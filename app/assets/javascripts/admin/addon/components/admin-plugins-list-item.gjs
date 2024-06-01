@@ -3,7 +3,7 @@ import { concat, fn, hash } from "@ember/helper";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { LinkTo } from "@ember/routing";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import DToggleSwitch from "discourse/components/d-toggle-switch";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import icon from "discourse-common/helpers/d-icon";
@@ -14,6 +14,7 @@ import PluginCommitHash from "./plugin-commit-hash";
 export default class AdminPluginsListItem extends Component {
   @service session;
   @service currentUser;
+  @service sidebarState;
 
   @action
   async togglePluginEnabled(plugin) {
@@ -30,9 +31,40 @@ export default class AdminPluginsListItem extends Component {
     }
   }
 
+  get isAdminSearchFiltered() {
+    if (!this.sidebarState.filter) {
+      return false;
+    }
+    return this.args.plugin.nameTitleizedLower.match(this.sidebarState.filter);
+  }
+
+  get showPluginSettingsButton() {
+    return this.currentUser.admin && this.args.plugin.hasSettings;
+  }
+
+  get disablePluginSettingsButton() {
+    return (
+      this.showPluginSettingsButton && this.args.plugin.hasOnlyEnabledSetting
+    );
+  }
+
+  get settingsButtonTitle() {
+    if (this.disablePluginSettingsButton) {
+      return i18n("admin.plugins.settings_disabled");
+    }
+
+    return "";
+  }
+
   <template>
-    <tr data-plugin-name={{@plugin.name}}>
-      <td class="admin-plugins-list__row">
+    <tr
+      data-plugin-name={{@plugin.name}}
+      class={{concat
+        "admin-plugins-list__row"
+        (if this.isAdminSearchFiltered "-admin-search-filtered")
+      }}
+    >
+      <td class="admin-plugins-list__name-details">
         <div class="admin-plugins-list__name-with-badges">
           <div class="admin-plugins-list__name">
             {{#if @plugin.linkUrl}}
@@ -87,13 +119,27 @@ export default class AdminPluginsListItem extends Component {
         {{/if}}
       </td>
       <td class="admin-plugins-list__settings">
-        {{#if this.currentUser.admin}}
-          {{#if @plugin.hasSettings}}
+        {{#if this.showPluginSettingsButton}}
+          {{#if @plugin.useNewShowRoute}}
+            <LinkTo
+              class="btn-default btn btn-icon-text"
+              @route="adminPlugins.show"
+              @model={{@plugin}}
+              @disabled={{this.disablePluginSettingsButton}}
+              title={{this.settingsButtonTitle}}
+              data-plugin-setting-button={{@plugin.name}}
+            >
+              {{icon "cog"}}
+              {{i18n "admin.plugins.change_settings_short"}}
+            </LinkTo>
+          {{else}}
             <LinkTo
               class="btn-default btn btn-icon-text"
               @route="adminSiteSettingsCategory"
               @model={{@plugin.settingCategoryName}}
               @query={{hash filter=(concat "plugin:" @plugin.name)}}
+              @disabled={{this.disablePluginSettingsButton}}
+              title={{this.settingsButtonTitle}}
               data-plugin-setting-button={{@plugin.name}}
             >
               {{icon "cog"}}

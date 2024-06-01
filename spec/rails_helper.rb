@@ -19,6 +19,7 @@ require "rbtrace" if RUBY_ENGINE == "ruby"
 require "pry"
 require "pry-byebug"
 require "pry-rails"
+require "pry-stack_explorer"
 require "fabrication"
 require "mocha/api"
 require "certified"
@@ -152,6 +153,7 @@ module TestSetup
 
     Middleware::AnonymousCache.disable_anon_cache
     BlockRequestsMiddleware.allow_requests!
+    BlockRequestsMiddleware.current_example_location = nil
   end
 end
 
@@ -200,6 +202,10 @@ RSpec.configure do |config|
   config.include UploadsHelpers
   config.include OneboxHelpers
   config.include FastImageHelpers
+  config.include WithServiceHelper
+  config.include ServiceMatchers
+  config.include I18nHelpers
+
   config.mock_framework = :mocha
   config.order = "random"
   config.infer_spec_type_from_file_location!
@@ -424,23 +430,6 @@ RSpec.configure do |config|
       Capybara::Selenium::Driver.new(app, **mobile_driver_options)
     end
 
-    Capybara.register_driver :selenium_firefox_headless do |app|
-      options =
-        Selenium::WebDriver::Firefox::Options.new(
-          args: %w[--window-size=1400,1400 --headless],
-          prefs: {
-            "browser.download.dir": Downloads::FOLDER,
-          },
-          log_level: ENV["SELENIUM_BROWSER_LOG_LEVEL"] || :warn,
-        )
-      Capybara::Selenium::Driver.new(
-        app,
-        browser: :firefox,
-        timeout: BROWSER_READ_TIMEOUT,
-        options: options,
-      )
-    end
-
     if ENV["ELEVATED_UPLOADS_ID"]
       DB.exec "SELECT setval('uploads_id_seq', 10000)"
     else
@@ -597,18 +586,13 @@ RSpec.configure do |config|
 
     driver = [:selenium]
     driver << :mobile if example.metadata[:mobile]
-    driver << (aarch64? ? :firefox : :chrome)
+    driver << :chrome
     driver << :headless unless ENV["SELENIUM_HEADLESS"] == "0"
-
-    if driver.include?(:firefox)
-      STDERR.puts(
-        "WARNING: Running system specs using the Firefox driver is not officially supported. Some tests will fail.",
-      )
-    end
-
     driven_by driver.join("_").to_sym
 
     setup_system_test
+
+    BlockRequestsMiddleware.current_example_location = example.location
   end
 
   config.after(:each, type: :system) do |example|
@@ -623,8 +607,7 @@ RSpec.configure do |config|
       lines << "~~~~~ END DRIVER LOGS ~~~~~"
     end
 
-    # The logs API isn’t available (yet?) with the Firefox driver
-    js_logs = aarch64? ? [] : page.driver.browser.logs.get(:browser)
+    js_logs = page.driver.browser.logs.get(:browser)
 
     # Recommended that this is not disabled, since it makes debugging
     # failed system tests a lot trickier.
@@ -683,7 +666,12 @@ RSpec.configure do |config|
         lines << "\n"
         lines << "Error encountered while proccessing #{path}"
         lines << "  #{ex.class}: #{ex.message}"
-        ex.backtrace.each { |line| lines << "    #{line}\n" }
+        ex.backtrace.each_with_index do |line, backtrace_index|
+          if ENV["RSPEC_EXCLUDE_GEMS_IN_BACKTRACE"]
+            next if line.match?(%r{/gems/})
+          end
+          lines << "    #{line}\n"
+        end
       end
 
       lines << "~~~~~~~ END SERVER EXCEPTIONS ~~~~~~~"
@@ -764,6 +752,14 @@ def set_cdn_url(cdn_url)
   end
 end
 
+# Time.now can cause flaky tests, especially in cases like
+# leap days. This method freezes time at a "safe" specific
+# time (the Discourse 1.1 release date), so it will not be
+# affected by further temporal disruptions.
+def freeze_time_safe
+  freeze_time(DateTime.parse("2014-08-26 12:00:00"))
+end
+
 def freeze_time(now = Time.now)
   time = now
   datetime = now
@@ -804,10 +800,38 @@ def unfreeze_time
   TrackTimeStub.unstub(:stubbed)
 end
 
-def file_from_fixtures(filename, directory = "images")
+def file_from_fixtures(filename, directory = "images", root_path = "#{Rails.root}/spec/fixtures")
   tmp_file_path = File.join(concurrency_safe_tmp_dir, SecureRandom.hex << filename)
-  FileUtils.cp("#{Rails.root}/spec/fixtures/#{directory}/#{filename}", tmp_file_path)
+  FileUtils.cp("#{root_path}/#{directory}/#{filename}", tmp_file_path)
   File.new(tmp_file_path)
+end
+
+def plugin_file_from_fixtures(filename, directory = "images")
+  # We [1] here instead of [0] because the first caller is the current method.
+  #
+  # /home/mb/repos/discourse-ai/spec/lib/modules/ai_bot/tools/discourse_meta_search_spec.rb:17:in `block (2 levels) in <main>'
+  first_non_gem_caller = caller_locations.select { |loc| !loc.to_s.match?(/gems/) }[1]&.path
+  raise StandardError.new("Could not find caller for fixture #{filename}") if !first_non_gem_caller
+
+  # This is the full path of the plugin spec file that needs a fixture.
+  # realpath makes sure we follow symlinks.
+  #
+  # #<Pathname:/home/mb/repos/discourse-ai/spec/lib/modules/ai_bot/tools/discourse_meta_search_spec.rb>
+  plugin_caller_path = Pathname.new(first_non_gem_caller).realpath
+
+  plugin_match =
+    Discourse.plugins.find do |plugin|
+      # realpath makes sure we follow symlinks
+      plugin_caller_path.to_s.starts_with?(Pathname.new(plugin.root_dir).realpath.to_s)
+    end
+
+  if !plugin_match
+    raise StandardError.new(
+            "Could not find matching plugin for #{plugin_caller_path} and fixture #{filename}",
+          )
+  end
+
+  file_from_fixtures(filename, directory, "#{plugin_match.root_dir}/spec/fixtures")
 end
 
 def file_from_contents(contents, filename, directory = "images")
@@ -929,10 +953,6 @@ def apply_base_chrome_options(options)
   if ENV["CHROME_DISABLE_FORCE_DEVICE_SCALE_FACTOR"].blank?
     options.add_argument("--force-device-scale-factor=1")
   end
-end
-
-def aarch64?
-  RUBY_PLATFORM == "aarch64-linux"
 end
 
 class SpecSecureRandom

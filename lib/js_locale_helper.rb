@@ -233,7 +233,7 @@ module JsLocaleHelper
     output
   end
 
-  MOMENT_LOCALE_MAPPING ||= { "hy" => "hy-am" }
+  MOMENT_LOCALE_MAPPING ||= { "hy" => "hy-am", "ug" => "ug-cn" }
 
   def self.find_moment_locale(locale_chain, timezone_names: false)
     if timezone_names
@@ -332,9 +332,7 @@ module JsLocaleHelper
         @ctx ||=
           begin
             ctx = MiniRacer::Context.new(timeout: 15_000, ensure_gc_after_idle: 2000)
-            ctx.load(
-              "#{Rails.root}/app/assets/javascripts/node_modules/messageformat/messageformat.js",
-            )
+            ctx.load("#{Rails.root}/node_modules/messageformat/messageformat.js")
             ctx
           end
       )

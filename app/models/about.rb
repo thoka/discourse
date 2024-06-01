@@ -7,11 +7,15 @@ class About
 
   class CategoryMods
     include ActiveModel::Serialization
-    attr_reader :category_id, :moderators
+    attr_reader :category, :moderators
 
-    def initialize(category_id, moderators)
-      @category_id = category_id
+    def initialize(category, moderators)
+      @category = category
       @moderators = moderators
+    end
+
+    def parent_category
+      category.parent_category
     end
   end
 
@@ -55,7 +59,11 @@ class About
   end
 
   def admins
-    @admins ||= User.where(admin: true).human_users.order("last_seen_at DESC")
+    @admins ||=
+      DiscoursePluginRegistry.apply_modifier(
+        :about_admins,
+        User.where(admin: true).human_users.order("last_seen_at DESC"),
+      )
   end
 
   def stats
@@ -85,9 +93,10 @@ class About
       ORDER BY c.position
     SQL
 
+    cats = Category.where(id: results.map(&:category_id)).index_by(&:id)
     mods = User.where(id: results.map(&:user_ids).flatten.uniq).index_by(&:id)
 
-    results.map { |row| CategoryMods.new(row.category_id, mods.values_at(*row.user_ids)) }
+    results.map { |row| CategoryMods.new(cats[row.category_id], mods.values_at(*row.user_ids)) }
   end
 
   def category_mods_limit

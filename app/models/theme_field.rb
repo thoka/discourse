@@ -23,7 +23,7 @@ class ThemeField < ActiveRecord::Base
 
   scope :find_by_theme_ids,
         ->(theme_ids) do
-          return none unless theme_ids.present?
+          return none if theme_ids.blank?
 
           where(theme_id: theme_ids).joins(
             "JOIN (
@@ -34,7 +34,7 @@ class ThemeField < ActiveRecord::Base
 
   scope :filter_locale_fields,
         ->(locale_codes) do
-          return none unless locale_codes.present?
+          return none if locale_codes.blank?
 
           where(target_id: Theme.targets[:translations], name: locale_codes).joins(
             DB.sql_fragment(
@@ -191,7 +191,6 @@ class ThemeField < ActiveRecord::Base
     javascript_cache.save!
 
     doc.add_child(<<~HTML.html_safe) if javascript_cache.content.present?
-      <link rel="preload" href="#{javascript_cache.url}" as="script" nonce="#{CSP_NONCE_PLACEHOLDER}">
       <script defer src='#{javascript_cache.url}' data-theme-id='#{theme_id}' nonce="#{CSP_NONCE_PLACEHOLDER}"></script>
     HTML
     [doc.to_s, errors&.join("\n")]
@@ -300,7 +299,6 @@ class ThemeField < ActiveRecord::Base
     javascript_cache.save!
     doc = ""
     doc = <<~HTML.html_safe if javascript_cache.content.present?
-          <link rel="preload" href="#{javascript_cache.url}" as="script" nonce="#{ThemeField::CSP_NONCE_PLACEHOLDER}">
           <script defer src="#{javascript_cache.url}" data-theme-id="#{theme_id}" nonce="#{ThemeField::CSP_NONCE_PLACEHOLDER}"></script>
         HTML
     [doc, errors&.join("\n")]
@@ -310,6 +308,7 @@ class ThemeField < ActiveRecord::Base
     return unless self.name == "yaml"
 
     errors = []
+
     begin
       ThemeSettingsParser
         .new(self)
@@ -325,16 +324,21 @@ class ThemeField < ActiveRecord::Base
             end
           end
 
-          errors << I18n.t("#{translation_key}.default_value_missing", name: name) if default.nil?
-
-          if (min = opts[:min]) && (max = opts[:max])
-            unless ThemeSetting.value_in_range?(default, (min..max), type)
-              errors << I18n.t("#{translation_key}.default_out_range", name: name)
-            end
+          unless ThemeSettingsValidator.is_value_present?(default)
+            errors << I18n.t("#{translation_key}.default_value_missing", name: name)
+            next
           end
 
-          unless ThemeSetting.acceptable_value_for_type?(default, type)
+          unless ThemeSettingsValidator.is_valid_value_type?(default, type)
             errors << I18n.t("#{translation_key}.default_not_match_type", name: name)
+          end
+
+          if (setting_errors = ThemeSettingsValidator.validate_value(default, type, opts)).present?
+            errors << I18n.t(
+              "#{translation_key}.default_value_not_valid",
+              name: name,
+              error_messages: setting_errors.join(" "),
+            )
           end
         end
     rescue ThemeSettingsParser::InvalidYaml => e
@@ -416,7 +420,7 @@ class ThemeField < ActiveRecord::Base
     if basic_html_field? || translation_field?
       self.value_baked, self.error =
         translation_field? ? process_translation : process_html(self.value)
-      self.error = nil unless self.error.present?
+      self.error = nil if self.error.blank?
       self.compiler_version = Theme.compiler_version
       CSP::Extension.clear_theme_extensions_cache!
     elsif extra_js_field? || js_tests_field?

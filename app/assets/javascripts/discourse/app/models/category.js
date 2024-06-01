@@ -1,12 +1,13 @@
 import { warn } from "@ember/debug";
-import { get } from "@ember/object";
+import { computed, get } from "@ember/object";
+import { service } from "@ember/service";
 import { on } from "@ember-decorators/object";
 import { ajax } from "discourse/lib/ajax";
 import { NotificationLevels } from "discourse/lib/notification-levels";
 import PermissionType from "discourse/models/permission-type";
 import RestModel from "discourse/models/rest";
 import Site from "discourse/models/site";
-import User from "discourse/models/user";
+import Topic from "discourse/models/topic";
 import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
 import getURL from "discourse-common/lib/get-url";
 import discourseComputed from "discourse-common/utils/decorators";
@@ -102,7 +103,14 @@ export default class Category extends RestModel {
     if (!id) {
       return;
     }
-    return Category._idMap()[id];
+
+    if (typeof id === "string") {
+      // eslint-disable-next-line no-console
+      console.warn("Category.findById called with a string ID");
+      id = parseInt(id, 10);
+    }
+
+    return Category._idMap().get(id);
   }
 
   static findByIds(ids = []) {
@@ -150,6 +158,10 @@ export default class Category extends RestModel {
     return categories;
   }
 
+  static async asyncFindById(id) {
+    return (await Category.asyncFindByIds([id]))[0];
+  }
+
   static findBySlugAndParent(slug, parentCategory) {
     if (this.slugEncoded()) {
       slug = encodeURI(slug);
@@ -174,6 +186,25 @@ export default class Category extends RestModel {
     }
 
     return category;
+  }
+
+  static async asyncFindBySlugPath(slugPath, opts = {}) {
+    const data = { slug_path: slugPath };
+    if (opts.includePermissions) {
+      data.include_permissions = true;
+    }
+
+    const result = await ajax("/categories/find", { data });
+
+    const categories = result["categories"].map((category) => {
+      category = Site.current().updateCategory(category);
+      if (opts.includePermissions) {
+        category.setupGroupsAndPermissions();
+      }
+      return category;
+    });
+
+    return categories[categories.length - 1];
   }
 
   static async asyncFindBySlugPathWithID(slugPathWithID) {
@@ -365,17 +396,33 @@ export default class Category extends RestModel {
       select_category_ids: opts.selectCategoryIds,
       reject_category_ids: opts.rejectCategoryIds,
       include_subcategories: opts.includeSubcategories,
+      include_ancestors: opts.includeAncestors,
       prioritized_category_id: opts.prioritizedCategoryId,
       limit: opts.limit,
+      page: opts.page,
     };
 
     const result = (CATEGORY_ASYNC_SEARCH_CACHE[JSON.stringify(data)] ||=
-      await ajax("/categories/search", { data }));
+      await ajax("/categories/search", { method: "POST", data }));
 
-    return result["categories"].map((category) =>
-      Site.current().updateCategory(category)
-    );
+    if (opts.includeAncestors) {
+      return {
+        ancestors: result["ancestors"].map((category) =>
+          Site.current().updateCategory(category)
+        ),
+        categories: result["categories"].map((category) =>
+          Site.current().updateCategory(category)
+        ),
+        categoriesCount: result["categories_count"],
+      };
+    } else {
+      return result["categories"].map((category) =>
+        Site.current().updateCategory(category)
+      );
+    }
   }
+
+  @service currentUser;
 
   permissions = null;
 
@@ -398,6 +445,27 @@ export default class Category extends RestModel {
         })
       );
     }
+  }
+
+  @computed("parent_category_id", "site.categories.[]")
+  get parentCategory() {
+    if (this.parent_category_id) {
+      return Category.findById(this.parent_category_id);
+    }
+  }
+
+  set parentCategory(newParentCategory) {
+    this.set("parent_category_id", newParentCategory?.id);
+  }
+
+  @computed("site.categories.[]")
+  get subcategories() {
+    return this.site.categories.filterBy("parent_category_id", this.id);
+  }
+
+  @computed("subcategory_list")
+  get serializedSubcategories() {
+    return this.subcategory_list?.map((c) => Category.create(c));
   }
 
   @discourseComputed("required_tag_groups", "minimum_required_tags")
@@ -431,6 +499,26 @@ export default class Category extends RestModel {
   @discourseComputed("parentCategory.ancestors")
   ancestors(parentAncestors) {
     return [...(parentAncestors || []), this];
+  }
+
+  @discourseComputed("parentCategory", "parentCategory.predecessors")
+  predecessors(parentCategory, parentPredecessors) {
+    if (parentCategory) {
+      return [parentCategory, ...parentPredecessors];
+    } else {
+      return [];
+    }
+  }
+
+  @discourseComputed("subcategories")
+  descendants() {
+    const descendants = [this];
+    for (let i = 0; i < descendants.length; i++) {
+      if (descendants[i].subcategories) {
+        descendants.push(...descendants[i].subcategories);
+      }
+    }
+    return descendants;
   }
 
   @discourseComputed("parentCategory.level")
@@ -680,14 +768,16 @@ export default class Category extends RestModel {
   @discourseComputed("topics")
   featuredTopics(topics) {
     if (topics && topics.length) {
-      return topics.slice(0, this.num_featured_topics || 2);
+      return topics
+        .slice(0, this.num_featured_topics || 2)
+        .map((t) => Topic.create(t));
     }
   }
 
   setNotification(notification_level) {
-    User.currentProp(
+    this.currentUser.set(
       "muted_category_ids",
-      User.current().calculateMutedIds(
+      this.currentUser.calculateMutedIds(
         notification_level,
         this.id,
         "muted_category_ids"
@@ -697,7 +787,7 @@ export default class Category extends RestModel {
     const url = `/category/${this.id}/notifications`;
     return ajax(url, { data: { notification_level }, type: "POST" }).then(
       (data) => {
-        User.current().set(
+        this.currentUser.set(
           "indirectly_muted_category_ids",
           data.indirectly_muted_category_ids
         );

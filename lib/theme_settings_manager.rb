@@ -10,7 +10,7 @@ class ThemeSettingsManager
   def self.cast_row_value(row)
     type_name = self.types.invert[row.data_type].downcase.capitalize
     klass = "ThemeSettingsManager::#{type_name}".constantize
-    klass.cast(row.value)
+    klass.cast(klass.extract_value_from_row(row))
   end
 
   def self.create(name, default, type, theme, opts = {})
@@ -21,6 +21,10 @@ class ThemeSettingsManager
 
   def self.cast(value)
     value
+  end
+
+  def self.extract_value_from_row(row)
+    row.value
   end
 
   def initialize(name, default, theme, opts = {})
@@ -53,10 +57,10 @@ class ThemeSettingsManager
 
   def value=(new_value)
     ensure_is_valid_value!(new_value)
+    value = new_value.to_s
 
-    record = has_record? ? db_record : create_record!
-    record.value = new_value.to_s
-    record.save!
+    record = has_record? ? update_record!(value:) : create_record!(value:)
+
     record.value
   end
 
@@ -68,39 +72,25 @@ class ThemeSettingsManager
     end
   end
 
-  def has_record?
-    db_record.present?
+  def update_record!(args)
+    db_record.tap { |instance| instance.update!(args) }
   end
 
-  def create_record!
-    record = ThemeSetting.new(name: @name, data_type: type, theme: @theme)
+  def create_record!(args)
+    record = ThemeSetting.new(name: @name, data_type: type, theme: @theme, **args)
     record.save!
     record
   end
 
-  def is_valid_value?(new_value)
-    true
-  end
-
-  def invalid_value_error_message
-    name = type == @types[:integer] || type == @types[:float] ? "number" : type_name
-    primary_key = "themes.settings_errors.#{name}_value_not_valid"
-
-    secondary_key = primary_key
-    secondary_key += "_min" if has_min?
-    secondary_key += "_max" if has_max?
-
-    translation = I18n.t(primary_key)
-    return translation if secondary_key == primary_key
-
-    translation += " #{I18n.t(secondary_key, min: @opts[:min], max: @opts[:max])}"
-    translation
+  def has_record?
+    db_record.present?
   end
 
   def ensure_is_valid_value!(new_value)
-    unless is_valid_value?(new_value)
-      raise Discourse::InvalidParameters.new invalid_value_error_message
-    end
+    return if new_value.nil?
+
+    error_messages = ThemeSettingsValidator.validate_value(new_value, type, @opts)
+    raise Discourse::InvalidParameters.new error_messages.join(" ") if error_messages.present?
   end
 
   def has_min?

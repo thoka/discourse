@@ -18,13 +18,13 @@ RSpec.describe "Drawer", type: :system do
     end
 
     context "when clicking channel title" do
-      it "opens channel info page" do
+      it "opens channel settings page" do
         visit("/")
         chat_page.open_from_header
         drawer_page.open_channel(channel)
         page.find(".c-navbar__channel-title").click
 
-        expect(page).to have_current_path("/chat/c/#{channel.slug}/#{channel.id}/info/members")
+        expect(page).to have_current_path("/chat/c/#{channel.slug}/#{channel.id}/info/settings")
       end
     end
   end
@@ -106,6 +106,7 @@ RSpec.describe "Drawer", type: :system do
     fab!(:user_1) { Fabricate(:user) }
 
     before do
+      current_user.upsert_custom_fields(::Chat::LAST_CHAT_CHANNEL_ID => channel_1.id)
       channel_1.add(current_user)
       channel_2.add(current_user)
       channel_1.add(user_1)
@@ -140,6 +141,7 @@ RSpec.describe "Drawer", type: :system do
     fab!(:channel) { Fabricate(:chat_channel) }
 
     before do
+      current_user.upsert_custom_fields(::Chat::LAST_CHAT_CHANNEL_ID => channel.id)
       channel.add(current_user)
       set_subfolder "/discuss"
     end

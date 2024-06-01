@@ -66,10 +66,12 @@ module PrettyText
     end
 
     root_path = "#{Rails.root}/app/assets/javascripts"
-    ctx.load("#{root_path}/node_modules/loader.js/dist/loader/loader.js")
-    ctx.load("#{root_path}/node_modules/markdown-it/dist/markdown-it.js")
+    node_modules = "#{Rails.root}/node_modules"
+    md_node_modules = "#{Rails.root}/app/assets/javascripts/discourse-markdown-it/node_modules"
+    ctx.load("#{node_modules}/loader.js/dist/loader/loader.js")
+    ctx.load("#{md_node_modules}/markdown-it/dist/markdown-it.js")
     ctx.load("#{root_path}/handlebars-shim.js")
-    ctx.load("#{root_path}/node_modules/xss/dist/xss.js")
+    ctx.load("#{node_modules}/xss/dist/xss.js")
     ctx.load("#{Rails.root}/lib/pretty_text/vendor-shims.js")
 
     ctx_load_directory(
@@ -462,11 +464,9 @@ module PrettyText
     mentions =
       cooked
         .css(".mention, .mention-group")
-        .map do |e|
+        .filter_map do |e|
           if (name = e.inner_text)
-            name = name[1..-1]
-            name = User.normalize_username(name)
-            name
+            User.normalize_username(name[1..-1]) if name[0] == "@"
           end
         end
 
@@ -506,17 +506,23 @@ module PrettyText
   end
 
   def self.make_all_links_absolute(doc)
-    site_uri = nil
     doc
-      .css("a")
-      .each do |link|
-        href = link["href"].to_s
+      .css("a[href]")
+      .each do |a|
         begin
-          uri = URI(href)
-          site_uri ||= URI(Discourse.base_url)
-          unless uri.host.present? || href.start_with?("mailto")
-            link["href"] = "#{site_uri}#{link["href"]}"
-          end
+          href = a["href"].to_s
+          next if href.blank?
+          next if href.start_with?("mailto:")
+          next if href.start_with?(Discourse.base_url)
+          next if URI(href).host.present?
+
+          a["href"] = (
+            if href.start_with?(Discourse.base_path)
+              "#{Discourse.base_url_no_prefix}#{href}"
+            else
+              "#{Discourse.base_url}#{href}"
+            end
+          )
         rescue URI::Error
           # leave it
         end
@@ -653,7 +659,7 @@ module PrettyText
   def self.format_for_email(html, post = nil)
     doc = Nokogiri::HTML5.fragment(html)
     DiscourseEvent.trigger(:reduce_cooked, doc, post)
-    strip_secure_uploads(doc) if post&.with_secure_uploads?
+    strip_secure_uploads(doc) if post&.should_secure_uploads?
     strip_image_wrapping(doc)
     convert_vimeo_iframes(doc)
     make_all_links_absolute(doc)

@@ -2519,7 +2519,7 @@ RSpec.describe Topic do
 
   describe "#listable_count_per_day" do
     before(:each) do
-      freeze_time DateTime.parse("2017-03-01 12:00")
+      freeze_time_safe
 
       Fabricate(:topic)
       Fabricate(:topic, created_at: 1.day.ago)
@@ -2874,6 +2874,7 @@ RSpec.describe Topic do
     topic.reload
 
     expect(topic.posts_count).to eq(1)
+    expect(topic.word_count).to eq(post1.word_count)
     expect(topic.highest_post_number).to eq(post1.post_number)
     expect(topic.highest_staff_post_number).to eq(post2.post_number)
     expect(topic.last_posted_at).to eq_time(post1.created_at)

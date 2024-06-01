@@ -53,6 +53,10 @@ sl:
   components:
     enabled_filter: "Vključeno"
     disabled_filter: "Onemogočeno"
+  themes:
+    settings_errors:
+      objects:
+        not_valid_integer_value: "mora biti celo število"
   emails:
     incoming:
       default_subject: "Tema potrebuje naslov"
@@ -64,7 +68,6 @@ sl:
     format: ! "%{attribute} %{message}"
     format_with_full_message: "<b>%{attribute}</b>: %{message}"
     messages:
-      too_long_validation: "je omejeno na %{max} znakov; vnesli ste %{length}."
       taken: "je že uporabljeno"
       exclusion: je rezervirano
       has_already_been_used: "je že v uporabi"
@@ -695,8 +698,8 @@ sl:
         user: Uporabnik
         qtt_like: Všečkov prejetih
   dashboard:
-    s3_cdn_warning: 'Strežnik je konfiguriran za nalaganje datotek v S3, vendar hkrati ni konfiguriran tudi S3 CDN. To lahko privede do visokih stroškov uporabe S3 in počasnejšega delovanja strani. Če želite izvedeti več, glejte <a href="https://meta.discourse.org/t/-/148916" target="_blank">"Using Object Storage for Uploads"</a>.'
-    out_of_date_themes: "Posodobitve so na voljo za naslednje prilagoditve:"
+    problem:
+      out_of_date_themes: "Posodobitve so na voljo za naslednje prilagoditve:"
   site_settings:
     disabled: "onemogočeno"
     allow_uncategorized_topics: "Dovoli ustvarjanje tem brez kategorije. OPOZORILO: Če obstajajo nerazvrščene teme, jih morate ponovno razvrstiti, preden izklopite to nastavitev."
@@ -717,6 +720,15 @@ sl:
     skip_auto_delete_reply_likes: "Pri samodejnem brisanju starih odgovorov preskočite brisanje objav s tem ali večjim številom všečkov."
     default_other_skip_new_user_tips: "Preskoči namige in značke za nove uporabnike."
     shared_drafts_min_trust_level: "Uporabnikom omogočite ogled in urejanje osnutkov v skupni rabi."
+    keywords:
+      clean_up_inactive_users_after_days:
+      - ""
+      - "nedejaven"
+      - ""
+      purge_unactivated_users_grace_period_days:
+      - ""
+      - "nedejaven"
+      - ""
   search:
     within_post: "#%{post_number} od %{username}"
     types:
@@ -1520,7 +1532,6 @@ sl:
 
         Če imate kakršnakoli vprašanja [kontaktirajte naše prijazno osebje](%{base_url}/about).
     digest:
-      why: "Kratek povzetek %{site_link} od vašega zadnjega obiska %{last_seen_at}"
       since_last_visit: "Od vašega zadnjega obiska"
       new_topics: "Nove teme"
       unread_notifications: "Neprebrana obvestila"
@@ -1534,7 +1545,6 @@ sl:
       unsubscribe: "Ta povzetek je poslan s strani %{site_link}, ker vas nekaj časa ni bilo na strani. Spremenite %{email_preferences_link} ali %{unsubscribe_link} za odjavo."
       your_email_settings: "vaše nastavitve e-pošte"
       click_here: "kliknite tukaj"
-      preheader: "Strnjen povzetek od vašega zadnjega obiska %{last_seen_at}"
     forgot_password:
       title: "Pozabljeno geslo"
       subject_template: "[%{email_prefix}] Ponastavi geslo"

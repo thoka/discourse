@@ -100,7 +100,6 @@ sv:
       channels_list_popup:
         browse: "Bläddra bland kanaler"
         create: "Ny kanal"
-      click_to_join: "Klicka här för att se tillgängliga kanaler."
       close: "Stäng"
       remove: "Ta bort"
       collapse: "Komprimera chattruta"
@@ -228,8 +227,6 @@ sv:
         header: "Chatthuvud"
         composer: "Chattkompositör"
         channels_list: "Lista över chattkanaler"
-      no_direct_message_channels: "Du har inte gått med i några direktmeddelandekanaler."
-      no_public_channels: "Du har inte gått med i några kanaler."
       kicked_from_channel: "Du har inte längre tillgång till den här kanalen."
       only_chat_push_notifications:
         title: "Skicka bara push-meddelanden för chatt"
@@ -306,7 +303,7 @@ sv:
         back: "Tillbaka"
         title: Kanaler
         filter_all: Alla
-        filter_open: Öppnad
+        filter_open: Öppen
         filter_closed: Stängd
         filter_archived: Arkiverad
         filter_input_placeholder: Sök kanal efter namn
@@ -563,6 +560,7 @@ sv:
       flags:
         off_topic: "Det här meddelandet är inte relevant för den aktuella diskussionen enligt kanaltiteln och bör förmodligen flyttas någon annanstans."
         inappropriate: "Detta meddelande innehåller saker som en förnuftig person skulle anse vara stötande, kränkande eller en överträdelse av <a href=\"%{basePath}/guidelines\">vårt forums riktlinjer</a>."
+        illegal: "Det här inlägget kräver personalens uppmärksamhet eftersom jag tror att det innehåller innehåll som är olagligt."
         spam: "Det här meddelandet är en annons eller vandalism. Det är inte lämpligt eller relevant med avseende på den aktuella kanalen."
         notify_user: "Jag vill prata med den här personen direkt och privat om meddelandet."
         notify_moderators: "Detta meddelande kräver personalens uppmärksamhet av en annan anledning som inte anges ovan."

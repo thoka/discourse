@@ -1,5 +1,5 @@
 import Component from "@glimmer/component";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 
 export default class RenderGlimmerContainer extends Component {
   @service renderGlimmer;
@@ -7,10 +7,12 @@ export default class RenderGlimmerContainer extends Component {
   <template>
     {{#each this.renderGlimmer._registrations as |info|}}
       {{#in-element info.element insertBefore=null}}
+        {{~! no whitespace ~}}
         <info.component
           @data={{info.data}}
           @setWrapperElementAttrs={{info.setWrapperElementAttrs}}
         />
+        {{~! no whitespace ~}}
       {{/in-element}}
     {{/each}}
   </template>

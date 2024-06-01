@@ -2,7 +2,7 @@ import { tracked } from "@glimmer/tracking";
 import { action, computed } from "@ember/object";
 import { and } from "@ember/object/computed";
 import { cancel, next } from "@ember/runloop";
-import Service, { inject as service } from "@ember/service";
+import Service, { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import {
@@ -175,6 +175,32 @@ export default class Chat extends Service {
     this.set("isNetworkUnreliable", false);
   }
 
+  async loadChannels() {
+    // We want to be able to call this method multiple times, but only
+    // actually load the channels once. This is because we might call
+    // this method before the chat is fully initialized, and we don't
+    // want to load the channels multiple times in that case.
+    try {
+      if (this.chatStateManager.hasPreloadedChannels) {
+        return;
+      }
+
+      if (this.loadingChannels) {
+        return this.loadingChannels;
+      }
+
+      this.loadingChannels = new Promise((resolve) => {
+        this.chatApi.listCurrentUserChannels().then((result) => {
+          this.setupWithPreloadedChannels(result);
+          this.chatStateManager.hasPreloadedChannels = true;
+          resolve();
+        });
+      });
+    } catch (e) {
+      popupAjaxError(e);
+    }
+  }
+
   setupWithPreloadedChannels(channelsView) {
     this.chatSubscriptionsManager.startChannelsSubscriptions(
       channelsView.meta.message_bus_last_ids
@@ -294,68 +320,6 @@ export default class Chat extends Service {
     }
   }
 
-  getIdealFirstChannelId() {
-    // When user opens chat we need to give them the 'best' channel when they enter.
-    //
-    // Look for public channels with mentions. If one exists, enter that.
-    // Next best is a DM channel with unread messages.
-    // Next best is a public channel with unread messages.
-    // Then we fall back to the chat_default_channel_id site setting
-    // if that is present and in the list of channels the user can access.
-    // If none of these options exist, then we get the first public channel,
-    // or failing that the first DM channel.
-    // Defined in order of significance.
-    let publicChannelWithMention,
-      dmChannelWithUnread,
-      publicChannelWithUnread,
-      publicChannel,
-      dmChannel,
-      defaultChannel;
-
-    this.chatChannelsManager.channels.forEach((channel) => {
-      const membership = channel.currentUserMembership;
-
-      if (!membership.following) {
-        return;
-      }
-
-      if (channel.isDirectMessageChannel) {
-        if (!dmChannelWithUnread && channel.tracking.unreadCount > 0) {
-          dmChannelWithUnread = channel.id;
-        } else if (!dmChannel) {
-          dmChannel = channel.id;
-        }
-      } else {
-        if (membership.unread_mentions > 0) {
-          publicChannelWithMention = channel.id;
-          return; // <- We have a public channel with a mention. Break and return this.
-        } else if (
-          !publicChannelWithUnread &&
-          channel.tracking.unreadCount > 0
-        ) {
-          publicChannelWithUnread = channel.id;
-        } else if (
-          !defaultChannel &&
-          parseInt(this.siteSettings.chat_default_channel_id || 0, 10) ===
-            channel.id
-        ) {
-          defaultChannel = channel.id;
-        } else if (!publicChannel) {
-          publicChannel = channel.id;
-        }
-      }
-    });
-
-    return (
-      publicChannelWithMention ||
-      dmChannelWithUnread ||
-      publicChannelWithUnread ||
-      defaultChannel ||
-      publicChannel ||
-      dmChannel
-    );
-  }
-
   _fireOpenFloatAppEvent(channel, messageId = null) {
     messageId
       ? this.router.transitionTo(
@@ -391,14 +355,17 @@ export default class Chat extends Service {
   // channel for. The current user will automatically be included in the channel when it is created.
   // @param {array} [targets.usernames] - The usernames to include in the direct message channel.
   // @param {array} [targets.groups] - The groups to include in the direct message channel.
-  // @param {string|null} [name=null] - Optional name for the direct message channel.
-  upsertDmChannel(targets, name = null) {
+  // @param {object} opts - Optional values when fetching or creating the direct message channel.
+  // @param {string|null} [opts.name] - Name for the direct message channel.
+  // @param {boolean} [opts.upsert] - Should we attempt to fetch existing channel before creating a new one.
+  createDmChannel(targets, opts = { name: null, upsert: false }) {
     return ajax("/chat/api/direct-message-channels.json", {
       method: "POST",
       data: {
         target_usernames: targets.usernames?.uniq(),
         target_groups: targets.groups?.uniq(),
-        name,
+        upsert: opts.upsert,
+        name: opts.name,
       },
     })
       .then((response) => {
@@ -407,6 +374,10 @@ export default class Chat extends Service {
         return channel;
       })
       .catch(popupAjaxError);
+  }
+
+  upsertDmChannel(targets, name = null) {
+    return this.createDmChannel(targets, { name, upsert: true });
   }
 
   // @param {array} usernames - The usernames to fetch the direct message

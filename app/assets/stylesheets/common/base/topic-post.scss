@@ -59,9 +59,9 @@
     font-weight: bold;
   }
 
-  span {
+  > span {
     font-size: var(--font-0);
-    margin-right: 8px;
+    margin-right: 0.33em;
     display: inline-block;
     @include ellipsis;
     vertical-align: middle;
@@ -89,7 +89,7 @@
 .cooked,
 .d-editor-preview {
   word-wrap: break-word;
-  line-height: var(--line-height-large);
+  line-height: 1.5;
 
   > *:first-child {
     margin-top: 0;
@@ -101,7 +101,7 @@
   h4,
   h5,
   h6 {
-    margin: 30px 0 10px;
+    margin: 2rem 0 0.67rem;
     line-height: var(--line-height-medium);
     a.anchor {
       opacity: 0;
@@ -316,7 +316,7 @@ nav.post-controls {
       .d-icon {
         opacity: 1;
       }
-      display: inline-block;
+      display: inline-flex;
     }
 
     button {
@@ -475,13 +475,13 @@ aside.quote {
     @include post-aside;
 
     color: var(--primary-high-or-secondary-low);
-    padding: 12px 12px 0px 12px;
+    padding: 0.8em 0.8em 0 0.8em;
     // blockquote is underneath this and has top margin
     .avatar {
-      margin-right: 7px;
+      margin-right: 0.5em;
     }
     img {
-      margin-top: -4px;
+      margin-top: -0.26em;
     }
     @include unselectable;
   }
@@ -518,8 +518,8 @@ aside.quote {
 
 .cooked .highlight {
   background-color: var(--tertiary-low);
-  padding: 2px;
-  margin: -2px;
+  padding: 0.15em;
+  margin: -0.15em;
 }
 
 .post-ignored {
@@ -534,14 +534,23 @@ aside.quote {
   }
 }
 
-.small-user-list .unknown {
-  display: inline-block;
-  background-color: var(--primary-low);
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  vertical-align: middle;
-  margin-right: 0.25em;
+.small-user-list {
+  .small-user-list-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .unknown {
+    display: inline-block;
+    background-color: var(--primary-low);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.25em;
+  }
 }
 
 .post-hidden {
@@ -751,11 +760,26 @@ aside.quote {
   }
 
   .topic-links {
+    tbody {
+      border: none;
+    }
     tr {
       border: none;
     }
     .badge-notification {
       margin: 1px 5px 2px 0;
+    }
+  }
+
+  .link-summary .btn {
+    width: 100%;
+    .d-icon {
+      color: var(--primary-high);
+    }
+    .discourse-no-touch & {
+      &:hover {
+        background: var(--primary-low);
+      }
     }
   }
 
@@ -789,6 +813,7 @@ aside.quote {
     }
 
     .user {
+      @include ellipsis;
       border: 1px solid var(--primary-low);
       border-radius: 0.25em;
       padding: 0;
@@ -799,6 +824,7 @@ aside.quote {
 
       .user-link,
       .group-link {
+        @include ellipsis;
         color: var(--primary-high);
 
         &:hover {
@@ -1154,7 +1180,10 @@ blockquote > *:last-child {
   }
 
   &.deleted {
-    background-color: var(--danger-low-mid);
+    .topic-avatar,
+    .small-action-desc {
+      background-color: var(--danger-low-mid);
+    }
   }
 
   .topic-avatar,
@@ -1170,6 +1199,7 @@ blockquote > *:last-child {
     padding-top: 1em;
     width: var(--topic-avatar-width);
     justify-content: center;
+    height: auto;
     .d-icon {
       font-size: var(--font-up-3);
       width: var(--topic-avatar-width);
@@ -1730,6 +1760,10 @@ iframe {
       top: 0;
       z-index: 1;
       background-color: var(--secondary);
+    }
+
+    td {
+      padding: 5px 6px 5px 3px;
     }
   }
 }

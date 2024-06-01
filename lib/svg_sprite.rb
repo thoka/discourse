@@ -77,6 +77,9 @@ module SvgSprite
         discourse-other-tab
         discourse-sparkles
         discourse-threads
+        discourse-sidebar
+        discourse-chevron-collapse
+        discourse-chevron-expand
         download
         ellipsis-h
         ellipsis-v
@@ -96,7 +99,10 @@ module SvgSprite
         fab-facebook
         fab-github
         fab-instagram
+        fab-linkedin-in
         fab-linux
+        fab-threads
+        fab-threads-square
         fab-twitter
         fab-twitter-square
         fab-wikipedia-w
@@ -159,6 +165,7 @@ module SvgSprite
         italic
         key
         keyboard
+        language
         layer-group
         link
         list
@@ -183,6 +190,7 @@ module SvgSprite
         plus-circle
         plus-square
         power-off
+        project-diagram
         puzzle-piece
         question
         question-circle
@@ -191,6 +199,7 @@ module SvgSprite
         random
         redo
         reply
+        robot
         rocket
         search
         search-plus

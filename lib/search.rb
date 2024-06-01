@@ -266,6 +266,7 @@ class Search
         search_context: @search_context,
         blurb_length: @blurb_length,
         is_header_search: !use_full_page_limit,
+        can_lazy_load_categories: @guardian.can_lazy_load_categories?,
       )
   end
 
@@ -348,19 +349,19 @@ class Search
   end
 
   def self.advanced_order(trigger, &block)
-    (@advanced_orders ||= {})[trigger] = block
+    advanced_orders[trigger] = block
   end
 
   def self.advanced_orders
-    @advanced_orders
+    @advanced_orders ||= {}
   end
 
   def self.advanced_filter(trigger, &block)
-    (@advanced_filters ||= {})[trigger] = block
+    advanced_filters[trigger] = block
   end
 
   def self.advanced_filters
-    @advanced_filters
+    @advanced_filters ||= {}
   end
 
   def self.custom_topic_eager_load(tables = nil, &block)
@@ -918,7 +919,7 @@ class Search
 
   def find_grouped_results
     if @results.type_filter.present?
-      unless Search.facets.include?(@results.type_filter)
+      if Search.facets.exclude?(@results.type_filter)
         raise Discourse::InvalidAccess.new("invalid type filter")
       end
       # calling protected methods
@@ -1075,7 +1076,7 @@ class Search
 
   def posts_query(limit, type_filter: nil, aggregate_search: false)
     posts =
-      Post.where(post_type: Topic.visible_post_types(@guardian.user)).joins(
+      Post.where(post_type: Topic.visible_post_types(@guardian.user), hidden: false).joins(
         :post_search_data,
         :topic,
       )
@@ -1447,7 +1448,7 @@ class Search
 
   def posts_eager_loads(query)
     query = query.includes(:user, :post_search_data)
-    topic_eager_loads = [:category]
+    topic_eager_loads = [{ category: :parent_category }]
 
     topic_eager_loads << :tags if SiteSetting.tagging_enabled
 

@@ -1,4 +1,4 @@
-import { tracked } from "@glimmer/tracking";
+import { cached, tracked } from "@glimmer/tracking";
 import { capitalize } from "@ember/string";
 import I18n from "discourse-i18n";
 
@@ -17,6 +17,7 @@ export default class AdminPlugin {
     this.enabled = args.enabled;
     this.enabledSetting = args.enabled_setting;
     this.hasSettings = args.has_settings;
+    this.hasOnlyEnabledSetting = args.has_only_enabled_setting;
     this.id = args.id;
     this.isOfficial = args.is_official;
     this.isDiscourseOwned = args.is_discourse_owned;
@@ -26,6 +27,11 @@ export default class AdminPlugin {
     this.version = args.version;
     this.metaUrl = args.meta_url;
     this.authors = args.authors;
+    this.extras = args.extras;
+  }
+
+  get useNewShowRoute() {
+    return this.adminRoute?.use_new_show_route;
   }
 
   get snakeCaseName() {
@@ -52,10 +58,11 @@ export default class AdminPlugin {
     return "plugins";
   }
 
+  @cached
   get nameTitleized() {
     // The category name is better in a lot of cases, as it's a human-inputted
     // translation, and we can handle things like SAML instead of showing them
-    // as Saml from discourse-saml. We can fall back to the programattic version
+    // as Saml from discourse-saml. We can fall back to the programmatic version
     // though if needed.
     let name;
     if (this.translatedCategoryName) {
@@ -76,6 +83,11 @@ export default class AdminPlugin {
     }
 
     return name;
+  }
+
+  @cached
+  get nameTitleizedLower() {
+    return this.nameTitleized.toLowerCase();
   }
 
   get author() {

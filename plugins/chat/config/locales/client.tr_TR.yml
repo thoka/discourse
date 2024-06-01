@@ -100,7 +100,6 @@ tr_TR:
       channels_list_popup:
         browse: "Kanallara göz atın"
         create: "Yeni kanal"
-      click_to_join: "Mevcut kanalları görüntülemek için buraya tıklayın."
       close: "Kapat"
       remove: "Kaldır"
       collapse: "Sohbet Çekmecesini Daralt"
@@ -228,8 +227,7 @@ tr_TR:
         header: "Sohbet başlığı"
         composer: "Sohbet oluşturucu"
         channels_list: "Sohbet kanalları listesi"
-      no_direct_message_channels: "Herhangi bir doğrudan mesaj kanalına katılmadınız."
-      no_public_channels: "Hiçbir kanala katılmadınız."
+      no_public_channels_cta: "Kanallara göz atın"
       kicked_from_channel: "Artık bu kanala erişemezsiniz."
       only_chat_push_notifications:
         title: "Yalnızca sohbet anlık bildirimleri gönder"
@@ -306,7 +304,7 @@ tr_TR:
         back: "Geri"
         title: Kanallar
         filter_all: Tümü
-        filter_open: Açıldı
+        filter_open: Aç
         filter_closed: Kapalı
         filter_archived: Arşivlendi
         filter_input_placeholder: Ada göre kanal ara
@@ -563,6 +561,7 @@ tr_TR:
       flags:
         off_topic: "Bu mesaj, kanal başlığı tarafından tanımlanan mevcut tartışma ile ilgili değildir ve muhtemelen başka bir yere taşınmalıdır."
         inappropriate: "Bu mesaj, makul bir kişinin saldırgan, taciz edici veya <a href=\"%{basePath}/guidelines\">topluluk kurallarımızı</a> ihlal ettiğini düşüneceği içerik içeriyor."
+        illegal: "Bu gönderi yetkililerin dikkatini çekmesi gerekiyor çünkü illegal içerikler içeriyor."
         spam: "Bu mesaj bir reklam veya vandalizm içerikli. Kullanışlı veya mevcut kanalla ilgili değil."
         notify_user: "Bu kişiyle doğrudan ve kişisel olarak mesajı hakkında konuşmak istiyorum."
         notify_moderators: "Bu mesaj, yukarıda listelenmeyen başka bir nedenden dolayı personelin dikkatini gerektiriyor."

@@ -110,6 +110,8 @@ Discourse::Application.routes.draw do
       get "" => "admin#index"
 
       get "plugins" => "plugins#index"
+      get "plugins/:plugin_id" => "plugins#show"
+      get "plugins/:plugin_id/settings" => "plugins#show"
 
       resources :site_settings, only: %i[index update], constraints: AdminConstraint.new do
         collection { get "category/:id" => "site_settings#index" }
@@ -219,6 +221,7 @@ Discourse::Application.routes.draw do
 
       get "customize" => "color_schemes#index", :constraints => AdminConstraint.new
       get "customize/themes" => "themes#index", :constraints => AdminConstraint.new
+      get "customize/components" => "themes#index", :constraints => AdminConstraint.new
       get "customize/theme-components" => "themes#index", :constraints => AdminConstraint.new
       get "customize/colors" => "color_schemes#index", :constraints => AdminConstraint.new
       get "customize/colors/:id" => "color_schemes#index", :constraints => AdminConstraint.new
@@ -231,8 +234,11 @@ Discourse::Application.routes.draw do
                 constraints: AdminConstraint.new do
         member do
           get "preview" => "themes#preview"
+          get "translations/:locale" => "themes#get_translations"
           put "setting" => "themes#update_single_setting"
+          get "objects_setting_metadata/:setting_name" => "themes#objects_setting_metadata"
         end
+
         collection do
           post "import" => "themes#import"
           post "upload_asset" => "themes#upload_asset"
@@ -252,8 +258,11 @@ Discourse::Application.routes.draw do
 
         get "themes/:id/:target/:field_name/edit" => "themes#index"
         get "themes/:id" => "themes#index"
+        get "components/:id" => "themes#index"
+        get "components/:id/:target/:field_name/edit" => "themes#index"
         get "themes/:id/export" => "themes#export"
         get "themes/:id/schema/:setting_name" => "themes#schema"
+        get "components/:id/schema/:setting_name" => "themes#schema"
 
         # They have periods in their URLs often:
         get "site_texts" => "site_texts#index"
@@ -322,6 +331,7 @@ Discourse::Application.routes.draw do
       get "dashboard/security" => "dashboard#security"
       get "dashboard/reports" => "dashboard#reports"
       get "dashboard/whats-new" => "dashboard#new_features"
+      get "/whats-new" => "dashboard#new_features"
 
       resources :dashboard, only: [:index] do
         collection { get "problems" }
@@ -381,6 +391,11 @@ Discourse::Application.routes.draw do
           get "types" => "badges#badge_types"
           post "badge_groupings" => "badges#save_badge_groupings"
           post "preview" => "badges#preview"
+        end
+      end
+      namespace :config, constraints: StaffConstraint.new do
+        resources :flags, only: %i[index] do
+          put "toggle"
         end
       end
     end # admin namespace
@@ -658,10 +673,6 @@ Discourse::Application.routes.draw do
             username: RouteFormat.username,
           }
       get "#{root_path}/:username/preferences/tracking" => "users#preferences",
-          :constraints => {
-            username: RouteFormat.username,
-          }
-      get "#{root_path}/:username/preferences/categories" => "users#preferences",
           :constraints => {
             username: RouteFormat.username,
           }
@@ -1095,6 +1106,8 @@ Discourse::Application.routes.draw do
     delete "admin/groups/:id/members" => "groups#remove_member", :constraints => AdminConstraint.new
     put "admin/groups/:id/members" => "groups#add_members", :constraints => AdminConstraint.new
 
+    put "bookmarks/bulk"
+
     resources :posts, only: %i[show update create destroy] do
       delete "bookmark", to: "posts#destroy_bookmark"
       put "wiki"
@@ -1127,6 +1140,7 @@ Discourse::Application.routes.draw do
         # creating an alias cause the api was extended to mark a single notification
         # this allows us to cleanly target it
         put "read" => "notifications#mark_read"
+        get "totals" => "notifications#totals"
       end
     end
 
@@ -1159,10 +1173,11 @@ Discourse::Application.routes.draw do
 
     get "/c", to: redirect(relative_url_root + "categories")
 
-    resources :categories, except: %i[show new edit]
+    resources :categories, only: %i[index create update destroy]
     post "categories/reorder" => "categories#reorder"
     get "categories/find" => "categories#find"
-    get "categories/search" => "categories#search"
+    post "categories/search" => "categories#search"
+    get "categories/:parent_category_id" => "categories#index"
 
     scope path: "category/:category_id" do
       post "/move" => "categories#move"
@@ -1204,6 +1219,9 @@ Discourse::Application.routes.draw do
           :constraints => {
             format: "html",
           }
+
+      get "/subcategories" => "categories#index"
+
       get "/" => "list#category_default", :as => "category_default"
     end
 
@@ -1570,6 +1588,9 @@ Discourse::Application.routes.draw do
            constraints: HomePageConstraint.new("#{filter}"),
            as: "list_#{filter}"
     end
+
+    get "/t/:topic_id/view-stats.json" => "topic_view_stats#index"
+
     # special case for categories
     root to: "categories#index",
          constraints: HomePageConstraint.new("categories"),
@@ -1578,6 +1599,8 @@ Discourse::Application.routes.draw do
     root to: "finish_installation#index",
          constraints: HomePageConstraint.new("finish_installation"),
          as: "installation_redirect"
+
+    root to: "custom#index", constraints: HomePageConstraint.new("custom"), as: "custom_index"
 
     get "/user-api-key/new" => "user_api_keys#new"
     post "/user-api-key" => "user_api_keys#create"
@@ -1620,6 +1643,8 @@ Discourse::Application.routes.draw do
 
     resources :sidebar_sections, only: %i[index create update destroy]
     put "/sidebar_sections/reset/:id" => "sidebar_sections#reset"
+
+    post "/pageview" => "pageview#index"
 
     get "*url", to: "permalinks#show", constraints: PermalinkConstraint.new
 

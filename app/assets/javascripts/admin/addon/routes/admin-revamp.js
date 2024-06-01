@@ -1,13 +1,15 @@
-import { inject as service } from "@ember/service";
-import { ADMIN_PANEL, MAIN_PANEL } from "discourse/lib/sidebar/panels";
+import { service } from "@ember/service";
+import { MAIN_PANEL } from "discourse/lib/sidebar/panels";
 import DiscourseURL from "discourse/lib/url";
 import DiscourseRoute from "discourse/routes/discourse";
 import I18n from "discourse-i18n";
 
+// DEPRECATED: (martin) This route is deprecated and will be removed in the near future.
 export default class AdminRoute extends DiscourseRoute {
   @service siteSettings;
   @service currentUser;
   @service sidebarState;
+  @service adminSidebarStateManager;
 
   titleToken() {
     return I18n.t("admin_title");
@@ -18,9 +20,9 @@ export default class AdminRoute extends DiscourseRoute {
       return DiscourseURL.redirectTo("/admin");
     }
 
-    this.sidebarState.setPanel(ADMIN_PANEL);
-    this.sidebarState.setSeparatedMode();
-    this.sidebarState.hideSwitchPanelButtons();
+    this.adminSidebarStateManager.maybeForceAdminSidebar({
+      onlyIfAlreadyActive: false,
+    });
 
     this.controllerFor("application").setProperties({
       showTop: false,
@@ -29,8 +31,10 @@ export default class AdminRoute extends DiscourseRoute {
 
   deactivate(transition) {
     this.controllerFor("application").set("showTop", true);
-    if (!transition?.to.name.startsWith("admin")) {
-      this.sidebarState.setPanel(MAIN_PANEL);
+    if (this.adminSidebarStateManager.currentUserUsingAdminSidebar) {
+      if (!transition?.to.name.startsWith("admin")) {
+        this.sidebarState.setPanel(MAIN_PANEL);
+      }
     }
   }
 }

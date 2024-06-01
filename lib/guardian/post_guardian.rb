@@ -56,6 +56,8 @@ module PostGuardian
         # post made by staff, but we don't allow staff flags
         return false if is_flag && (!SiteSetting.allow_flagging_staff?) && post&.user&.staff?
 
+        return false if is_flag && PostActionType.disabled_flag_types.keys.include?(action_key)
+
         if action_key == :notify_user &&
              !@user.in_any_groups?(SiteSetting.personal_message_enabled_groups_map)
           # The modifier below is used to add additional permissions for notifying users.
@@ -261,8 +263,21 @@ module PostGuardian
   def can_delete_post_action?(post_action)
     return false unless is_my_own?(post_action) && !post_action.is_private_message?
 
-    post_action.created_at > SiteSetting.post_undo_action_window_mins.minutes.ago &&
-      !post_action.post&.topic&.archived?
+    ok_to_delete =
+      post_action.created_at > SiteSetting.post_undo_action_window_mins.minutes.ago &&
+        !post_action.post&.topic&.archived?
+
+    # NOTE: This looks strange...but we are checking if someone is posting anonymously
+    # as a AnonymousUser model, _not_ as Guardian::AnonymousUser which is a different thing
+    # used when !authenticated?
+    if authenticated? && is_anonymous?
+      return(
+        ok_to_delete && SiteSetting.allow_anonymous_likes? && post_action.is_like? &&
+          is_my_own?(post_action)
+      )
+    end
+
+    ok_to_delete
   end
 
   def can_receive_post_notifications?(post)
@@ -358,7 +373,7 @@ module PostGuardian
   end
 
   def can_view_raw_email?(post)
-    post && is_staff?
+    post && @user.in_any_groups?(SiteSetting.view_raw_email_allowed_groups_map)
   end
 
   def can_unhide?(post)

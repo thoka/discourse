@@ -721,7 +721,7 @@ class TopicQuery
   end
 
   def get_category_id(category_id_or_slug)
-    return nil unless category_id_or_slug.present?
+    return nil if category_id_or_slug.blank?
     category_id = category_id_or_slug.to_i
 
     if category_id == 0
@@ -1285,9 +1285,7 @@ class TopicQuery
         result = result.joins(:tags).where("tags.id in (?)", tags)
       end
 
-      # TODO: this is very side-effecty and should be changed
-      # It is done cause further up we expect normalized tags
-      @options[:tags] = tags
+      @options[:tag_ids] = tags
     elsif @options[:no_tags]
       # the following will do: ("topics"."id" NOT IN (SELECT DISTINCT "topic_tags"."topic_id" FROM "topic_tags"))
       result = result.where.not(id: TopicTag.distinct.select(:topic_id))

@@ -1,5 +1,5 @@
 import { schedule } from "@ember/runloop";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import { defaultHomepage } from "discourse/lib/utilities";
 import { scrollTop } from "discourse/mixins/scroll-top";
@@ -34,6 +34,7 @@ export default class ChatRoute extends DiscourseRoute {
       "chat.channel.thread",
       "chat.channel.thread.index",
       "chat.channel.thread.near-message",
+      "chat.channel.near-message-with-thread",
       "chat.channel.threads",
       "chat.channel.index",
       "chat.channel.near-message",
@@ -98,7 +99,12 @@ export default class ChatRoute extends DiscourseRoute {
     });
 
     if (transition) {
-      const url = this.router.urlFor(transition.from.name);
+      let url = this.router.urlFor(transition.from.name);
+
+      if (this.router.rootURL !== "/") {
+        url = url.replace(new RegExp(`^${this.router.rootURL}`), "/");
+      }
+
       this.chatStateManager.storeChatURL(url);
     }
 

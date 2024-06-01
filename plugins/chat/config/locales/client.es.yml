@@ -99,7 +99,6 @@ es:
       channels_list_popup:
         browse: "Examinar canales"
         create: "Nuevo canal"
-      click_to_join: "Haz clic aquí para ver los canales disponibles."
       close: "Cerrar"
       remove: "Eliminar"
       collapse: "Contraer contenedor del chat"
@@ -226,7 +225,7 @@ es:
         header: "Encabezado del chat"
         composer: "Compositor del chat"
         channels_list: "Lista de canales de chat"
-      no_public_channels: "No te has unido a ningún canal."
+      no_public_channels_cta: "Examinar canales"
       kicked_from_channel: "Ya no puedes acceder a este canal."
       only_chat_push_notifications:
         title: "Enviar solo notificaciones de chat"
@@ -550,6 +549,7 @@ es:
       flags:
         off_topic: "Este mensaje no es relevante para la discusión actual, tal y como se define en el título del canal, y probablemente debería moverse a otro lugar."
         inappropriate: "Este mensaje tiene un contenido que una persona razonable consideraría ofensivo, abusivo o que viola las <a href=\"%{basePath}/guidelines\">directrices de nuestra comunidad</a>."
+        illegal: "Esta publicación requiere la atención del personal porque creo que contiene contenido ilegal."
         spam: "Este mensaje es un anuncio o vandalismo. No es útil ni relevante para el canal actual."
         notify_user: "Quiero hablar con esta persona directa y personalmente sobre su mensaje."
         notify_moderators: "Este mensaje requiere la atención del personal por otra razón no mencionada anteriormente."

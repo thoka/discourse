@@ -17,6 +17,7 @@
       @tags={{this.model.tags}}
     />
     <AddTopicStatusClasses @topic={{this.model}} />
+    {{body-class (concat "archetype-" this.model.archetype)}}
     <div class="container">
       <DiscourseBanner
         @overlay={{this.hasScrolled}}
@@ -154,7 +155,7 @@
                 href
                 {{on "click" this.editTopic}}
                 class="edit-topic"
-                title={{i18n "edit"}}
+                title={{i18n "edit_topic"}}
               >{{d-icon "pencil-alt"}}</a>
             {{/if}}
 
@@ -279,7 +280,7 @@
                 }}
               />
             </span>
-            <TopicAdminMenuButton
+            <TopicAdminMenu
               @topic={{this.model}}
               @openUpwards="true"
               @rightSide="true"
@@ -392,7 +393,10 @@
               {{#if this.model.pending_posts}}
                 <div class="pending-posts">
                   {{#each this.model.pending_posts as |pending|}}
-                    <div class="reviewable-item">
+                    <div
+                      class="reviewable-item"
+                      data-reviewable-id={{pending.id}}
+                    >
                       <div class="reviewable-meta-data">
                         <span class="reviewable-type">
                           {{i18n "review.awaiting_approval"}}
@@ -417,6 +421,10 @@
                         </div>
                       </div>
                       <div class="reviewable-actions">
+                        <PluginOutlet
+                          @name="topic-additional-reviewable-actions"
+                          @outletArgs={{hash pending=pending}}
+                        />
                         <DButton
                           @label="review.delete"
                           @icon="trash-alt"
@@ -501,6 +509,11 @@
             {{/if}}
           </ConditionalLoadingSpinner>
 
+          <PluginOutlet
+            @name="topic-area-bottom"
+            @connectorTagName="div"
+            @outletArgs={{hash model=this.model}}
+          />
         </section>
       </div>
 
@@ -559,6 +572,10 @@
       </span>
 
       <MoreTopics @topic={{this.model}} />
+      <PluginOutlet
+        @name="topic-below-suggested"
+        @outletArgs={{hash model=this.model}}
+      />
     {{/if}}
   {{else}}
     <div class="container">

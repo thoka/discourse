@@ -8,6 +8,7 @@ import { ajax } from "discourse/lib/ajax";
 import Category from "discourse/models/category";
 import GroupHistory from "discourse/models/group-history";
 import RestModel from "discourse/models/rest";
+import Site from "discourse/models/site";
 import Topic from "discourse/models/topic";
 import User from "discourse/models/user";
 import discourseComputed from "discourse-common/utils/decorators";
@@ -223,6 +224,7 @@ export default class Group extends RestModel {
   get watchingCategories() {
     if (
       this.site.lazy_load_categories &&
+      this.watching_category_ids &&
       !Category.hasAsyncFoundAll(this.watching_category_ids)
     ) {
       Category.asyncFindByIds(this.watching_category_ids).then(() =>
@@ -244,6 +246,7 @@ export default class Group extends RestModel {
   get trackingCategories() {
     if (
       this.site.lazy_load_categories &&
+      this.tracking_category_ids &&
       !Category.hasAsyncFoundAll(this.tracking_category_ids)
     ) {
       Category.asyncFindByIds(this.tracking_category_ids).then(() =>
@@ -265,6 +268,7 @@ export default class Group extends RestModel {
   get watchingFirstPostCategories() {
     if (
       this.site.lazy_load_categories &&
+      this.watching_first_post_category_ids &&
       !Category.hasAsyncFoundAll(this.watching_first_post_category_ids)
     ) {
       Category.asyncFindByIds(this.watching_first_post_category_ids).then(() =>
@@ -286,6 +290,7 @@ export default class Group extends RestModel {
   get regularCategories() {
     if (
       this.site.lazy_load_categories &&
+      this.regular_category_ids &&
       !Category.hasAsyncFoundAll(this.regular_category_ids)
     ) {
       Category.asyncFindByIds(this.regular_category_ids).then(() =>
@@ -307,6 +312,7 @@ export default class Group extends RestModel {
   get mutedCategories() {
     if (
       this.site.lazy_load_categories &&
+      this.muted_category_ids &&
       !Category.hasAsyncFoundAll(this.muted_category_ids)
     ) {
       Category.asyncFindByIds(this.muted_category_ids).then(() =>
@@ -445,7 +451,7 @@ export default class Group extends RestModel {
     });
   }
 
-  findPosts(opts) {
+  async findPosts(opts) {
     opts = opts || {};
     const type = opts.type || "posts";
     const data = {};
@@ -458,13 +464,17 @@ export default class Group extends RestModel {
       data.category_id = parseInt(opts.categoryId, 10);
     }
 
-    return ajax(`/groups/${this.name}/${type}.json`, { data }).then((posts) => {
-      return posts.map((p) => {
-        p.user = User.create(p.user);
-        p.topic = Topic.create(p.topic);
-        p.category = Category.findById(p.category_id);
-        return EmberObject.create(p);
-      });
+    const result = await ajax(`/groups/${this.name}/${type}.json`, { data });
+
+    result.categories?.forEach((category) => {
+      Site.current().updateCategory(category);
+    });
+
+    return result.posts.map((p) => {
+      p.user = User.create(p.user);
+      p.topic = Topic.create(p.topic);
+      p.category = Category.findById(p.category_id);
+      return EmberObject.create(p);
     });
   }
 

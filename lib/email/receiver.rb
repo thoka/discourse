@@ -445,7 +445,7 @@ module Email
         text_content_type = @mail.content_type
       end
 
-      return unless text.present? || html.present?
+      return if text.blank? && html.blank?
 
       if text.present?
         text = trim_discourse_markers(text)
@@ -1359,6 +1359,13 @@ module Email
     def add_attachments(raw, user, options = {})
       raw = raw.dup
 
+      upload_ids =
+        UploadReference.where(
+          target_id: Post.where(topic_id: options[:topic_id]).select(:id),
+        ).pluck("DISTINCT upload_id")
+
+      upload_shas = Upload.where(id: upload_ids).pluck("DISTINCT COALESCE(original_sha1, sha1)")
+
       rejected_attachments = []
       attachments.each do |attachment|
         tmp = Tempfile.new(["discourse-email-attachment", File.extname(attachment.filename)])
@@ -1368,6 +1375,7 @@ module Email
           # create the upload for the user
           opts = { for_group_message: options[:is_group_message] }
           upload = UploadCreator.new(tmp, attachment.filename, opts).create_for(user.id)
+          upload_sha = upload.original_sha1.presence || upload.sha1
           if upload.errors.empty?
             # try to inline images
             if attachment.content_type&.start_with?("image/")
@@ -1384,10 +1392,10 @@ module Email
                 end
               elsif raw[/\[image:[^\]]*\]/i]
                 raw.sub!(/\[image:[^\]]*\]/i, UploadMarkdown.new(upload).to_markdown)
-              else
+              elsif !upload_ids.include?(upload.id) && !upload_shas.include?(upload_sha)
                 raw << "\n\n#{UploadMarkdown.new(upload).to_markdown}\n\n"
               end
-            else
+            elsif !upload_ids.include?(upload.id) && !upload_shas.include?(upload_sha)
               raw << "\n\n#{UploadMarkdown.new(upload).to_markdown}\n\n"
             end
           else

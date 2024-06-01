@@ -141,6 +141,7 @@ class User < ActiveRecord::Base
   belongs_to :uploaded_avatar, class_name: "Upload"
 
   has_many :sidebar_section_links, dependent: :delete_all
+  has_many :embeddable_hosts
 
   delegate :last_sent_email_address, to: :email_logs
 
@@ -171,6 +172,7 @@ class User < ActiveRecord::Base
   after_create :set_default_categories_preferences
   after_create :set_default_tags_preferences
   after_create :set_default_sidebar_section_links
+  after_create :refresh_user_directory, if: Proc.new { SiteSetting.bootstrap_mode_enabled }
   after_update :set_default_sidebar_section_links, if: Proc.new { self.saved_change_to_staged? }
 
   after_update :trigger_user_updated_event,
@@ -259,12 +261,19 @@ class User < ActiveRecord::Base
           )
         end
 
-  scope :human_users, -> { where("users.id > 0") }
+  scope :human_users,
+        ->(allowed_bot_user_ids: nil) do
+          if allowed_bot_user_ids.present?
+            where("users.id > 0 OR users.id IN (?)", allowed_bot_user_ids)
+          else
+            where("users.id > 0")
+          end
+        end
 
   # excluding fake users like the system user or anonymous users
   scope :real,
-        -> do
-          human_users.where(
+        ->(allowed_bot_user_ids: nil) do
+          human_users(allowed_bot_user_ids: allowed_bot_user_ids).where(
             "NOT EXISTS(
                      SELECT 1
                      FROM anonymous_users a
@@ -353,12 +362,18 @@ class User < ActiveRecord::Base
         post_menu: 3,
         topic_notification_levels: 4,
         suggested_topics: 5,
-        admin_guide: 6,
       )
   end
 
   def should_skip_user_fields_validation?
     custom_fields_clean? || SiteSetting.disable_watched_word_checking_in_user_fields
+  end
+
+  def all_sidebar_sections
+    sidebar_sections
+      .or(SidebarSection.public_sections)
+      .includes(:sidebar_urls)
+      .order("(section_type IS NOT NULL) DESC, (public IS TRUE) DESC")
   end
 
   def secured_sidebar_category_ids(user_guardian = nil)
@@ -557,7 +572,7 @@ class User < ActiveRecord::Base
 
   def enqueue_staff_welcome_message(role)
     return unless staff?
-    return if role == :admin && User.real.where(admin: true).count == 1
+    return if is_singular_admin?
 
     Jobs.enqueue(
       :send_system_message,
@@ -773,18 +788,6 @@ class User < ActiveRecord::Base
     Reviewable.list_for(self, include_claimed_by_others: false).count
   end
 
-  def saw_notification_id(notification_id)
-    Discourse.deprecate(<<~TEXT, since: "2.9", drop_from: "3.0")
-      User#saw_notification_id is deprecated. Please use User#bump_last_seen_notification! instead.
-    TEXT
-    if seen_notification_id.to_i < notification_id.to_i
-      update_columns(seen_notification_id: notification_id.to_i)
-      true
-    else
-      false
-    end
-  end
-
   def bump_last_seen_notification!
     query = self.notifications.visible
     query = query.where("notifications.id > ?", seen_notification_id) if seen_notification_id
@@ -895,7 +898,7 @@ class User < ActiveRecord::Base
 
   def password=(password)
     # special case for passwordless accounts
-    @raw_password = password unless password.blank?
+    @raw_password = password if password.present?
   end
 
   def password
@@ -1482,7 +1485,7 @@ class User < ActiveRecord::Base
     end
 
     # mark all the user's quoted posts as "needing a rebake"
-    Post.rebake_all_quoted_posts(self.id) if self.will_save_change_to_uploaded_avatar_id?
+    Post.rebake_all_quoted_posts(self.id) if saved_change_to_uploaded_avatar_id?
   end
 
   def first_post_created_at
@@ -2012,8 +2015,11 @@ class User < ActiveRecord::Base
     destroyer = UserDestroyer.new(Discourse.system_user)
 
     User
+      .joins(
+        "LEFT JOIN user_histories ON user_histories.target_user_id = users.id AND action = #{UserHistory.actions[:deactivate_user]} AND acting_user_id IS NOT NULL",
+      )
       .where(active: false)
-      .where("created_at < ?", SiteSetting.purge_unactivated_users_grace_period_days.days.ago)
+      .where("users.created_at < ?", SiteSetting.purge_unactivated_users_grace_period_days.days.ago)
       .where("NOT admin AND NOT moderator")
       .where(
         "NOT EXISTS
@@ -2025,6 +2031,7 @@ class User < ActiveRecord::Base
               (SELECT 1 FROM posts p WHERE p.user_id = users.id LIMIT 1)
             ",
       )
+      .where("user_histories.id IS NULL")
       .limit(200)
       .find_each do |user|
         begin
@@ -2151,6 +2158,10 @@ class User < ActiveRecord::Base
 
   def validate_status!(status)
     UserStatus.new(status).validate!
+  end
+
+  def refresh_user_directory
+    DirectoryItem.refresh!
   end
 end
 

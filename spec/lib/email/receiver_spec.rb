@@ -93,7 +93,7 @@ RSpec.describe Email::Receiver do
     post = Fabricate(:post, topic: topic)
     user = Fabricate(:user, email: "discourse@bar.com")
 
-    mail = email(:old_destination).gsub("424242", topic.id.to_s)
+    mail = email(:old_destination).gsub(":post_id", post.id.to_s)
     expect { Email::Receiver.new(mail).process! }.to raise_error(
       Email::Receiver::BadDestinationAddress,
     )
@@ -756,6 +756,29 @@ RSpec.describe Email::Receiver do
       MD
     end
 
+    it "tries not to repeat duplicate attachments" do
+      SiteSetting.authorized_extensions = "jpg"
+
+      expect { process(:logo_1) }.to change { UploadReference.count }.by(1)
+      expect(topic.posts.last.raw).to match %r{upload://}
+
+      expect { process(:logo_2) }.not_to change { UploadReference.count }
+      expect(topic.posts.last.raw).not_to match %r{upload://}
+    end
+
+    it "tries not to repeat duplicate secure attachments" do
+      setup_s3
+      stub_s3_store
+      SiteSetting.secure_uploads = true
+      SiteSetting.authorized_extensions = "jpg"
+
+      expect { process(:logo_1) }.to change { UploadReference.count }.by(1)
+      expect(topic.posts.last.raw).to match %r{upload://}
+
+      expect { process(:logo_2) }.not_to change { UploadReference.count }
+      expect(topic.posts.last.raw).not_to match %r{upload://}
+    end
+
     it "works with removed attachments" do
       SiteSetting.authorized_extensions = "jpg"
 
@@ -1095,44 +1118,6 @@ RSpec.describe Email::Receiver do
           This is email reply testing with Message-ID formats.
           EMAIL
           Email::Receiver.new(mail_string).process!
-        end
-
-        it "posts a reply using a message-id in the format topic/TOPIC_ID/POST_ID@HOST" do
-          expect {
-            process_mail_with_message_id("topic/#{topic.id}/#{post.id}@test.localhost")
-          }.to change { Post.count }.by(1)
-          expect(topic.reload.posts.last.raw).to include(
-            "This is email reply testing with Message-ID formats",
-          )
-        end
-
-        it "posts a reply using a message-id in the format topic/TOPIC_ID@HOST" do
-          expect { process_mail_with_message_id("topic/#{topic.id}@test.localhost") }.to change {
-            Post.count
-          }.by(1)
-          expect(topic.reload.posts.last.raw).to include(
-            "This is email reply testing with Message-ID formats",
-          )
-        end
-
-        it "posts a reply using a message-id in the format topic/TOPIC_ID/POST_ID.RANDOM_SUFFIX@HOST" do
-          expect {
-            process_mail_with_message_id("topic/#{topic.id}/#{post.id}.rjc3yr79834y@test.localhost")
-          }.to change { Post.count }.by(1)
-          expect(topic.reload.posts.last.raw).to include(
-            "This is email reply testing with Message-ID formats",
-          )
-        end
-
-        it "posts a reply using a message-id in the format topic/TOPIC_ID.RANDOM_SUFFIX@HOST" do
-          expect {
-            process_mail_with_message_id(
-              "topic/#{topic.id}/#{post.id}.x3487nxy877843x@test.localhost",
-            )
-          }.to change { Post.count }.by(1)
-          expect(topic.reload.posts.last.raw).to include(
-            "This is email reply testing with Message-ID formats",
-          )
         end
 
         it "posts a reply using a message-id in the format discourse/post/POST_ID@HOST" do

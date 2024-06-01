@@ -46,7 +46,7 @@ def write_template(path, task_name, template)
 
   File.write(output_path, "#{header}\n\n#{template}")
   puts "#{basename} created"
-  `yarn run prettier --write #{output_path}`
+  system("yarn run prettier --write #{output_path}", exception: true)
   puts "#{basename} prettified"
 end
 
@@ -59,7 +59,7 @@ def write_hbs_template(path, task_name, template)
   basename = File.basename(path)
   output_path = "#{Rails.root}/app/assets/javascripts/#{path}"
   File.write(output_path, "#{header}\n#{template}")
-  `yarn run prettier --write #{output_path}`
+  system("yarn run prettier --write #{output_path}", exception: true)
   puts "#{basename} created"
 end
 
@@ -162,6 +162,8 @@ task "javascript:update_constants" => :environment do
     export const AUTO_GROUPS = #{auto_groups.to_json};
 
     export const MAX_NOTIFICATIONS_LIMIT_PARAMS = #{NotificationsController::INDEX_LIMIT};
+
+    export const TOPIC_VISIBILITY_REASONS = #{Topic.visibility_reasons.to_json};
   JS
 
   pretty_notifications = Notification.types.map { |n| "  #{n[0]}: #{n[1]}," }.join("\n")
@@ -203,8 +205,7 @@ end
 task "javascript:update" => "clean_up" do
   require "uglifier"
 
-  yarn = system("yarn install")
-  abort('Unable to run "yarn install"') unless yarn
+  system("yarn install", exception: true)
 
   versions = {}
   start = Time.now
@@ -233,26 +234,28 @@ task "javascript:update" => "clean_up" do
         dest = "#{path}/#{filename}"
 
         FileUtils.mkdir_p(path) unless File.exist?(path)
+
+        if src.include? "ace.js"
+          versions["ace/ace.js"] = versions.delete("ace.js")
+
+          themes = %w[theme-chrome theme-chaos]
+
+          themes.each do |file|
+            versions["ace/#{file}.js"] = "#{package_dir_name}/#{package_version}/#{file}.js"
+          end
+
+          ace_root = "#{library_src}/ace-builds/src-min-noconflict/"
+
+          addtl_files = %w[ext-searchbox mode-html mode-scss mode-sql mode-yaml worker-html].concat(
+            themes,
+          )
+
+          dest_path = dest.split("/")[0..-2].join("/")
+          addtl_files.each { |file| FileUtils.cp_r("#{ace_root}#{file}.js", dest_path) }
+        end
       end
     else
       dest = "#{vendor_js}/#{filename}"
-    end
-
-    if src.include? "ace.js"
-      versions["ace/ace.js"] = versions.delete("ace.js")
-      ace_root = "#{library_src}/ace-builds/src-min-noconflict/"
-      addtl_files = %w[
-        ext-searchbox
-        mode-html
-        mode-scss
-        mode-sql
-        mode-yaml
-        theme-chrome
-        theme-chaos
-        worker-html
-      ]
-      dest_path = dest.split("/")[0..-2].join("/")
-      addtl_files.each { |file| FileUtils.cp_r("#{ace_root}#{file}.js", dest_path) }
     end
 
     STDERR.puts "New dependency added: #{dest}" unless File.exist?(dest)
@@ -276,7 +279,7 @@ task "javascript:clean_up" do
     next if processed.include?(package_dir_name)
 
     versions = Dir["#{File.join(public_js, package_dir_name)}/*"].collect { |p| p.split("/").last }
-    next unless versions.present?
+    next if versions.blank?
 
     versions = versions.sort { |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }
     puts "Keeping #{package_dir_name} version: #{versions[-1]}"

@@ -1,5 +1,5 @@
 import { setOwner } from "@ember/application";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import getURL from "discourse-common/lib/get-url";
 import I18n from "discourse-i18n";
@@ -35,7 +35,10 @@ export default class ChatMessageFlag {
     return flags.map((flag) => {
       flag.set(
         "description",
-        I18n.t(`chat.flags.${flag.name_key}`, { basePath: getURL("") })
+        I18n.t(`chat.flags.${flag.name_key}`, {
+          basePath: getURL(""),
+          defaultValue: "",
+        })
       );
       return flag;
     });

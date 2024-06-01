@@ -1,5 +1,6 @@
 import Controller from "@ember/controller";
-import { inject as service } from "@ember/service";
+import { action } from "@ember/object";
+import { service } from "@ember/service";
 import { FOOTER_NAV_ROUTES } from "discourse/plugins/chat/discourse/lib/chat-constants";
 
 export default class ChatController extends Controller {
@@ -21,6 +22,10 @@ export default class ChatController extends Controller {
 
   get shouldUseCoreSidebar() {
     return this.siteSettings.navigation_menu === "sidebar";
+  }
+
+  get activeTab() {
+    return this.router.currentRouteName.replace(/^chat\./, "");
   }
 
   get shouldUseChatFooter() {
@@ -45,5 +50,10 @@ export default class ChatController extends Controller {
     }
 
     return modifierClasses.join(" ");
+  }
+
+  @action
+  onClickTab(tab) {
+    return this.router.transitionTo(`chat.${tab}`);
   }
 }

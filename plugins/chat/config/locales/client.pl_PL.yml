@@ -102,7 +102,6 @@ pl_PL:
       channels_list_popup:
         browse: "Przeglądaj kanały"
         create: "Nowy kanał"
-      click_to_join: "Kliknij tutaj, aby wyświetlić dostępne kanały."
       close: "Zamknij"
       remove: "Usuń"
       collapse: "Zwiń szufladę czatu"
@@ -122,6 +121,7 @@ pl_PL:
         direct_message_cta: "Rozpocznij czat osobisty"
         direct_message: "Możesz także rozpocząć osobisty czat z jednym lub kilkoma użytkownikami."
         title: "Nie znaleziono żadnych kanałów"
+        my_threads: "Nie masz jeszcze żadnych wątków. Wątki, w których bierzesz udział, będą wyświetlane tutaj."
       email_frequency:
         description: "Wyślemy Ci wiadomość e-mail tylko wtedy, gdy nie widzieliśmy Cię w ciągu ostatnich 15 minut."
         never: "Nigdy"
@@ -241,8 +241,6 @@ pl_PL:
         header: "Nagłówek czatu"
         composer: "Edytor czatu"
         channels_list: "Lista kanałów czatu"
-      no_direct_message_channels: "Nie dołączyłeś do żadnego kanału wiadomości bezpośrednich."
-      no_public_channels: "Nie dołączyłeś do żadnego kanału."
       kicked_from_channel: "Nie masz już dostępu do tego kanału."
       only_chat_push_notifications:
         title: "Wysyłaj tylko powiadomienia push czatu"
@@ -323,7 +321,7 @@ pl_PL:
         back: "Poprzednia"
         title: Kanały
         filter_all: Wszystkie
-        filter_open: Otwarty
+        filter_open: Otwórz
         filter_closed: Zamknięte
         filter_archived: Zarchiwizowany
         filter_input_placeholder: Szukaj kanału według nazwy
@@ -520,6 +518,7 @@ pl_PL:
         title: Moje wątki
         aria_label: "Przejdź do mojej listy wątków"
       direct_messages:
+        title: "PW"
         aria_label: "Przełącz na wiadomości bezpośrednie"
         new: "Utwórz osobisty czat"
         create: "Utwórz"
@@ -609,6 +608,7 @@ pl_PL:
       flags:
         off_topic: "Ta wiadomość nie jest związana z bieżącą dyskusją określoną w tytule kanału i prawdopodobnie powinna zostać przeniesiona w inne miejsce."
         inappropriate: "Ta wiadomość zawiera treści, które rozsądna osoba mogłaby uznać za obraźliwe, krzywdzące lub stanowiące naruszenie <a href=\"%{basePath}/guidelines\">naszych wytycznych dotyczących społeczności</a>."
+        illegal: "Ten post wymaga uwagi personelu, ponieważ uważam, że zawiera treści niezgodne z prawem."
         spam: "Ta wiadomość to reklama lub akt wandalizmu. Nie jest przydatna ani istotna dla bieżącego kanału."
         notify_user: "Chcę porozmawiać z tą osobą bezpośrednio i osobiście o jej przesłaniu."
         notify_moderators: "Ta wiadomość wymaga uwagi personelu z innego powodu niewymienionego powyżej."
@@ -653,6 +653,12 @@ pl_PL:
           few: "+%{count}"
           many: "+%{count}"
           other: "+%{count}"
+      thread_title_toast:
+        title: "Ustaw tytuł wątku"
+        dismiss_action: "Nie pokazuj ponownie"
+        primary_action: "Ustaw tytuł"
+      thread_title_modal:
+        title: "Ustaw tytuł wątku"
       threads:
         open: "Otwórz wątek"
         list: "Wątki"

@@ -1,7 +1,6 @@
 import { action } from "@ember/object";
 import { htmlSafe } from "@ember/template";
 import { findOrResetCachedTopicList } from "discourse/lib/cached-topic-list";
-import { cleanNullQueryParams } from "discourse/lib/utilities";
 import UserAction from "discourse/models/user-action";
 import UserTopicListRoute from "discourse/routes/user-topic-list";
 import getURL from "discourse-common/lib/get-url";
@@ -37,8 +36,6 @@ export default (inboxType, path, filter) => {
       if (lastTopicList) {
         return lastTopicList;
       }
-
-      params = cleanNullQueryParams(params);
 
       return this.store
         .findFiltered("topicList", {
@@ -107,12 +104,14 @@ export default (inboxType, path, filter) => {
 
     emptyState() {
       const title = I18n.t("user.no_messages_title");
-      const body = htmlSafe(
-        I18n.t("user.no_messages_body", {
-          aboutUrl: getURL("/about"),
-          icon: iconHTML("envelope"),
-        })
-      );
+      const body = this.currentUser?.can_send_private_messages
+        ? htmlSafe(
+            I18n.t("user.no_messages_body", {
+              aboutUrl: getURL("/about"),
+              icon: iconHTML("envelope"),
+            })
+          )
+        : "";
       return { title, body };
     },
 

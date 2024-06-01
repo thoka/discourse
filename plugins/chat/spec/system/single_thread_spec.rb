@@ -20,7 +20,7 @@ describe "Single thread in side panel", type: :system do
 
     before { channel.update!(threading_enabled: false) }
 
-    it "does not open the side panel for a single thread", capture_log: true do
+    it "does not open the side panel for a single thread" do
       thread =
         chat_thread_chain_bootstrap(channel: channel, users: [current_user, Fabricate(:user)])
       chat_page.visit_channel(channel)
@@ -33,6 +33,17 @@ describe "Single thread in side panel", type: :system do
     fab!(:user_2) { Fabricate(:user) }
     fab!(:channel) { Fabricate(:chat_channel, threading_enabled: true) }
     fab!(:thread) { chat_thread_chain_bootstrap(channel: channel, users: [current_user, user_2]) }
+
+    context "when returning to a thread where last read is not last message" do
+      it "scrolls to the correct last read message" do
+        message_1 = Fabricate(:chat_message, thread: thread, chat_channel: channel)
+        thread.membership_for(current_user).update!(last_read_message: message_1)
+        messages = Fabricate.times(50, :chat_message, thread: thread, chat_channel: channel)
+        chat_page.visit_thread(thread)
+
+        expect(page).to have_css("[data-id='#{message_1.id}'].-highlighted")
+      end
+    end
 
     context "when in full page" do
       context "when switching channel" do
@@ -80,6 +91,35 @@ describe "Single thread in side panel", type: :system do
       chat_drawer_page.back
 
       expect(chat_drawer_page).to have_open_channel(channel)
+    end
+
+    context "when thread is forced and threading disabled" do
+      before do
+        channel.update!(threading_enabled: false)
+        thread.update!(force: true)
+      end
+
+      it "doesn’t show back button " do
+        chat_page.visit_thread(thread)
+
+        expect(page).to have_no_css(".c-routes-channel-thread .c-navbar__back-button")
+      end
+    end
+
+    context "when in drawer" do
+      it "opens the channel and highlights the message when clicking original message link" do
+        visit("/latest")
+        chat_page.open_from_header
+        chat_drawer_page.open_channel(channel)
+        channel_page.message_thread_indicator(thread.original_message).click
+        find(".chat-message-info__original-message").click
+
+        expect(chat_drawer_page).to have_open_channel(channel)
+        expect(channel_page.messages).to have_message(
+          id: thread.original_message.id,
+          highlighted: true,
+        )
+      end
     end
 
     it "highlights the message in the channel when clicking original message link" do
