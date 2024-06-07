@@ -1497,6 +1497,8 @@ en:
         set_password: "Set Password"
         choose_new: "Choose a new password"
         choose: "Choose a password"
+        verify_identity: "To continue, please verify your identity."
+        title: "Password Reset"
 
       second_factor_backup:
         title: "Two-Factor Backup Codes"
@@ -1933,7 +1935,9 @@ en:
         fine_print: "We are asking you to confirm your identity because this is a potentially sensitive action. Once authenticated, you will only be asked to re-authenticate again after a few hours of inactivity."
       password:
         title: "Password"
-        too_short: "Your password is too short."
+        too_short:
+          one: "Your password is too short (minimum is %{count} character)."
+          other: "Your password is too short (minimum is %{count} characters)."
         common: "That password is too common."
         same_as_username: "Your password is the same as your username."
         same_as_email: "Your password is the same as your email."
@@ -2291,6 +2295,7 @@ en:
       error: "Unknown error"
       cookies_error: "Your browser seems to have cookies disabled. You might not be able to log in without enabling them first."
       rate_limit: "Please wait before trying to log in again."
+      password_expired: "Password expired. Please <a href='%{reset_url}'>reset your password</a>."
       blank_username: "Please enter your email or username."
       blank_username_or_password: "Please enter your email or username, and password."
       reset_password: "Reset Password"
@@ -5032,6 +5037,10 @@ en:
         title: "Moderation Flags"
         description: "Description"
         enabled: "Enabled?"
+        more_options:
+          title: "More options"
+          move_up: "Move up"
+          move_down: "Move down"
 
       groups:
         new:
@@ -5348,6 +5357,10 @@ en:
           timestamp: "Created"
           completion: "Completion Time"
           actions: "Actions"
+          filter_status:
+            all: "All Events"
+            successful: "Delivered"
+            failed: "Failed"
       home:
         title: "Home"
       account:
@@ -5416,6 +5429,46 @@ en:
           spam: "Spam"
           staff_action_logs: "Staff Action Logs"
 
+      config_areas:
+        about:
+          header: "About your site"
+          general_settings: "General settings"
+          community_name: "Community name"
+          community_summary: "Community summary"
+          community_description: "Community description"
+          banner_image: "Banner image"
+          banner_image_help: |
+            This will be used on your About page. Recommended size: 800x300px. Accepted types: JPG, PNG, and SVG up to 10MB.
+          contact_information: "Contact information"
+          community_owner: "Community owner"
+          community_owner_help: |
+            Name of key contact responsible for this site. Used for critical notifications, and also displayed on /about. Visible to anonymous users on public sites.
+          contact_email: "Contact email"
+          contact_email_help: |
+            Email address of key contact responsible for this site. Used for critical notifications, and also displayed on /about. Visible to anonymous users on public sites.
+          contact_url: "Contact URL"
+          contact_url_help: |
+            Contact URL for this site. When present, replaces contact email address on /about and visible to anonymous users on public sites.
+          site_contact_name: "Site contact name"
+          site_contact_name_help: |
+            A valid staff username to send all automated messages from. If left blank, the default System account will be used.
+          site_contact_group: "Site contact group"
+          site_contact_group_help: |
+            A valid name of a group that gets invited to all automatically sent private messages.
+          your_organization: "Your organization"
+          company_name: "Company name"
+          company_name_help: |
+            Name of your company or organization.
+          company_name_warning: |
+            If left blank, no boilerplate Terms of Service or Privacy Notice will be provided.
+          governing_law: "Governing law"
+          governing_law_help: |
+            Specify the jurisdiction that governs the legal aspects of the site, including Terms of Service and Privacy Notice. This is typically the country or state where the company operating the site is registered or conducts business.
+          city_for_disputes: "City for disputes"
+          city_for_disputes_help: |
+            Specify the city that will be used as the jurisdiction for resolving any disputes related to the use of this forum. This information is typically included in legal documents such as the forum's Terms of Service.
+          optional: "(optional)"
+          update: "Update"
       plugins:
         title: "Plugins"
         installed: "Installed Plugins"
@@ -6092,6 +6145,7 @@ en:
             update_watched_word_group: "update watched word group"
             delete_watched_word_group: "delete watched word group"
             toggle_flag: "toggle flag"
+            move_flag: "move flag"
         screened_emails:
           title: "Screened Emails"
           description: "When someone tries to create a new account, the following email addresses will be checked and the registration will be blocked, or some other action performed."
