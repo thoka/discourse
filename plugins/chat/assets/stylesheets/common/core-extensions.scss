@@ -11,8 +11,8 @@
   }
 }
 
-.user-summary-page .details .controls ul {
-  display: flex;
+.user-summary-page .details .controls ul,
+.user-main .details .controls ul {
   flex-direction: column;
 
   li:first-child {
@@ -21,7 +21,14 @@
 
   li.user-profile-controls-outlet.chat-button {
     order: -1;
+    &:empty {
+      display: none;
+    }
   }
+}
+
+.user-main .collapsed-info .details .controls ul {
+  flex-direction: row;
 }
 
 // TODO (davidb): remove once consolidated chat notifications is complete

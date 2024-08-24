@@ -14,6 +14,8 @@ class User < ActiveRecord::Base
   TARGET_PASSWORD_ALGORITHM =
     "$pbkdf2-#{Rails.configuration.pbkdf2_algorithm}$i=#{Rails.configuration.pbkdf2_iterations},l=32$"
 
+  MAX_SIMILAR_USERS = 10
+
   deprecate_column :flag_level, drop_from: "3.2"
 
   # not deleted on user delete
@@ -158,7 +160,9 @@ class User < ActiveRecord::Base
             unless: :should_skip_user_fields_validation?
 
   validates_associated :primary_email,
-                       message: ->(_, user_email) { user_email[:value]&.errors&.[](:email)&.first }
+                       message: ->(_, user_email) do
+                         user_email[:value]&.errors&.[](:email)&.first.to_s
+                       end
 
   after_initialize :add_trust_level
 
@@ -250,6 +254,9 @@ class User < ActiveRecord::Base
 
   # Cache for user custom fields. Currently it is used to display quick search results
   attr_accessor :custom_data
+
+  # Information if user was authenticated with OAuth
+  attr_accessor :authenticated_with_oauth
 
   scope :with_email,
         ->(email) { joins(:user_emails).where("lower(user_emails.email) IN (?)", email) }
@@ -602,8 +609,20 @@ class User < ActiveRecord::Base
   end
 
   def invited_by
+    # this is unfortunate, but when an invite is redeemed,
+    # any user created by the invite is created *after*
+    # the invite's redeemed_at
+    invite_redemption_delay = 5.seconds
     used_invite =
-      Invite.with_deleted.joins(:invited_users).where("invited_users.user_id = ?", self.id).first
+      Invite
+        .with_deleted
+        .joins(:invited_users)
+        .where(
+          "invited_users.user_id = ? AND invited_users.redeemed_at <= ?",
+          self.id,
+          self.created_at + invite_redemption_delay,
+        )
+        .first
     used_invite.try(:invited_by)
   end
 
@@ -1021,6 +1040,10 @@ class User < ActiveRecord::Base
   end
 
   def self.update_ip_address!(user_id, new_ip:, old_ip:)
+    can_update_ip_address =
+      DiscoursePluginRegistry.apply_modifier(:user_can_update_ip_address, user_id: user_id)
+    return if !can_update_ip_address
+
     unless old_ip == new_ip || new_ip.blank?
       DB.exec(<<~SQL, user_id: user_id, ip_address: new_ip)
         UPDATE users
@@ -1208,10 +1231,14 @@ class User < ActiveRecord::Base
     stat.increment!(:post_edits_count)
   end
 
+  def post_action_type_view
+    @post_action_type_view ||= PostActionTypeView.new
+  end
+
   def flags_given_count
     PostAction.where(
       user_id: id,
-      post_action_type_id: PostActionType.flag_types_without_custom.values,
+      post_action_type_id: post_action_type_view.flag_types_without_additional_message.values,
     ).count
   end
 
@@ -1222,7 +1249,10 @@ class User < ActiveRecord::Base
   def flags_received_count
     posts
       .includes(:post_actions)
-      .where("post_actions.post_action_type_id" => PostActionType.flag_types_without_custom.values)
+      .where(
+        "post_actions.post_action_type_id" =>
+          post_action_type_view.flag_types_without_additional_message.values,
+      )
       .count
   end
 
@@ -1435,7 +1465,7 @@ class User < ActiveRecord::Base
 
     disagreed_flag_post_ids =
       PostAction
-        .where(post_action_type_id: PostActionType.types[:spam])
+        .where(post_action_type_id: post_action_type_view.types[:spam])
         .where.not(disagreed_at: nil)
         .pluck(:post_id)
 
@@ -1563,7 +1593,7 @@ class User < ActiveRecord::Base
     PostAction
       .where(user_id: self.id)
       .where(disagreed_at: nil)
-      .where(post_action_type_id: PostActionType.notify_flag_type_ids)
+      .where(post_action_type_id: post_action_type_view.notify_flag_type_ids)
       .count
   end
 
@@ -1841,6 +1871,28 @@ class User < ActiveRecord::Base
     end
   end
 
+  def populated_required_custom_fields?
+    UserField
+      .required
+      .pluck(:id)
+      .all? { |field_id| custom_fields["#{User::USER_FIELD_PREFIX}#{field_id}"].present? }
+  end
+
+  def needs_required_fields_check?
+    (required_fields_version || 0) < UserRequiredFieldsVersion.current
+  end
+
+  def bump_required_fields_version
+    update(required_fields_version: UserRequiredFieldsVersion.current)
+  end
+
+  def similar_users
+    User
+      .real
+      .where.not(id: self.id)
+      .where(ip_address: self.ip_address, admin: false, moderator: false)
+  end
+
   protected
 
   def badge_grant
@@ -2020,7 +2072,7 @@ class User < ActiveRecord::Base
         end
     end
 
-    TagUser.insert_all!(values) if values.present?
+    TagUser.insert_all(values) if values.present?
   end
 
   def self.purge_unactivated
@@ -2223,6 +2275,7 @@ end
 #  flair_group_id            :integer
 #  last_seen_reviewable_id   :integer
 #  password_algorithm        :string(64)
+#  required_fields_version   :integer
 #
 # Indexes
 #

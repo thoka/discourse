@@ -1,7 +1,7 @@
-import { getOwner } from "@ember/application";
 import Component from "@ember/component";
 import { alias } from "@ember/object/computed";
 import { on } from "@ember/object/evented";
+import { getOwner } from "@ember/owner";
 import { schedule } from "@ember/runloop";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
@@ -337,7 +337,7 @@ export default Component.extend({
 
       this.element.classList.add("highlighted");
       this.element.setAttribute(
-        "data-islastviewedtopic",
+        "data-is-last-viewed-topic",
         opts.isLastViewedTopic
       );
       this.element.addEventListener("animationend", () => {

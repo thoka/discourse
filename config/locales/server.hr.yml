@@ -52,11 +52,6 @@ hr:
   remove_posts_deleted_by_author: "Izbrisao autor"
   redirect_warning: "Nismo mogli potvrditi da je poveznica koju ste odabrali stvarno bila objavljena na forumu. Želite li svejedno nastaviti, odaberite poveznicu u nastavku."
   on_another_topic: "Na drugoj temi"
-  topic_category_changed: "Od %{from} do %{to}"
-  topic_tag_changed:
-    added_and_removed: "Dodano %{added} i uklonjeno %{removed}"
-    added: "Dodano %{added}"
-    removed: "je uklonio %{removed}"
   inline_oneboxer:
     topic_page_title_post_number: "#%{post_number}"
     topic_page_title_post_number_by_user: "#%{post_number} od %{username}"
@@ -433,6 +428,8 @@ hr:
         raw: "Tijelo"
       user_profile:
         bio_raw: "O meni"
+      user:
+        password: "Lozinka"
     errors:
       models:
         topic:
@@ -683,11 +680,7 @@ hr:
   associated_accounts:
     connected: "(povezano)"
   activation:
-    action: "Kliknite ovdje kako bi aktivirali vaš korisnički račun"
     already_done: "Žao nam je, poveznica za aktivaciju računa više nije važeća. Možda vam je račun već aktivan?"
-    please_continue: "Vaš novi račun je potvrđen, biti će te preusmjereni na glavnu stranicu."
-    continue_button: "Nastavite na %{site_name}"
-    welcome_to: "Dobrodošli na %{site_name}"
     approval_required: "Moderator vam mora ručno odobriti račun da bi mogli pristupiti ovom forumu. Dobiti će te email kad vam račun bude odobren!"
     missing_session: "Ne možemo utvrditi je li vaš korisnički račun kreiran, molimo osigurajte da su vam omogućeni cookieji (kolačići)."
     activated: "Žao nam je, ovaj korisnički račun je već aktiviran."
@@ -1069,6 +1062,8 @@ hr:
         user_agent: "Korisnički agent"
         page_views: "Pregledi stranica"
       description: "Popis korisničkih agenata alata za indeksiranje, poredanih po prikazima stranica."
+    web_hook_events_daily_aggregate:
+      xaxis: "Dan"
     suspicious_logins:
       title: "Sumnjive prijave"
       labels:
@@ -1095,6 +1090,12 @@ hr:
       labels:
         user: Korisnik
         qtt_like: Like-ova primljeno
+    topic_view_stats:
+      labels:
+        topic: Tema
+        logged_in_views: Prijavljeni
+        anon_views: Anonimno
+        total_views: Ukupno
   dashboard:
     problem:
       rails_env: "Server vam radi na %{env} način."
@@ -1385,7 +1386,6 @@ hr:
     allowed_href_schemes: "Sheme dopuštene u vezama uz http i https."
     embed_post_limit: "Maksimalan broj postova za ugradnju."
     embed_username_required: "Potrebno je korisničko ime za kreiranje teme."
-    delete_merged_stub_topics_after_days: "Broj dana čekanja prije automatskog brisanja potpuno spojenih tema. Postavite na 0 da nikada ne brišete nezavršene teme."
     prevent_anons_from_downloading_files: "Spriječite anonimne korisnike u preuzimanju privitaka."
     secure_uploads: 'Ograničava pristup SVIM prijenosima (slike, video, audio, tekst, pdf-ovi, zipovi i ostalo). Ako je "potrebna prijava" omogućena, samo prijavljeni korisnici mogu pristupiti učitavanjima. U suprotnom, pristup će biti ograničen samo na učitavanje medija u privatnim porukama i privatnim kategorijama. UPOZORENJE: Ova je postavka složena i zahtijeva duboko administrativno razumijevanje. Pogledajte <a target="_blank" href="https://meta.discourse.org/t/-/140017">sigurnu učitava temu na Meta</a> za detalje.'
     secure_uploads_allow_embed_images_in_emails: "Omogućuje ugrađivanje sigurnih slika koje bi se inače redigirale u e-porukama, ako je njihova veličina manja od postavke 'maksimalna veličina slike za ugrađivanje e-pošte u sigurne prijenose kb'."
@@ -2257,6 +2257,8 @@ hr:
     boolean_yes: "Da"
     boolean_no: "Ne"
     rate_limit_error: "Objave mogu biti preuzimane jednom na dan, molimo pokušajte sutra."
+  guidelines_topic:
+    guidelines_title: "Vodić za uporabu"
   tos_topic:
     title: "Uvjeti korištenja"
   privacy_topic:
@@ -2335,7 +2337,12 @@ hr:
       privacy:
         fields:
           login_required:
-            placeholder: "Privatno"
+            label: "Vidljivost"
+            choices:
+              public:
+                label: "Javnost"
+              private:
+                label: "Privatno"
           chat_enabled:
             placeholder: "Omogući chat"
       styling:

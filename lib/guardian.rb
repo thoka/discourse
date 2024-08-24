@@ -155,9 +155,9 @@ class Guardian
   end
 
   def is_developer?
-    @user && is_admin? &&
+    @user &&
       (
-        Rails.env.development? || Developer.user_ids.include?(@user.id) ||
+        Rails.env.development? || (is_admin? && Developer.user_ids.include?(@user.id)) ||
           (
             Rails.configuration.respond_to?(:developer_emails) &&
               Rails.configuration.developer_emails.include?(@user.email)
@@ -505,6 +505,14 @@ class Guardian
     # Must be a valid target
     return false if !(target_is_group || target_is_user)
 
+    can_send_private_message =
+      DiscoursePluginRegistry.apply_modifier(
+        :guardian_can_send_private_message,
+        target: target,
+        user: @user,
+      )
+    return false if !can_send_private_message
+
     # Users can send messages to certain groups with the `everyone` messageable_level
     # even if they are not in personal_message_enabled_groups
     group_is_messageable = target_is_group && Group.messageable(@user).where(id: target.id).exists?
@@ -559,8 +567,7 @@ class Guardian
 
   def can_ignore_users?
     return false if anonymous?
-    @user.staff? || @user.has_trust_level?(SiteSetting.min_trust_level_to_allow_ignore.to_i) ||
-      @user.in_any_groups?(SiteSetting.ignore_allowed_groups_map)
+    @user.staff? || @user.in_any_groups?(SiteSetting.ignore_allowed_groups_map)
   end
 
   def allowed_theme_repo_import?(repo)

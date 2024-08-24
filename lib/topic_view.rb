@@ -41,6 +41,8 @@ class TopicView
     :user_custom_fields,
     :post_custom_fields,
     :post_number,
+    :include_suggested,
+    :include_related,
   )
 
   delegate :category, to: :topic, allow_nil: true, private: true
@@ -50,8 +52,10 @@ class TopicView
     1000
   end
 
+  CHUNK_SIZE = 20
+
   def self.chunk_size
-    20
+    CHUNK_SIZE
   end
 
   def self.default_post_custom_fields
@@ -598,17 +602,28 @@ class TopicView
       ReviewableQueuedPost.pending.where(target_created_by: @user, topic: @topic).order(:created_at)
   end
 
+  def post_action_type_view
+    @post_action_type_view ||= PostActionTypeView.new
+  end
+
   def actions_summary
     return @actions_summary unless @actions_summary.nil?
 
     @actions_summary = []
     return @actions_summary unless post = posts&.first
-    PostActionType.topic_flag_types.each do |sym, id|
+    post_action_type_view.topic_flag_types.each do |sym, id|
       @actions_summary << {
         id: id,
         count: 0,
         hidden: false,
-        can_act: @guardian.post_can_act?(post, sym),
+        can_act:
+          @guardian.post_can_act?(
+            post,
+            sym,
+            opts: {
+              post_action_type_view: post_action_type_view,
+            },
+          ),
       }
     end
 
@@ -633,6 +648,7 @@ class TopicView
               { include_random: true, pm_params: pm_params },
               self,
             )
+
           TopicQuery.new(@user).list_suggested_for(topic, **kwargs)
         end
     else
@@ -733,17 +749,14 @@ class TopicView
         usernames.flatten!
         usernames.uniq!
 
-        users = User.where(username: usernames).includes(:user_status).index_by(&:username)
+        users =
+          User.where(username_lower: usernames).includes(:user_status).index_by(&:username_lower)
 
         mentions.reduce({}) do |hash, (post_id, post_mentioned_usernames)|
           hash[post_id] = post_mentioned_usernames.map { |username| users[username] }.compact
           hash
         end
       end
-  end
-
-  def summarizable?
-    Summarization::Base.can_see_summary?(@topic, @user)
   end
 
   def categories

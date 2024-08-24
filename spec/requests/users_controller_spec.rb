@@ -60,9 +60,8 @@ RSpec.describe UsersController do
 
     context "with invalid token" do
       it "return success" do
-        put "/u/activate-account/invalid-tooken"
-        expect(response.status).to eq(200)
-        expect(flash[:error]).to be_present
+        put "/u/activate-account/invalid-token"
+        expect(response.status).to eq(422)
       end
     end
 
@@ -108,12 +107,11 @@ RSpec.describe UsersController do
           )
 
           expect(response.status).to eq(200)
-          expect(flash[:error]).to be_blank
-          expect(session[:current_user_id]).to be_present
 
-          expect(CGI.unescapeHTML(response.body)).to_not include(
-            I18n.t("activation.approval_required"),
-          )
+          data = JSON.parse(response.body)
+          expect(data["needs_approval"]).to eq(false)
+
+          expect(session[:current_user_id]).to be_present
         end
       end
 
@@ -124,11 +122,9 @@ RSpec.describe UsersController do
           put "/u/activate-account/#{email_token.token}"
           expect(response.status).to eq(200)
 
-          expect(CGI.unescapeHTML(response.body)).to include(I18n.t("activation.approval_required"))
+          data = JSON.parse(response.body)
+          expect(data["needs_approval"]).to eq(true)
 
-          expect(response.body).to_not have_tag(:script, with: { src: "/assets/application.js" })
-
-          expect(flash[:error]).to be_blank
           expect(session[:current_user_id]).to be_blank
         end
       end
@@ -141,7 +137,8 @@ RSpec.describe UsersController do
 
         put "/u/activate-account/#{email_token.token}"
 
-        expect(response).to redirect_to(destination_url)
+        expect(response.status).to eq(200)
+        expect(response.parsed_body["redirect_to"]).to eq(destination_url)
       end
     end
 
@@ -158,7 +155,8 @@ RSpec.describe UsersController do
       it "should redirect to the topic" do
         put "/u/activate-account/#{email_token.token}"
 
-        expect(response).to redirect_to(topic.relative_url)
+        expect(response.status).to eq(200)
+        expect(response.parsed_body["redirect_to"]).to eq(topic.relative_url)
       end
     end
   end
@@ -302,6 +300,31 @@ RSpec.describe UsersController do
               timezone: "America/Chicago",
             }
         expect(user1.user_option.reload.timezone).to eq("America/Chicago")
+      end
+
+      it "deletes user associated accounts" do
+        SiteSetting.delete_associated_accounts_on_password_reset = true
+        UserAssociatedAccount.create(
+          user_id: user.id,
+          provider_uid: "example0",
+          provider_name: "facebook",
+        )
+        UserAssociatedAccount.create(
+          user_id: user1.id,
+          provider_uid: "example1",
+          provider_name: "facebook",
+        )
+
+        get "/u/password-reset/#{email_token.token}"
+
+        expect do
+          put "/u/password-reset/#{email_token.token}",
+              params: {
+                password: "hg9ow8yhg98oadminlonger",
+              }
+        end.to change { UserAssociatedAccount.count }.by(-1)
+
+        expect(UserAssociatedAccount.count).to eq(1)
       end
 
       it "logs the password change" do
@@ -1497,6 +1520,20 @@ RSpec.describe UsersController do
             expect do
               put update_user_url, params: { user_fields: { field_id => nil } }
             end.not_to change { user1.reload.user_fields[field_id] }
+
+            expect do
+              put update_user_url, params: { user_fields: { field_id => "" } }
+            end.not_to change { user1.reload.user_fields[field_id] }
+          end
+
+          it "value is required only on sign-up" do
+            user_field.on_signup!
+
+            expect do
+              put update_user_url, params: { user_fields: { field_id => "" } }
+            end.to change { user1.reload.user_fields[field_id] }.from(nil).to("")
+
+            put update_user_url, params: { user_fields: { field_id => valid_options } }
 
             expect do
               put update_user_url, params: { user_fields: { field_id => "" } }
@@ -4531,6 +4568,7 @@ RSpec.describe UsersController do
         expect(parsed["username"]).to eq(user.username)
         expect(parsed["profile_hidden"]).to be_blank
         expect(parsed["trust_level"]).to be_present
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       it "returns a hidden profile" do
@@ -4543,11 +4581,13 @@ RSpec.describe UsersController do
         expect(parsed["username"]).to eq(user.username)
         expect(parsed["profile_hidden"]).to eq(true)
         expect(parsed["trust_level"]).to be_blank
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       it "should 403 for anonymous user when profiles are hidden" do
         SiteSetting.hide_user_profiles_from_public = true
         get "/u/#{user.username}.json"
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
         expect(response).to have_http_status(:forbidden)
         get "/u/#{user.username}/messages.json"
         expect(response).to have_http_status(:forbidden)
@@ -4558,6 +4598,7 @@ RSpec.describe UsersController do
         get "/u/#{user.username}", headers: { "User-Agent" => "Googlebot" }
         expect(response).to have_http_status(:forbidden)
         expect(response.body).to have_tag("body.crawler")
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       describe "user profile views" do
@@ -4590,12 +4631,14 @@ RSpec.describe UsersController do
       it "returns not found when the username doesn't exist" do
         get "/u/madeuppity.json"
         expect(response).not_to be_successful
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       it "returns not found when the user is inactive" do
         inactive = Fabricate(:user, active: false)
         get "/u/#{inactive.username}.json"
         expect(response).not_to be_successful
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       it "returns success when show_inactive_accounts is true and user is logged in" do
@@ -4609,6 +4652,7 @@ RSpec.describe UsersController do
         Guardian.any_instance.expects(:can_see?).with(user1).returns(false)
         get "/u/#{user1.username}.json"
         expect(response).to be_forbidden
+        expect(response.headers["X-Robots-Tag"]).to eq("noindex")
       end
 
       describe "user profile views" do
@@ -4792,17 +4836,30 @@ RSpec.describe UsersController do
         expect(response.parsed_body["user"]["inactive"]).to eq(true)
       end
 
-      it "returns partial response when hidden users" do
-        user.user_option.update!(hide_profile_and_presence: true)
-        get "/u/#{user.username}/card.json"
-        expect(response).to be_successful
-        expect(response.parsed_body["user"]["profile_hidden"]).to eq(true)
-      end
-
       it "raises an error on invalid access" do
         Guardian.any_instance.expects(:can_see?).with(user).returns(false)
         get "/u/#{user.username}/card.json"
         expect(response).to be_forbidden
+      end
+
+      context "when hidden users" do
+        before { user.user_option.update!(hide_profile_and_presence: true) }
+
+        it "returns the correct partial response when the user has messages enabled" do
+          user.user_option.update!(allow_private_messages: true)
+          get "/u/#{user.username}/card.json"
+          expect(response).to be_successful
+          expect(response.parsed_body["user"]["profile_hidden"]).to eq(true)
+          expect(response.parsed_body["user"]["can_send_private_message_to_user"]).to eq(true)
+        end
+
+        it "returns the correct partial response when the user has messages disabled" do
+          user.user_option.update!(allow_private_messages: false)
+          get "/u/#{user.username}/card.json"
+          expect(response).to be_successful
+          expect(response.parsed_body["user"]["profile_hidden"]).to eq(true)
+          expect(response.parsed_body["user"]["can_send_private_message_to_user"]).to eq(false)
+        end
       end
     end
   end

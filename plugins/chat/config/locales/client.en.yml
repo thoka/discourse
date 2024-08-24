@@ -33,6 +33,10 @@ en:
       chat_messages_count: "Chat messages"
       chat_channels_count: "Chat channels"
       chat_users_count: "Chat users"
+      activities:
+        chat_messages:
+          one: "%{formatted_number} chat message"
+          other: "%{formatted_number} chat messages"
 
     chat:
       text_copied: Text copied to clipboard
@@ -144,13 +148,6 @@ en:
       join: "Join"
       last_visit: "last visit"
 
-      summarization:
-        title: "Summarize messages"
-        description: "Select an option below to summarize the conversation sent during the desired timeframe."
-        summarize: "Summarize"
-        since:
-          one: "Last hour"
-          other: "Last %{count} hours"
       mention_warning:
         invitations_sent:
           one: "Invitation sent"
@@ -266,6 +263,7 @@ en:
       copy_link: "Copy link"
       copy_text: "Copy text"
       rebake_message: "Rebuild HTML"
+      message_too_long: "Message is too long, messages must be a maximum of %{count} characters."
       retry_staged_message:
         title: "Network error"
         action: "Send again?"

@@ -1,9 +1,9 @@
+import { number } from "discourse/lib/formatter";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
 import { replaceIcon } from "discourse-common/lib/icon-library";
 import { bind } from "discourse-common/utils/decorators";
 import I18n from "discourse-i18n";
-import { MENTION_KEYWORDS } from "discourse/plugins/chat/discourse/components/chat-message";
 import { clearChatComposerButtons } from "discourse/plugins/chat/discourse/lib/chat-composer-buttons";
 import ChannelHashtagType from "discourse/plugins/chat/discourse/lib/hashtag-types/channel";
 import ChatHeaderIcon from "../components/chat/header/icon";
@@ -97,21 +97,6 @@ export default {
         },
       });
 
-      const canSummarize =
-        this.siteSettings.summarization_strategy &&
-        this.currentUser &&
-        this.currentUser.can_summarize;
-
-      if (canSummarize) {
-        api.registerChatComposerButton({
-          translatedLabel: "chat.summarization.title",
-          id: "channel-summary",
-          icon: "discourse-sparkles",
-          position: "dropdown",
-          action: "showChannelSummaryModal",
-        });
-      }
-
       // we want to decorate the chat quote dates regardless
       // of whether the current user has chat enabled
       api.decorateCookedElement((elem) => {
@@ -172,30 +157,19 @@ export default {
         id: "chat",
       });
 
-      api.addChatDrawerStateCallback(({ isDrawerActive }) => {
-        if (isDrawerActive) {
-          document.body.classList.add("chat-drawer-active");
-        } else {
-          document.body.classList.remove("chat-drawer-active");
+      api.addAboutPageActivity("chat_messages", (periods) => {
+        const count = periods["7_days"];
+        if (count) {
+          return {
+            icon: "comment-dots",
+            class: "chat-messages",
+            activityText: I18n.t("about.activities.chat_messages", {
+              count,
+              formatted_number: number(count),
+            }),
+            period: I18n.t("about.activities.periods.last_7_days"),
+          };
         }
-      });
-
-      api.decorateChatMessage(function (chatMessage, chatChannel) {
-        if (!this.currentUser) {
-          return;
-        }
-
-        const highlightable = [`@${this.currentUser.username}`];
-        if (chatChannel.allowChannelWideMentions) {
-          highlightable.push(...MENTION_KEYWORDS.map((k) => `@${k}`));
-        }
-
-        chatMessage.querySelectorAll(".mention").forEach((node) => {
-          const mention = node.textContent.trim();
-          if (highlightable.includes(mention)) {
-            node.classList.add("highlighted", "valid-mention");
-          }
-        });
       });
     });
   },

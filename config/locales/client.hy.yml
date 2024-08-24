@@ -244,6 +244,16 @@ hy:
       topic_count: "Թեմաներ"
       post_count: "Գրառում"
       contact_info: "Այս կայքի հետ կապված կրիտիկական խնդիրների կամ հրատապ հարցերի դեպքում խնդրում ենք կապվել մեզ հետ %{contact_info} էլ. հասցեով:"
+      activities:
+        topics:
+          one: "%{formatted_number} թեմա"
+          other: "%{formatted_number} թեմա"
+        posts:
+          one: "%{formatted_number} գրառում"
+          other: "%{formatted_number} գրառում"
+        periods:
+          last_7_days: "վերջին 7 օրվա ընթացքում"
+          today: "այսօրվա"
     bookmarked:
       title: "Էջանշել"
       clear_bookmarks: "Ջնջել Էջանշանները"
@@ -564,6 +574,8 @@ hy:
         email:
           title: "Էլ. հասցե"
           last_updated_by: "կողմից"
+          ssl_modes:
+            none: "Ոչ մի"
           credentials:
             username: "Օգտանուն"
             password: "Գաղտնաբառ"
@@ -761,6 +773,7 @@ hy:
       copied: "կրկօրինակված"
     user_fields:
       none: "(ընտրել)"
+      optional: (ընտրովի)
     user:
       said: "%{username} ՝"
       profile: "Պրոֆիլ"
@@ -789,7 +802,8 @@ hy:
         to: "ում"
       activity_stream: "Ակտիվություն"
       read: "Կարդացած"
-      preferences: "Նախընտրություններ"
+      preferences:
+        title: "Նախընտրություններ"
       feature_topic_on_profile:
         open_search: "Ընտրեք Նոր Թեմա"
         title: "Ընտրել Թեմա"
@@ -934,6 +948,7 @@ hy:
         set_password: "Առաջադրել Գաղտնաբառ"
         choose_new: "Ընտրել նոր գաղտնաբառ"
         choose: "Ընտրել գաղտնաբառ"
+        title: "Գաղտնաբառի Վերականգնում"
       second_factor_backup:
         regenerate: "Վերագեներացնել"
         disable: "Անջատել"
@@ -1036,6 +1051,13 @@ hy:
         confirm_description:
           account_specific: "Ձեր %{provider} հաշիվը '%{account_description}' կօգտագործվի վավերացման համար:"
           generic: "Ձեր %{provider} հաշիվը կօգտագործվի վավերացման համար:"
+      activate_account:
+        action: "Սեղմեք այստեղ՝ Ձեր հաշիվը ակտիվացնելու համար"
+        already_done: "Ներողություն, հաշվի հաստատման այս հղումը այլևս վավեր չէ: Միգուցե Ձեր հաշիվն արդեն ակտի՞վ է:"
+        please_continue: "Ձեր նոր հաշիվը հաստատված է; Դուք կվերաուղարկվեք դեպի գլխավոր էջ:"
+        continue_button: "Շարունակել դեպի %{site_name}"
+        welcome_to: "Բարի գալուստ %{site_name}!"
+        approval_required: "Մոդերատորը պետք է ձեռքով հաստատի Ձեր նոր հաշիվը, մինչև Դուք հասանելիություն կունենաք այս ֆորումից: Դուք էլ. նամակ կստանաք, երբ Ձեր հաշիվը հաստատվի!"
       name:
         title: "Անուն"
         instructions: "Ձեր անուն ազգանունը (ընտրովի)."
@@ -1179,7 +1201,6 @@ hy:
           error: "Ներողություն, ֆայլը պետք է լինի CSV ձևաչափով:"
       password:
         title: "Գաղտնաբառ"
-        too_short: "Ձեր գաղտնաբառը շատ կարճ է:"
         common: "Այդ գաղտնաբառը շատ է տարածված:"
         same_as_username: "Ձեր գաղտնաբառը համընկնում է Ձեր օգտանվան հետ:"
         same_as_email: "Ձեր գաղտնաբառը համընկնում է Ձեր էլ. հասցեի հետ:"
@@ -1277,6 +1298,11 @@ hy:
     modal:
       close: "փակել"
       dismiss_error: "Չեղարկել սխալը"
+    form_kit:
+      reset: Զրոյացնել
+      optional: ընտրովի
+      errors:
+        required: "Պարտադիր"
     close: "Փակել"
     logout: "Դուք դուրս եք գրվել:"
     refresh: "Թարմացնել"
@@ -1302,6 +1328,8 @@ hy:
       hide_forever: "ոչ, շնորհակալություն"
       intro: "Ողջույն! Կարծես թե Դուք վայելում եք քննարկումը, սակայն դեռևս հաշիվ չեք գրանցել:"
     summary:
+      buttons:
+        regenerate: "Վերագեներացնել"
       disable: "Ցուցադրել Բոլոր Գրառումները"
     deleted_filter:
       enabled_description: "Այս թեման պարունակում է հեռացված գրառումներ, որոնք թաքցվել են:"
@@ -1325,6 +1353,7 @@ hy:
     create_account:
       header_title: "Բարի գալուստ!"
       disclaimer: "Գրանցվելով դուք ընդունում եք <a href='%{privacy_link}' target='blank'> գաղտնիության քաղաքականությունը </a> և <a href='%{tos_link}' target='blank'> պայմանները </a>:"
+      title: "Գրանցվել"
       failed: "Ինչ-որ սխալ է տեղի ունեցել, հնարավոր է՝ այս էլ. հասցեն արդեն գրանցված է, փորձեք կատարել գաղտնաբառի վերականգնում:"
     forgot_password:
       title: "Գաղտնաբառի Վերականգնում"
@@ -1379,6 +1408,7 @@ hy:
       not_activated: "Դուք դեռևս չեք կարող մուտք գործել: Մենք որոշ ժամանակ առաջ Ձեզ ուղարկել ենք ակտիվացման նամակ <b>%{sentTo}</b> էլ. հասցեին: Խնդրում ենք հետևել այդ նամակի հրահանգներին՝ Ձեր հաշիվը ակտիվացնելու համար:"
       admin_not_allowed_from_ip_address: "Դուք չեք կարող մուտք գործել որպես ադմին այդ IP հասցեից:"
       resend_activation_email: "Սեղմեք այստեղ՝ ակտիվացման նամակը կրկին ուղարկելու համար: "
+      activate_account: "Ակտիվացնել Հաշիվը"
       resend_title: "Կրկին Ուղարկել Ակտիվացման Նամակը"
       change_email: "Փոփոխել Էլ. Հասցեն"
       provide_new_email: "Տրամադրեք նոր էլ. հասցե, և մենք կրկին կուղարկենք հաստատման էլ. նամակը:"
@@ -1546,7 +1576,6 @@ hy:
       enter_fullscreen: "մուտք գործել ամբողջական էկրանով կոմպոզեր"
       exit_fullscreen: "դուրս գալ ամբողջական էկրանով կոմպոզերից"
       modal_ok: "ՕԿ"
-      modal_cancel: "Չեղարկել"
       cant_send_pm: "Ներողություն, Դուք չեք կարող ուղարկել հաղորդագրություն %{username}-ին:"
       yourself_confirm:
         title: "Մոռացե՞լ եք ավելացնել ստացողներին:"
@@ -2415,7 +2444,6 @@ hy:
         appearance: "Արտաքին տեսք"
         email: "Էլ. հասցե"
     flagging:
-      title: "Շնորհակալ ենք, որ օգնում եք պահել մեր համայնքը քաղաքակիրթ:"
       action: "Դրոշակավորել Գրառումը"
       take_action_options:
         default:
@@ -2447,7 +2475,6 @@ hy:
           one: "%{count}-ը մնում է"
           other: "%{count} հատ է մնացել"
     flagging_topic:
-      title: "Շնորհակալ ենք, որ օգնում եք պահել մեր համայնքը քաղաքակիրթ:"
       action: "Դրոշակավորել Թեման"
       notify_action: "Հաղորդագրություն"
     topic_map:
@@ -2457,6 +2484,9 @@ hy:
       clicks:
         one: "%{count} սեղմում"
         other: "%{count} սեղմում"
+      views: "Դիտում"
+      read: կարդացած
+      minutes: նվազագույնը
     post_links:
       about: "Ցուցադրել ավելի շատ հղումներ այս գրառման համար"
       title:
@@ -2489,6 +2519,7 @@ hy:
     pending_posts:
       label: "Սպասող"
       label_with_count: "Սպասող (%{count})"
+    posters: "Հրապարակողների"
     original_post: "Սկզբնական Գրառումը"
     views: "Դիտում"
     views_lowercase:
@@ -2714,7 +2745,6 @@ hy:
     tagging:
       other_tags: "Այլ Թեգեր"
       selector_tags: "թեգեր"
-      selector_all_tags: "բոլոր թեգերը"
       selector_no_tags: "առանց թեգերի"
       selector_remove_filter: "հանել ֆիլտրը"
       tags: "Թեգեր"
@@ -2867,6 +2897,8 @@ hy:
               content: "Թեմա"
             faq:
               content: "ՀՏՀ"
+            guidelines:
+              content: "Ուղեցույց"
             groups:
               content: "Խմբեր"
             users:
@@ -2896,6 +2928,7 @@ hy:
         show: "Ցուցադրել"
         about: "Մասին"
   admin_js:
+    settings: "Կարգավորումներ"
     admin:
       title: "Discourse Ադմին"
       moderator: "Մոդերատոր"
@@ -3144,6 +3177,8 @@ hy:
           timestamp: "Ստեղծված"
           completion: "Ավարտի Ժամանակը"
           actions: "Գործողություններ"
+          filter_status:
+            failed: "Ձախողված"
       home:
         title: "Գլխավոր էջ"
       account:
@@ -3190,6 +3225,24 @@ hy:
           search_logs: "Որոնել Գրառումներ"
           security: "Անվտանգություն"
           spam: "Սպամ"
+      config_areas:
+        about:
+          contact_url_placeholder: "https://johnny-smith.com/contact"
+          optional: "(ընտրովի)"
+          saved: "պահված է!"
+        flags:
+          description: "Նկարագրությունը"
+          enabled: "Միացվա՞ծ է:"
+          edit: "Խմբագրել"
+          delete: "Ջնջել"
+          delete_confirm: 'Դուք համոզվա՞ծ եք, որ ցանկանում եք ջնջել <<%{name}>> :'
+          form:
+            save: "Պահպանել"
+            name: "Անուն"
+            description: "Նկարագրությունը"
+            invalid_applies_to: "Պարտադիր"
+            topic: "թեմաներ"
+            post: "գրառումներ"
       plugins:
         title: "Հավելումներ"
         installed: "Տեղադրված Հավելումները"
@@ -3482,7 +3535,6 @@ hy:
             description: "Հղումներ, որոշ կոճակներ, ծանուցումներ և շեշտային գույն:"
           quaternary:
             name: "չորրորդային"
-            description: "Նավիգացիոն հղումները:"
           header_background:
             name: "վերնամասի ֆոն"
             description: "Կայքի վերնամասի ֆոնի գույնը:"
@@ -4135,6 +4187,7 @@ hy:
         file_types_list:
           add_image_types: "Նկարներ"
       badges:
+        status: Ստատուս
         title: Կրծքանշաններ
         new_badge: Նոր Կրծքանշան
         new: Նոր
@@ -4142,8 +4195,6 @@ hy:
         badge: Կրծքանշան
         display_name: Ցուցադրվող Անվանումը
         description: Նկարագրությունը
-        long_description: Ընդարձակ Նկարագրությունը
-        badge_type: Կրծքանշանի Տիպը
         badge_grouping: Խմբավորել
         badge_groupings:
           modal_title: Կրծքանշանների Խմբավորումները

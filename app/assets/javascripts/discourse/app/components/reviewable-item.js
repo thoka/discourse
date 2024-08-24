@@ -1,6 +1,6 @@
-import { getOwner } from "@ember/application";
 import Component from "@ember/component";
 import { action, set } from "@ember/object";
+import { getOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import { classify, dasherize } from "@ember/string";
 import ExplainReviewableModal from "discourse/components/modal/explain-reviewable";
@@ -173,6 +173,7 @@ export default Component.extend({
         `/review/${reviewable.id}/perform/${performableAction.server_action}?version=${version}`,
         {
           type: "PUT",
+          dataType: "json",
           data,
         }
       )

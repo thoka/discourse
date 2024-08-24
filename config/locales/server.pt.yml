@@ -185,7 +185,6 @@ pt:
       s3_backup_requires_s3_settings: "Não pode utilizar S3 como local para cópia de segurança a não ser que providencie '%{setting_name}'."
       s3_bucket_reused: "Não pode utilizar o mesmo balde para 's3_upload_bucket' e 's3_backup_bucket'. Escolha um balde diferente ou use uma localização diferente para cada balde."
       share_quote_facebook_requirements: "Você tem de definir um ID de Aplicação do Facebook para ativar a partilha de citações para o Facebook."
-      second_factor_cannot_enforce_with_socials: "Você não pode aplicar o 2FA com logins sociais ativados. Você tem primeiro de desativar o login via: %{auth_provider_names}"
       second_factor_cannot_be_enforced_with_disabled_local_login: "Não pode forçar 2FA se logins locais estiver desativado."
       second_factor_cannot_be_enforced_with_discourse_connect_enabled: "Você não pode impor 2FA se o DiscourseConnect estiver habilitado."
       local_login_cannot_be_disabled_if_second_factor_enforced: "Você não pode desabilitar o login local se 2FA for obrigatório. Desative o 2FA obrigatório antes de desativar os logins locais."
@@ -405,6 +404,8 @@ pt:
         raw: "Corpo"
       user_profile:
         bio_raw: "Sobre Mim"
+      user:
+        password: "Palavra-passe"
     errors:
       models:
         topic:
@@ -591,11 +592,7 @@ pt:
     error_staged: "Ocorreu um erro ao alterar o seu endereço de email. O endereço de email já está a ser utilizado por um utilizador temporário."
     already_done: "Pedimos desculpa, mas esta hiperligação de confirmação já não é valida. Talvez o seu email já tenha sido alterado?"
   activation:
-    action: "Clique aqui para ativar a sua conta"
     already_done: "Pedimos desculpa, esta hiperligação de confirmação já não está válida. Talvez a sua conta já esteja ativa?"
-    please_continue: "A sua nova conta foi confirmada; será redirecionado para a página principal."
-    continue_button: "Continuar para %{site_name}"
-    welcome_to: "Bem-vindo a %{site_name}!"
     approval_required: "Um moderador tem que aprovar a sua conta antes de poder aceder a este fórum. Irá receber um email quando a sua conta for aprovada!"
     missing_session: "Não conseguimos detectar se a sua conta foi criada, pelo que pedimos que confirme que tem os cookies permitidos."
     activated: "Desculpe, esta conta já foi ativada."
@@ -919,6 +916,8 @@ pt:
     web_crawlers:
       labels:
         page_views: "Exibições de Página"
+    web_hook_events_daily_aggregate:
+      xaxis: "Dia"
     suspicious_logins:
       labels:
         user: Utilizador
@@ -942,6 +941,12 @@ pt:
       labels:
         user: Utilizador
         qtt_like: Gostos Recebidos
+    topic_view_stats:
+      labels:
+        topic: Tópico
+        logged_in_views: Com Sessão Iniciada
+        anon_views: Anónimo
+        total_views: Total
   dashboard:
     problem:
       rails_env: "O seu servidor está a executar em modo %{env}."
@@ -1014,7 +1019,6 @@ pt:
     max_reply_history: "Número máximo de respostas a serem expandidas quando se expande em-resposta-a"
     topics_per_period_in_top_summary: "Número de tópicos principais mostrados no resumo padrão de tópicos principais."
     topics_per_period_in_top_page: "Número de tópicos principais mostrados em 'Mostrar Mais' tópicos principais expandido."
-    redirect_users_to_top_page: "Redirecionar automaticamente os utilizadores novos e ausentes por períodos longos para o topo da página."
     prioritize_username_in_ux: "Mostrar o nome de utilizador primeiro na página de utilizador, cartão de utilizador e publicações (quando o nome desactivado é mostrado primeiro)"
     email_token_valid_hours: "Os símbolos para palavra-passe esquecida /conta ativada são válidos por (n) horas."
     blocked_email_domains: "Uma lista delimitada de domínios de correio electrónico com os quais os utilizadores não estão autorizados a registar contas. Os subdomínios são automaticamente tratados para os domínios especificados. Os símbolos wildcard * e ? não são suportados. Exemplo: mailinator.com|trashmail.net"
@@ -1357,7 +1361,6 @@ pt:
     password_too_long: "As palavras-passe estão limitadas a 200 caracteres."
     email_too_long: "O email fornecido é demasiado longo. Nomes de caixas de email não devem ter mais que 254 caracteres, e nomes de domínio não devem ter mais que 253 caracteres."
     reserved_username: "Esse nome de utilizador não é permitido."
-    missing_user_field: "Não completou todos os campos de utilizador."
     second_factor_title: "Autenticação em Dois Passos"
     second_factor_backup_description: "Por favor introduza um dos seus códigos de reserva:"
     second_factor_toggle:
@@ -1837,6 +1840,7 @@ pt:
     Edite a primeira mensagem neste tópico para alterar os conteúdos da página %{page_name}.
   guidelines_topic:
     title: "FAQ/Orientações"
+    guidelines_title: "Orientações"
   tos_topic:
     title: "Termos de Serviço"
   privacy_topic:
@@ -2043,7 +2047,12 @@ pt:
       privacy:
         fields:
           login_required:
-            placeholder: "Privado"
+            label: "Visibilidade"
+            choices:
+              public:
+                label: "Público"
+              private:
+                label: "Privado"
       styling:
         fields:
           styling_preview:

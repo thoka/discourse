@@ -61,7 +61,7 @@ module Chat
       def remove_users_without_channel_permission(users:, category_channel_ids:)
         memberships_to_remove =
           Chat::Action::CalculateMembershipsForRemoval.call(
-            scoped_users: users,
+            scoped_users_query: users,
             channel_ids: category_channel_ids,
           )
 

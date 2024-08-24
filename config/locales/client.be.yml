@@ -72,9 +72,6 @@ be:
     share:
       topic_html: 'Тэма: <span class="topic-title">%{topicTitle}</span>'
       close: "схаваць"
-    action_codes:
-      tags_changed: "Тэгі абноўлены %{when}"
-      category_changed: "Катэгорыя абноўлена %{when}"
     emails_are_disabled: "Адпраўка паведамленняў па электроннай пошце было глабальна адключана адміністратарам. Ні адно апавяшчэнне па электроннай пошце не будзе даслана."
     back_button: "Назад"
     themes:
@@ -158,6 +155,15 @@ be:
       topic_count: "Тэмы"
       post_count: "Паведамленні"
       contact_info: "У выпадку сур'ёзных праблем з гэтым сайтам, калі ласка, звяжыцеся з намі праз %{contact_info}."
+      activities:
+        posts:
+          one: "%{formatted_number} запіс"
+          few: "%{formatted_number}запісаў"
+          many: "%{formatted_number}запісаў"
+          other: "%{formatted_number}запісаў"
+        periods:
+          last_7_days: "за апошнія 7 дзён"
+          today: "сёння"
     bookmarked:
       title: "Абранае"
       clear_bookmarks: "Выдаліць з абранага"
@@ -468,7 +474,8 @@ be:
         to: "да"
       activity_stream: "Актыўнасць"
       read: "прачытаныя"
-      preferences: "Налады"
+      preferences:
+        title: "Налады"
       feature_topic_on_profile:
         save: "Захаваць"
         clear:
@@ -536,6 +543,7 @@ be:
         set_password: "ўсталяваць пароль"
         choose_new: "Абярыце новы пароль"
         choose: "% Менш, чым {лік} хвілін таму........................................................."
+        title: "Скід пароля"
       second_factor_backup:
         regenerate: "Перагенераваць"
         disable: "Адключыць"
@@ -583,6 +591,13 @@ be:
         title: "Асацыяваныя аккаўнты"
         revoke: "ануляваць"
         cancel: "адмяніць"
+      activate_account:
+        action: "Націсніце тут, каб актываваць свой рахунак"
+        already_done: "ня На жаль, гэтая спасылка для пацверджання акаўнта больш не дзейнічае. Магчыма, ваш уліковы запіс ўжо актываваная?"
+        please_continue: "Ваш новы рахунак пацвярджаецца; Вы будзеце перанакіраваны на галоўную старонку."
+        continue_button: "Працягнуць да %{site_name}"
+        welcome_to: "Сардэчна запрашаем да сайта %{site_name}!"
+        approval_required: "Мадэратар павінен ўручную зацвердзіць новы ўліковы запіс, перш чым гэты форум. Вы атрымаеце па электроннай пошце, калі ваш рахунак будзе ўхвалены!"
       name:
         title: "Імя"
         instructions_required: "Ваша поўнае імя."
@@ -670,7 +685,6 @@ be:
         account_age_days: "Ўзрост акаўнта ў днях"
       password:
         title: "Пароль"
-        too_short: "Пароль занадта кароткі."
         common: "Гэты пароль занадта просты."
         same_as_username: "Гэты пароль занадта просты...."
         same_as_email: "Пароль ідэнтычны Вашаму email"
@@ -732,6 +746,10 @@ be:
         fixed: "загрузка Старонкі"
     modal:
       close: "схаваць"
+    form_kit:
+      reset: скінуць
+      errors:
+        required: "абавязковыя"
     close: "зачыніць"
     refresh: "абнавіць"
     home: "дома"
@@ -750,6 +768,8 @@ be:
       sign_up: "рэгістрацыя"
       hide_forever: "няма дзякуй"
     summary:
+      buttons:
+        regenerate: "Перагенераваць"
       disable: "Усе паведамленні"
     deleted_filter:
       enabled_description: "Гэтая тэма ўтрымлівае выдаленыя паведамленні, якія былі схаваныя."
@@ -768,6 +788,7 @@ be:
     search_hint: "імя карыстальніка, email або IP-адрас"
     create_account:
       header_title: "жаданы!"
+      title: "рэгістрацыя"
       failed: "Нешта пайшло не так; хутчэй за ўсё, гэтую электронную пошту ўжо зарэгістравана, паспрабуйце спасылкі Забыўся пароль"
     forgot_password:
       title: "Скід пароля"
@@ -791,6 +812,7 @@ be:
       not_activated: "Вы яшчэ не можаце ўвайсці ў сістэму. Мы ўжо накіравалі Вам ліст для актывацыі на скрыню <b> %{sentTo}"
       admin_not_allowed_from_ip_address: "Вы не можаце ўвайсці як адміністратар з гэтага IP-адрасу."
       resend_activation_email: "Націсніце тут, каб атрымаць яшчэ адзін ліст з актывацыяй."
+      activate_account: "Актываваць уліковы запіс"
       resend_title: "Актываваць зноў"
       sent_activation_email_again: "Мы накіравалі ў паштовую скрыню <b> %{currentEmail}"
       to_continue: "Калі ласка Увайдзіце"
@@ -869,7 +891,6 @@ be:
       list_item: "элемент спісу"
       help: "Markdown Editing Help"
       modal_ok: "Добра"
-      modal_cancel: "Адмяніць"
       admin_options_title: "Неабавязковыя налады персаналу для гэтай тэмы"
       composer_actions:
         reply: Адказаць
@@ -1217,6 +1238,8 @@ be:
       notify_action: "паведамленне"
     topic_map:
       title: "Рэзюмэ запісу"
+      views: "прагляды"
+      read: счытванне
     topic_statuses:
       pinned:
         title: "замацаваныя"
@@ -1431,6 +1454,8 @@ be:
               content: "тэмы"
             faq:
               content: "Пытанні і адказы"
+            guidelines:
+              content: "інструкцыі"
             groups:
               content: "Групы"
             users:
@@ -1458,6 +1483,7 @@ be:
       spreadsheet:
         about: "Аб тэме"
   admin_js:
+    settings: "Налады"
     admin:
       moderator: "Мадэратар"
       tags:
@@ -1583,6 +1609,8 @@ be:
           body: "цела"
           timestamp: "Створана"
           actions: "загалоўкі....................."
+          filter_status:
+            failed: "памылка"
       home:
         title: "дома"
       account:
@@ -1619,6 +1647,20 @@ be:
           screened_urls: "Screened URLs"
           security: "Бяспека"
           spam: "Спам"
+      config_areas:
+        about:
+          saved: "захавана!"
+        flags:
+          description: "Апісанне"
+          edit: "рэдагаваць"
+          delete: "Выдаліць"
+          form:
+            save: "захаваць"
+            name: "імя"
+            description: "Апісанне"
+            invalid_applies_to: "абавязковыя"
+            topic: "тэмы"
+            post: "паведамленняў"
       plugins:
         title: "Плагіны"
         name: "Назва"
@@ -1743,8 +1785,6 @@ be:
             name: "другасны"
           tertiary:
             name: "троесны"
-          quaternary:
-            description: "Навігацыйныя спасылкі."
           header_background:
             name: "фон загалоўка"
           header_primary:
@@ -2128,6 +2168,7 @@ be:
         file_types_list:
           add_image_types: "Выява"
       badges:
+        status: Статус
         title: значкі
         new_badge: новы значок
         new: Новыя
@@ -2135,7 +2176,6 @@ be:
         badge: значок
         display_name: Адлюстроўваецца імя
         description: апісанне
-        long_description: пашыранае апісанне
         badge_grouping: група
         save: захаваць
         delete: выдаліць

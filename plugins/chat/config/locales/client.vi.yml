@@ -35,8 +35,6 @@ vi:
       flag: "Gắn cờ"
       join: "Tham gia"
       last_visit: "lần thăm cuối"
-      summarization:
-        summarize: "Tóm tắt"
       mention_warning:
         groups:
           header:
@@ -103,6 +101,8 @@ vi:
         category_label: "Danh mục"
         history_label: "Lịch sử"
         members_label: "Các thành viên"
+      direct_messages:
+        title: "Tin nhắn"
       incoming_webhooks:
         back: "Quay lại"
         description: "Mô tả"

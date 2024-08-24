@@ -53,6 +53,7 @@ class Toolbar {
     const { siteSettings, capabilities } = opts;
     this.shortcuts = {};
     this.context = null;
+    this.handleSmartListAutocomplete = false;
 
     this.groups = [
       { group: "fontStyles", buttons: [] },
@@ -321,11 +322,41 @@ export default Component.extend(TextareaTextManipulation, {
       });
     });
 
+    if (this.popupMenuOptions && this.onPopupMenuAction) {
+      this.popupMenuOptions.forEach((popupButton) => {
+        if (popupButton.shortcut && popupButton.condition) {
+          const shortcut =
+            `${PLATFORM_KEY_MODIFIER}+${popupButton.shortcut}`.toLowerCase();
+          this._itsatrap.bind(shortcut, () => {
+            this.onPopupMenuAction(popupButton, this.newToolbarEvent());
+            return false;
+          });
+        }
+      });
+    }
+
     this._itsatrap.bind("tab", () => this.indentSelection("right"));
     this._itsatrap.bind("shift+tab", () => this.indentSelection("left"));
     this._itsatrap.bind(`${PLATFORM_KEY_MODIFIER}+shift+.`, () =>
       this.send("insertCurrentTime")
     );
+
+    // These must be bound manually because itsatrap does not support
+    // beforeinput or input events.
+    //
+    // beforeinput is better used to detect line breaks because it is
+    // fired before the actual value of the textarea is changed,
+    // and sometimes in the input event no `insertLineBreak` event type
+    // is fired.
+    //
+    // c.f. https://developer.mozilla.org/en-US/docs/Web/API/Element/beforeinput_event
+    if (this._textarea) {
+      this._textarea.addEventListener(
+        "beforeinput",
+        this.onBeforeInputSmartList
+      );
+      this._textarea.addEventListener("input", this.onInputSmartList);
+    }
 
     // disable clicking on links in the preview
     this.element
@@ -346,6 +377,21 @@ export default Component.extend(TextareaTextManipulation, {
   },
 
   @bind
+  onBeforeInputSmartList(event) {
+    // This inputType is much more consistently fired in `beforeinput`
+    // rather than `input`.
+    this.handleSmartListAutocomplete = event.inputType === "insertLineBreak";
+  },
+
+  @bind
+  onInputSmartList() {
+    if (this.handleSmartListAutocomplete) {
+      this.maybeContinueList();
+    }
+    this.handleSmartListAutocomplete = false;
+  },
+
+  @bind
   _handlePreviewLinkClick(event) {
     if (wantsNewWindow(event)) {
       return;
@@ -354,15 +400,17 @@ export default Component.extend(TextareaTextManipulation, {
     if (event.target.tagName === "A") {
       if (event.target.classList.contains("mention")) {
         this.appEvents.trigger(
-          "click.discourse-preview-user-card-mention",
-          $(event.target)
+          "d-editor:preview-click-user-card",
+          event.target,
+          event
         );
       }
 
       if (event.target.classList.contains("mention-group")) {
         this.appEvents.trigger(
-          "click.discourse-preview-group-card-mention-group",
-          $(event.target)
+          "d-editor:preview-click-group-card",
+          event.target,
+          event
         );
       }
 
@@ -383,6 +431,14 @@ export default Component.extend(TextareaTextManipulation, {
         this,
         "indentSelection"
       );
+    }
+
+    if (this._textarea) {
+      this._textarea.removeEventListener(
+        "beforeinput",
+        this.onBeforeInputSmartList
+      );
+      this._textarea.removeEventListener("input", this.onInputSmartList);
     }
 
     this._itsatrap?.destroy();
@@ -742,6 +798,25 @@ export default Component.extend(TextareaTextManipulation, {
     }
   },
 
+  newToolbarEvent(trimLeading) {
+    const selected = this.getSelected(trimLeading);
+    return {
+      selected,
+      selectText: (from, length) =>
+        this.selectText(from, length, { scroll: false }),
+      applySurround: (head, tail, exampleKey, opts) =>
+        this.applySurround(selected, head, tail, exampleKey, opts),
+      applyList: (head, exampleKey, opts) =>
+        this._applyList(selected, head, exampleKey, opts),
+      formatCode: (...args) => this.send("formatCode", args),
+      addText: (text) => this.addText(selected, text),
+      getText: () => this.value,
+      toggleDirection: () => this._toggleDirection(),
+      replaceText: (oldVal, newVal, opts) =>
+        this.replaceText(oldVal, newVal, opts),
+    };
+  },
+
   actions: {
     emoji() {
       if (this.disabled) {
@@ -756,21 +831,7 @@ export default Component.extend(TextareaTextManipulation, {
         return;
       }
 
-      const selected = this.getSelected(button.trimLeading);
-      const toolbarEvent = {
-        selected,
-        selectText: (from, length) =>
-          this.selectText(from, length, { scroll: false }),
-        applySurround: (head, tail, exampleKey, opts) =>
-          this.applySurround(selected, head, tail, exampleKey, opts),
-        applyList: (head, exampleKey, opts) =>
-          this._applyList(selected, head, exampleKey, opts),
-        formatCode: (...args) => this.send("formatCode", args),
-        addText: (text) => this.addText(selected, text),
-        getText: () => this.value,
-        toggleDirection: () => this._toggleDirection(),
-      };
-
+      const toolbarEvent = this.newToolbarEvent(button.trimLeading);
       if (button.sendAction) {
         return button.sendAction(toolbarEvent);
       } else {

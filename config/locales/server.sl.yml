@@ -263,6 +263,8 @@ sl:
         title: "Naziv"
         featured_link: "Izpostavljena povezava"
         category_id: "Kategorija"
+      user:
+        password: "Geslo"
     errors:
       models:
         user:
@@ -490,9 +492,6 @@ sl:
   associated_accounts:
     revoke_failed: "Nismo uspeli razveljaviti vaš račun pri %{provider_name}."
   activation:
-    please_continue: "Vaš nov uporabniški račun je potrjen - preusmerjeni boste na začetno stran."
-    continue_button: "Nadaljujte na %{site_name}"
-    welcome_to: "Dobrodošli na %{site_name}!"
     approval_required: "Moderator mora ročno potrditi vaš nov uporabniški račun da boste lahko dostopali do foruma. Ko bo račun potrjen boste prejeli e-sporočilo."
   reviewable_score_types:
     needs_approval:
@@ -697,9 +696,11 @@ sl:
       labels:
         user: Uporabnik
         qtt_like: Všečkov prejetih
-  dashboard:
-    problem:
-      out_of_date_themes: "Posodobitve so na voljo za naslednje prilagoditve:"
+    topic_view_stats:
+      labels:
+        topic: Tema
+        anon_views: Anonimni
+        total_views: Skupaj
   site_settings:
     disabled: "onemogočeno"
     allow_uncategorized_topics: "Dovoli ustvarjanje tem brez kategorije. OPOZORILO: Če obstajajo nerazvrščene teme, jih morate ponovno razvrstiti, preden izklopite to nastavitev."
@@ -869,7 +870,6 @@ sl:
     password_too_long: "Geslo je omejeno na 200 znakov."
     email_too_long: "Vaš e-naslov je predolg. E-naslov je lahko dolg največ 254 znakov, od tega domena največ 253 znakov."
     reserved_username: "Uporabniško ime ni dovoljeno."
-    missing_user_field: "Niste vnesli vseh uporabniških podatkov."
     auth_complete: "Avtentikacija je končana."
     click_to_continue: "Kliknite tukaj za nadaljevanje."
     second_factor_title: "Preverjanje v dveh korakih"
@@ -1682,6 +1682,7 @@ sl:
     Uredite prvi prispevek v tej temi da spremenite vsebino %{page_name} strani.
   guidelines_topic:
     title: "Pravila skupnosti"
+    guidelines_title: "Navodila"
   tos_topic:
     title: "Pogoji uporabe"
   privacy_topic:
@@ -1955,7 +1956,12 @@ sl:
       privacy:
         fields:
           login_required:
-            placeholder: "Zasebno"
+            label: "Vidljivost"
+            choices:
+              public:
+                label: "Javno"
+              private:
+                label: "Zasebno"
       styling:
         fields:
           styling_preview:

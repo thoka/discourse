@@ -21,6 +21,7 @@ import prepareFormTemplateData, {
 } from "discourse/lib/form-template-validation";
 import { shortDate } from "discourse/lib/formatter";
 import { disableImplicitInjections } from "discourse/lib/implicit-injections";
+import { wantsNewWindow } from "discourse/lib/intercept-click";
 import { buildQuote } from "discourse/lib/quote";
 import renderTags from "discourse/lib/render-tags";
 import { emojiUnescape } from "discourse/lib/text";
@@ -29,7 +30,7 @@ import {
   uploadIcon,
 } from "discourse/lib/uploads";
 import DiscourseURL from "discourse/lib/url";
-import { escapeExpression, modKeysPressed } from "discourse/lib/utilities";
+import { escapeExpression } from "discourse/lib/utilities";
 import Category from "discourse/models/category";
 import Composer, {
   CREATE_TOPIC,
@@ -136,6 +137,10 @@ export default class ComposerService extends Service {
 
   get topicController() {
     return getOwnerWithFallback(this).lookup("controller:topic");
+  }
+
+  get isOpen() {
+    return this.model?.composeState === Composer.OPEN;
   }
 
   @on("init")
@@ -645,10 +650,11 @@ export default class ComposerService extends Service {
 
   @action
   viewNewReply(event) {
-    if (event && modKeysPressed(event).length > 0) {
-      return false;
+    if (wantsNewWindow(event)) {
+      return;
     }
-    event?.preventDefault();
+
+    event.preventDefault();
     DiscourseURL.routeTo(this.get("model.createdPost.url"));
     this.close();
   }
@@ -659,7 +665,7 @@ export default class ComposerService extends Service {
   }
 
   @action
-  onPopupMenuAction(menuItem) {
+  onPopupMenuAction(menuItem, toolbarEvent) {
     // menuItem is an object with keys name & action like so: { name: "toggle-invisible, action: "toggleInvisible" }
     // `action` value can either be a string (to lookup action by) or a function to call
     this.appEvents.trigger(
@@ -667,7 +673,12 @@ export default class ComposerService extends Service {
       menuItem
     );
     if (typeof menuItem.action === "function") {
-      return menuItem.action(this.toolbarEvent);
+      // note due to the way args are passed to actions we need
+      // to treate the explicity toolbarEvent as a fallback for no
+      // event
+      // Long term we want to avoid needing this awkwardness and pass
+      // the event explicitly
+      return menuItem.action(this.toolbarEvent || toolbarEvent);
     } else {
       return (
         this.actions?.[menuItem.action]?.bind(this) || // Legacy-style contributions from themes/plugins

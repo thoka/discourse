@@ -12,6 +12,7 @@ import MessageBus from "message-bus-client";
 import { resetCache as resetOneboxCache } from "pretty-text/oneboxer";
 import QUnit, { module, skip, test } from "qunit";
 import sinon from "sinon";
+import { clearAboutPageActivities } from "discourse/components/about-page";
 import {
   cleanUpComposerUploadHandler,
   cleanUpComposerUploadMarkdownResolver,
@@ -20,7 +21,6 @@ import {
 import { clearToolbarCallbacks } from "discourse/components/d-editor";
 import { clearExtraHeaderButtons as clearExtraGlimmerHeaderButtons } from "discourse/components/header";
 import { clearExtraHeaderIcons as clearExtraGlimmerHeaderIcons } from "discourse/components/header/icons";
-import { clearBulkButtons } from "discourse/components/modal/topic-bulk-actions";
 import { resetWidgetCleanCallbacks } from "discourse/components/mount-widget";
 import { resetDecorators as resetPluginOutletDecorators } from "discourse/components/plugin-connector";
 import { resetItemSelectCallbacks } from "discourse/components/search-menu/results/assistant-item";
@@ -33,6 +33,7 @@ import { clearHTMLCache } from "discourse/helpers/custom-html";
 import { resetUsernameDecorators } from "discourse/helpers/decorate-username-selector";
 import { resetBeforeAuthCompleteCallbacks } from "discourse/instance-initializers/auth-complete";
 import { resetAdminPluginConfigNav } from "discourse/lib/admin-plugin-config-nav";
+import { rollbackAllPrepends } from "discourse/lib/class-prepend";
 import { clearPopupMenuOptions } from "discourse/lib/composer/custom-popup-menu-options";
 import { clearDesktopNotificationHandlers } from "discourse/lib/desktop-notifications";
 import { cleanUpHashtagTypeClasses } from "discourse/lib/hashtag-type-registry";
@@ -53,6 +54,7 @@ import PreloadStore from "discourse/lib/preload-store";
 import { clearTopicFooterButtons } from "discourse/lib/register-topic-footer-button";
 import { clearTopicFooterDropdowns } from "discourse/lib/register-topic-footer-dropdown";
 import { clearTagsHtmlCallbacks } from "discourse/lib/render-tags";
+import { resetLogSearchLinkClickedCallbacks } from "discourse/lib/search";
 import { clearAdditionalAdminSidebarSectionLinks } from "discourse/lib/sidebar/admin-sidebar";
 import { resetDefaultSectionLinks as resetTopicsSectionLinks } from "discourse/lib/sidebar/custom-community-section-links";
 import { resetSidebarPanels } from "discourse/lib/sidebar/custom-sections";
@@ -65,6 +67,7 @@ import {
   resetHighestReadCache,
   setTopicList,
 } from "discourse/lib/topic-list-tracker";
+import { resetTransformers } from "discourse/lib/transformer";
 import { clearRewrites } from "discourse/lib/url";
 import { resetUserMenuTabs } from "discourse/lib/user-menu/tab";
 import {
@@ -99,6 +102,7 @@ import { cloneJSON, deepMerge } from "discourse-common/lib/object";
 import { clearResolverOptions } from "discourse-common/resolver";
 import I18n from "discourse-i18n";
 import { _clearSnapshots } from "select-kit/components/composer-actions";
+import { setupFormKitAssertions } from "./form-kit-assertions";
 import { cleanupTemporaryModuleRegistrations } from "./temporary-module-helper";
 
 export function currentUser() {
@@ -234,6 +238,7 @@ export function testCleanup(container, app) {
   clearExtraHeaderIcons();
   clearExtraHeaderButtons();
   resetOnKeyUpCallbacks();
+  resetLogSearchLinkClickedCallbacks();
   resetItemSelectCallbacks();
   resetUserMenuTabs();
   resetLinkLookup();
@@ -241,11 +246,13 @@ export function testCleanup(container, app) {
   resetMentions();
   cleanupTemporaryModuleRegistrations();
   cleanupCssGeneratorTags();
-  clearBulkButtons();
   resetBeforeAuthCompleteCallbacks();
   clearPopupMenuOptions();
   clearAdditionalAdminSidebarSectionLinks();
   resetAdminPluginConfigNav();
+  resetTransformers();
+  rollbackAllPrepends();
+  clearAboutPageActivities();
 }
 
 function cleanupCssGeneratorTags() {
@@ -443,7 +450,7 @@ export function controllerFor(controller, model) {
   deprecated(
     'controllerFor is deprecated. Use the standard `getOwner(this).lookup("controller:NAME")` instead',
     {
-      id: "controller-for",
+      id: "discourse.controller-for",
       since: "3.0.0.beta14",
     }
   );
@@ -500,6 +507,8 @@ QUnit.assert.containsInstance = function (collection, klass, message) {
     message,
   });
 };
+
+setupFormKitAssertions();
 
 export async function selectDate(selector, date) {
   const elem = document.querySelector(selector);

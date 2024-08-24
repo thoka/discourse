@@ -1,3 +1,8 @@
+.admin-config-area {
+  .btn-back {
+    margin-bottom: 1em;
+  }
+}
 .admin-config-area-card {
   padding: 20px;
   border: 1px solid var(--primary-low);
@@ -21,5 +26,40 @@
     background-color: var(--danger-low);
     font-size: var(--font-down-1);
     padding: 10px 10px;
+  }
+  &__control-group-horizontal {
+    display: flex;
+    margin-bottom: 18px;
+    label {
+      margin-right: 1em;
+    }
+  }
+}
+
+.admin-config-page {
+  &__main-area {
+    .admin-detail {
+      padding-top: 15px;
+      border-left: 0;
+      padding-left: 0;
+      width: 100%;
+    }
+  }
+}
+
+.admin-config-area {
+  &__settings {
+    .admin-site-settings-filter-controls {
+      margin-bottom: 1em;
+    }
+
+    .setting-label {
+      margin-left: 18px;
+    }
+  }
+
+  &__empty-list {
+    padding: 1em;
+    border: 1px solid var(--primary-low);
   }
 }

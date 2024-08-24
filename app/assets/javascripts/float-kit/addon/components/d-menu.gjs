@@ -1,6 +1,6 @@
 import Component from "@glimmer/component";
-import { getOwner } from "@ember/application";
 import { concat } from "@ember/helper";
+import { getOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import { modifier } from "ember-modifier";
 import { and } from "truth-helpers";
@@ -110,7 +110,6 @@ export default class DMenu extends Component {
           @trapTab={{this.options.trapTab}}
           @mainClass={{concatClass
             "fk-d-menu"
-            "fk-d-menu__content"
             (concat this.options.identifier "-content")
             @class
             @contentClass

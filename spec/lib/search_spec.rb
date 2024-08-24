@@ -1255,6 +1255,41 @@ RSpec.describe Search do
       )
     end
 
+    it "allow searching for multiple categories" do
+      category2 = Fabricate(:category, name: "abc")
+      topic2 = Fabricate(:topic, category: category2)
+      post2 = Fabricate(:post, topic: topic2, raw: "snow monkey")
+
+      category3 = Fabricate(:category, name: "def")
+      topic3 = Fabricate(:topic, category: category3)
+      post3 = Fabricate(:post, topic: topic3, raw: "snow monkey")
+
+      search = Search.execute("monkey category:abc,def")
+      expect(search.posts.map(&:id)).to contain_exactly(post2.id, post3.id)
+
+      search = Search.execute("monkey categories:abc,def")
+      expect(search.posts.map(&:id)).to contain_exactly(post2.id, post3.id)
+
+      search = Search.execute("monkey categories:xxxxx,=abc,=def")
+      expect(search.posts.map(&:id)).to contain_exactly(post2.id, post3.id)
+
+      search = Search.execute("snow category:abc,#{category.id}")
+      expect(search.posts.map(&:id)).to contain_exactly(post.id, post2.id)
+
+      child_category = Fabricate(:category, parent_category: category2)
+      child_topic = Fabricate(:topic, category: child_category)
+      child_post = Fabricate(:post, topic: child_topic, raw: "snow monkey")
+
+      search = Search.execute("monkey category:zzz,nnn,=abc,mmm")
+      expect(search.posts.map(&:id)).to contain_exactly(post2.id)
+
+      search =
+        Search.execute(
+          "monkey category:0007847874874874874748749398384398439843984938439843948394834984934839483984983498394834983498349834983,zzz,nnn,abc,mmm",
+        )
+      expect(search.posts.map(&:id)).to contain_exactly(post2.id, child_post.id)
+    end
+
     it "should return the right categories" do
       search = Search.execute("monkey")
 
@@ -2141,6 +2176,18 @@ RSpec.describe Search do
       expect(Search.execute("Topic max_views:150").posts.map(&:id)).to eq([post.id])
     end
 
+    it "can order by likes" do
+      raw = "Foo bar lorem ipsum"
+      topic = Fabricate(:topic)
+      post1 = Fabricate(:post, topic:, raw:, like_count: 1)
+      post2 = Fabricate(:post, topic:, raw:, like_count: 2)
+      post3 = Fabricate(:post, topic:, raw:, like_count: 3)
+
+      expect(Search.execute("topic:#{topic.id} bar order:likes").posts.map(&:id)).to eq(
+        [post3, post2, post1].map(&:id),
+      )
+    end
+
     it "can search for terms with dots" do
       post = Fabricate(:post, raw: "Will.2000 Will.Bob.Bill...")
       expect(Search.execute("bill").posts.map(&:id)).to eq([post.id])
@@ -2491,6 +2538,42 @@ RSpec.describe Search do
 
       results = Search.execute("in:title status:open Discourse")
       expect(results.posts.length).to eq(1)
+    end
+  end
+
+  describe "include:invisible / include:unlisted" do
+    it "allows including invisible topics in the results for users that can see unlisted topics" do
+      topic = Fabricate(:topic, title: "I am testing a search", visible: false)
+      post = Fabricate(:post, topic: topic, raw: "this is the first post", post_number: 1)
+
+      results = Search.execute("testing include:invisible", guardian: Guardian.new(admin))
+      expect(results.posts.map(&:id)).to eq([post.id])
+
+      results =
+        Search.execute(
+          "testing include:unlisted",
+          guardian: Guardian.new(Fabricate(:trust_level_4)),
+        )
+      expect(results.posts.map(&:id)).to eq([post.id])
+
+      results = Search.execute("testing", guardian: Guardian.new(admin))
+      expect(results.posts).to eq([])
+    end
+
+    it "won't work for users that can't see unlisted topics" do
+      topic = Fabricate(:topic, title: "I am testing a search", visible: false)
+      _post = Fabricate(:post, topic: topic, raw: "this is the first post", post_number: 1)
+
+      results =
+        Search.execute("testing include:invisible", guardian: Guardian.new(Fabricate(:user)))
+      expect(results.posts).to eq([])
+
+      results =
+        Search.execute(
+          "testing include:unlisted",
+          guardian: Guardian.new(Fabricate(:trust_level_3)),
+        )
+      expect(results.posts).to eq([])
     end
   end
 

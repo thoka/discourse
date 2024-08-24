@@ -871,7 +871,7 @@ RSpec.describe Chat::UpdateMessage do
     end
 
     before do
-      SiteSetting.chat_editing_grace_period = 10
+      SiteSetting.chat_editing_grace_period = 30
       SiteSetting.chat_editing_grace_period_max_diff_low_trust = 10
       SiteSetting.chat_editing_grace_period_max_diff_high_trust = 40
 
@@ -963,7 +963,7 @@ RSpec.describe Chat::UpdateMessage do
       end
 
       it "creates a revision when over (n) seconds" do
-        freeze_time 30.seconds.from_now
+        freeze_time 40.seconds.from_now
         message_1.update!(message: "welcome")
 
         expect { result }.to change { Chat::MessageRevision.count }.by(1)

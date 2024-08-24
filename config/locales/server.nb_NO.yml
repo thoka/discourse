@@ -331,6 +331,8 @@ nb_NO:
         raw: "Body"
       user_profile:
         bio_raw: "Om meg"
+      user:
+        password: "Passord"
     errors:
       models:
         topic:
@@ -513,11 +515,7 @@ nb_NO:
   associated_accounts:
     revoke_failed: "Klarte ikke å oppheve kontotilknytningen til %{provider_name}."
   activation:
-    action: "Klikk her for å aktivere din konto"
     already_done: "Beklager, denne bekreftelseslenken er ikke lenger gyldig. Kanskje er kontoen din allerede aktivert?"
-    please_continue: "Din nye konto er registrert; du vil bli videresendt til hjemmesiden. "
-    continue_button: "Fortsett til %{site_name}"
-    welcome_to: "Velkommen til %{site_name}!"
     approval_required: "En moderator må manuelt godkjenne kontoen din før du får tilgang til forumet. Du vil motta en e-post når kontoen din er godkjent!"
     missing_session: "Vi klarer ikke å se om kontoen din ble laget, vennligst sjekk om cookies/kapsler er aktivert i nettleseren."
     activated: "Beklager, denne kontoen er allerede aktivert."
@@ -874,6 +872,8 @@ nb_NO:
       labels:
         user_agent: "Brukeragent"
         page_views: "Sidevisninger"
+    web_hook_events_daily_aggregate:
+      xaxis: "Dag"
     suspicious_logins:
       labels:
         user: Bruker
@@ -898,6 +898,12 @@ nb_NO:
       labels:
         user: Bruker
         qtt_like: Likes mottatt
+    topic_view_stats:
+      labels:
+        topic: Emne
+        logged_in_views: Innlogget
+        anon_views: Anonym
+        total_views: Total
   dashboard:
     problem:
       host_names: "Din config/database.yml-fil bruker forvalgt lokalvert-vertsnavn. Oppdater det til å bruke din sides vertsnavn."
@@ -905,7 +911,6 @@ nb_NO:
       ram: "Serveren din kjører med mindre enn 1 GB med minne. Minst 1 GB RAM er anbefalt."
       subfolder_ends_in_slash: "Oppsettet av undermappe er feil; variablen DISCOURSE_RELATIVE_URL_ROOT slutter med en skråstrek."
       missing_mailgun_api_key: "Serveren er konfigurert til å sende e-post via Mailgun men du har ikke satt API-nøkkelen som brukes til å verifisere webhook meldinger."
-      out_of_date_themes: "Oppdateringer er tilgjengelig for følgende drakter:"
   site_settings:
     disabled: "deaktivert"
     censored_words: "Ord som automatisk vil bli erstattet med &#9632;&#9632;&#9632;&#9632;"
@@ -1069,7 +1074,6 @@ nb_NO:
     new_registrations_disabled: "Nye kontoregistreringer tillates ikke per nå."
     password_too_long: "Passord er begrenset til 200 tegn."
     reserved_username: "Det brukernavnet tillates ikke."
-    missing_user_field: "Du har ikke fylt ut alle brukerfeltene."
     second_factor_title: "To-faktor autentisering"
     second_factor_backup_description: "Vennligst skriv en av reservekodene dine:"
     second_factor_toggle:
@@ -1191,6 +1195,7 @@ nb_NO:
     rate_limit_error: "Innlegg kan lastes ned en gang om dagen, prøv igjen i morgen."
   guidelines_topic:
     title: "O-S-S/retningslinjer"
+    guidelines_title: "Retningslinjer"
   tos_topic:
     title: "Bruksvilkår"
   privacy_topic:
@@ -1291,7 +1296,12 @@ nb_NO:
       privacy:
         fields:
           login_required:
-            placeholder: "Privat"
+            label: "Synlighet"
+            choices:
+              public:
+                label: "Offentlig"
+              private:
+                label: "Privat"
       styling:
         fields:
           styling_preview:

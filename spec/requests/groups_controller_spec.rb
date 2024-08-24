@@ -2276,7 +2276,7 @@ RSpec.describe GroupsController do
         title: I18n.t("groups.request_membership_pm.title", group_name: group.name),
         raw: "*British accent* Please, sir, may I have some group?",
         archetype: Archetype.private_message,
-        target_usernames: "#{user.username}",
+        target_usernames: user.username,
         skip_validations: true,
       ).create!
 
@@ -2312,15 +2312,10 @@ RSpec.describe GroupsController do
       # send the initial request PM
       PostCreator.new(
         other_user,
-        title:
-          (
-            I18n.t "groups.request_membership_pm.title",
-                   group_name: group.name,
-                   locale: other_user.locale
-          ),
+        title: I18n.t("groups.request_membership_pm.title", group_name: group.name, locale: "fr"),
         raw: "*French accent* Please let me in!",
         archetype: Archetype.private_message,
-        target_usernames: "#{user.username}",
+        target_usernames: user.username,
         skip_validations: true,
       ).create!
 
@@ -2345,6 +2340,34 @@ RSpec.describe GroupsController do
       expect(post.raw).to eq(
         I18n.t("groups.request_accepted_pm.body", group_name: group.name, locale: "fr").strip,
       )
+    end
+
+    it "works even though the user has no locale" do
+      other_user.update!(locale: "")
+
+      GroupRequest.create!(group: group, user: other_user)
+
+      # send the initial request PM
+      PostCreator.new(
+        other_user,
+        title: I18n.t("groups.request_membership_pm.title", group_name: group.name),
+        raw: "*Alien accent* Can I join?!",
+        archetype: Archetype.private_message,
+        target_usernames: user.username,
+        skip_validations: true,
+      ).create!
+
+      topic = Topic.last
+
+      expect {
+        put "/groups/#{group.id}/handle_membership_request.json",
+            params: {
+              user_id: other_user.id,
+              accept: true,
+            }
+      }.to_not change { Topic.count }
+
+      expect(topic.posts.count).to eq(2)
     end
   end
 
@@ -2743,6 +2766,7 @@ RSpec.describe GroupsController do
     let(:params) do
       {
         protocol: protocol,
+        ssl_mode: ssl_mode,
         ssl: ssl,
         port: port,
         host: host,
@@ -2761,7 +2785,8 @@ RSpec.describe GroupsController do
       let(:username) { "test@gmail.com" }
       let(:password) { "password" }
       let(:domain) { nil }
-      let(:ssl) { true }
+      let(:ssl_mode) { Group.smtp_ssl_modes[:starttls] }
+      let(:ssl) { nil }
       let(:host) { "smtp.somemailsite.com" }
       let(:port) { 587 }
 
@@ -2776,7 +2801,7 @@ RSpec.describe GroupsController do
           post "/groups/#{group.id}/test_email_settings.json", params: params
           expect(response.status).to eq(422)
           expect(response.parsed_body["errors"]).to include(
-            I18n.t("email_settings.smtp_authentication_error"),
+            I18n.t("email_settings.smtp_authentication_error", message: "Invalid credentials"),
           )
         end
       end
@@ -2788,11 +2813,12 @@ RSpec.describe GroupsController do
       let(:password) { "password" }
       let(:domain) { nil }
       let(:ssl) { true }
+      let(:ssl_mode) { nil }
       let(:host) { "imap.somemailsite.com" }
       let(:port) { 993 }
 
       it "validates with the correct TLS settings" do
-        EmailSettingsValidator.expects(:validate_imap).with(has_entry(ssl: true))
+        EmailSettingsValidator.expects(:validate_imap).with(has_entries(ssl: true))
         post "/groups/#{group.id}/test_email_settings.json", params: params
         expect(response.status).to eq(200)
       end
@@ -2821,6 +2847,7 @@ RSpec.describe GroupsController do
       let(:username) { "test@gmail.com" }
       let(:password) { "password" }
       let(:ssl) { true }
+      let(:ssl_mode) { nil }
 
       context "when the protocol is not accepted" do
         let(:protocol) { "sigma" }

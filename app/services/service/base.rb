@@ -139,13 +139,15 @@ module Service
 
       def call(instance, context)
         context[name] = super
-        raise ArgumentError, "Model not found" if !optional && context[name].blank?
+        if !optional && (!context[name] || context[name].try(:empty?))
+          raise ArgumentError, "Model not found"
+        end
         if context[name].try(:invalid?)
           context[result_key].fail(invalid: true)
           context.fail!
         end
       rescue ArgumentError => exception
-        context[result_key].fail(exception: exception)
+        context[result_key].fail(exception: exception, not_found: true)
         context.fail!
       end
     end
@@ -177,7 +179,7 @@ module Service
         context[contract_name] = contract
         context[result_key] = Context.build
         if contract.invalid?
-          context[result_key].fail(errors: contract.errors)
+          context[result_key].fail(errors: contract.errors, parameters: contract.raw_attributes)
           context.fail!
         end
       end
@@ -218,6 +220,10 @@ module Service
           include ActiveModel::Attributes
           include ActiveModel::AttributeMethods
           include ActiveModel::Validations::Callbacks
+
+          def raw_attributes
+            @attributes.values_before_type_cast
+          end
         end
     end
 

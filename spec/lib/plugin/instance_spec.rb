@@ -105,6 +105,9 @@ TEXT
         :likes_7_days,
         :likes_30_days,
         :likes_count,
+        :participating_users_last_day,
+        :participating_users_7_days,
+        :participating_users_30_days,
       )
     end
 
@@ -183,6 +186,7 @@ TEXT
 
       class TroutPlugin < Plugin::Instance
         attr_accessor :enabled
+
         def enabled?
           @enabled
         end
@@ -277,6 +281,42 @@ TEXT
         expect(DiscoursePluginRegistry.build_html("test:html", ctx)).to eq("")
         @plugin.enabled = true
         expect(DiscoursePluginRegistry.build_html("test:html", ctx)).to eq("<div>hello</div>")
+      end
+
+      it "can act when the plugin is enabled/disabled" do
+        plugin = Plugin::Instance.new
+        plugin.enabled_site_setting(:discourse_sample_plugin_enabled)
+
+        SiteSetting.discourse_sample_plugin_enabled = false
+        expect(plugin.enabled?).to eq(false)
+
+        begin
+          expected_old_value = expected_new_value = nil
+
+          event_handler =
+            plugin.on_enabled_change do |old_value, new_value|
+              expected_old_value = old_value
+              expected_new_value = new_value
+            end
+
+          SiteSetting.discourse_sample_plugin_enabled = true
+          expect(expected_old_value).to eq(false)
+          expect(expected_new_value).to eq(true)
+
+          SiteSetting.discourse_sample_plugin_enabled = false
+          expect(expected_old_value).to eq(true)
+          expect(expected_new_value).to eq(false)
+
+          # ensures only the setting specified in `enabled_site_setting` is tracked
+          expected_old_value = expected_new_value = nil
+          plugin.enabled_site_setting(:discourse_sample_plugin_enabled_alternative)
+          SiteSetting.discourse_sample_plugin_enabled = true
+          expect(expected_old_value).to be_nil
+          expect(expected_new_value).to be_nil
+        ensure
+          # clear the underlying DiscourseEvent
+          DiscourseEvent.off(:site_setting_changed, &event_handler)
+        end
       end
     end
   end
@@ -523,9 +563,6 @@ TEXT
       expect(DiscoursePluginRegistry.locales).to have_key(:foo_BAR)
 
       expect(locale[:fallbackLocale]).to be_nil
-      expect(locale[:message_format]).to eq(
-        ["foo_BAR", "#{plugin_path}/lib/javascripts/locale/message_format/foo_BAR.js"],
-      )
       expect(locale[:moment_js]).to eq(
         ["foo_BAR", "#{plugin_path}/lib/javascripts/locale/moment_js/foo_BAR.js"],
       )
@@ -536,9 +573,6 @@ TEXT
 
       expect(Rails.configuration.assets.precompile).to include("locales/foo_BAR.js")
 
-      expect(
-        JsLocaleHelper.find_message_format_locale(["foo_BAR"], fallback_to_english: true),
-      ).to eq(locale[:message_format])
       expect(JsLocaleHelper.find_moment_locale(["foo_BAR"])).to eq(locale[:moment_js])
       expect(JsLocaleHelper.find_moment_locale(["foo_BAR"], timezone_names: true)).to eq(
         locale[:moment_js_timezones],
@@ -552,9 +586,6 @@ TEXT
       expect(DiscoursePluginRegistry.locales).to have_key(:tup)
 
       expect(locale[:fallbackLocale]).to eq("pt_BR")
-      expect(locale[:message_format]).to eq(
-        ["pt_BR", "#{Rails.root}/lib/javascripts/locale/pt_BR.js"],
-      )
       expect(locale[:moment_js]).to eq(
         ["pt-br", "#{Rails.root}/vendor/assets/javascripts/moment-locale/pt-br.js"],
       )
@@ -565,9 +596,6 @@ TEXT
 
       expect(Rails.configuration.assets.precompile).to include("locales/tup.js")
 
-      expect(JsLocaleHelper.find_message_format_locale(["tup"], fallback_to_english: true)).to eq(
-        locale[:message_format],
-      )
       expect(JsLocaleHelper.find_moment_locale(["tup"])).to eq(locale[:moment_js])
     end
 
@@ -578,9 +606,6 @@ TEXT
       expect(DiscoursePluginRegistry.locales).to have_key(:tlh)
 
       expect(locale[:fallbackLocale]).to be_nil
-      expect(locale[:message_format]).to eq(
-        ["tlh", "#{plugin_path}/lib/javascripts/locale/message_format/tlh.js"],
-      )
       expect(locale[:moment_js]).to eq(
         ["tlh", "#{Rails.root}/vendor/assets/javascripts/moment-locale/tlh.js"],
       )
@@ -588,9 +613,6 @@ TEXT
 
       expect(Rails.configuration.assets.precompile).to include("locales/tlh.js")
 
-      expect(JsLocaleHelper.find_message_format_locale(["tlh"], fallback_to_english: true)).to eq(
-        locale[:message_format],
-      )
       expect(JsLocaleHelper.find_moment_locale(["tlh"])).to eq(locale[:moment_js])
     end
 
@@ -602,7 +624,6 @@ TEXT
     %w[
       config/locales/client.foo_BAR.yml
       config/locales/server.foo_BAR.yml
-      lib/javascripts/locale/message_format/foo_BAR.js
       lib/javascripts/locale/moment_js/foo_BAR.js
       assets/locales/foo_BAR.js.erb
     ].each do |path|
@@ -618,25 +639,60 @@ TEXT
     end
   end
 
-  describe "#register_reviewable_types" do
-    it "Overrides the existing Reviewable types adding new ones" do
-      current_types = Reviewable.types
-      new_type_class = Class
+  describe "#register_reviewable_type" do
+    subject(:register_reviewable_type) { plugin_instance.register_reviewable_type(new_type) }
 
-      Plugin::Instance.new.register_reviewable_type new_type_class
+    context "when the provided class inherits from `Reviewable`" do
+      let(:new_type) { Class.new(Reviewable) }
 
-      expect(Reviewable.types).to match_array(current_types << new_type_class.name)
+      it "adds the provided class to the existing types" do
+        expect { register_reviewable_type }.to change { Reviewable.types.size }.by(1)
+        expect(Reviewable.types).to include(new_type)
+      end
+
+      context "when the plugin is disabled" do
+        before do
+          register_reviewable_type
+          plugin_instance.stubs(:enabled?).returns(false)
+        end
+
+        it "does not return the new type" do
+          expect(Reviewable.types).not_to be_blank
+          expect(Reviewable.types).not_to include(new_type)
+        end
+      end
+    end
+
+    context "when the provided class does not inherit from `Reviewable`" do
+      let(:new_type) { Class }
+
+      it "does not add the provided class to the existing types" do
+        expect { register_reviewable_type }.not_to change { Reviewable.types }
+        expect(Reviewable.types).not_to be_blank
+      end
     end
   end
 
   describe "#extend_list_method" do
-    it "Overrides the existing list appending new elements" do
-      current_list = Reviewable.types
-      new_element = Class.name
+    subject(:extend_list) do
+      plugin_instance.extend_list_method(UserHistory, :staff_actions, %i[new_action another_action])
+    end
 
-      Plugin::Instance.new.extend_list_method Reviewable, :types, [new_element]
+    it "adds the provided values to the provided method on the provided class" do
+      expect { extend_list }.to change { UserHistory.staff_actions.size }.by(2)
+      expect(UserHistory.staff_actions).to include(:new_action, :another_action)
+    end
 
-      expect(Reviewable.types).to match_array(current_list << new_element)
+    context "when the plugin is disabled" do
+      before do
+        extend_list
+        plugin_instance.stubs(:enabled?).returns(false)
+      end
+
+      it "does not return the provided values" do
+        expect(UserHistory.staff_actions).not_to be_blank
+        expect(UserHistory.staff_actions).not_to include(:new_action, :another_action)
+      end
     end
   end
 

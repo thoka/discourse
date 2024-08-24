@@ -52,11 +52,6 @@ sv:
   remove_posts_deleted_by_author: "Borttaget av författaren"
   redirect_warning: "Vi kunde inte verifiera att länken som du valt faktiskt har lagts upp i forumet. Välj länken nedan om du vill fortsätta ändå."
   on_another_topic: "I ett annat ämne"
-  topic_category_changed: "Från %{from} till %{to}"
-  topic_tag_changed:
-    added_and_removed: "Lade till %{added} och tog bort %{removed}"
-    added: "Lade till %{added}"
-    removed: "Tog bort %{removed}"
   inline_oneboxer:
     topic_page_title_post_number: "Nr %{post_number}"
     topic_page_title_post_number_by_user: "Nr %{post_number} av %{username}"
@@ -234,7 +229,6 @@ sv:
       secure_uploads_requirements: "S3-uppladdningar och S3 ACL:er måste ha aktiverats innan säkra uppladdningar aktiveras."
       s3_use_acls_requirements: "Du måste ha S3 ACL:er aktiverade när säkra uppladdningar är aktiverade."
       share_quote_facebook_requirements: "Du måste ange ett Facebook-app-id för att möjliggöra delning av citat på Facebook."
-      second_factor_cannot_enforce_with_socials: "Du kan inte tvinga 2FA med sociala inloggningar aktiverade. Du måste först inaktivera inloggning via: %{auth_provider_names}"
       second_factor_cannot_be_enforced_with_disabled_local_login: "Du kan inte genomdriva 2FA om lokala inloggningar är inaktiverade."
       second_factor_cannot_be_enforced_with_discourse_connect_enabled: "Du kan inte genomdriva 2FA om DiscourseConnect har aktiverats."
       local_login_cannot_be_disabled_if_second_factor_enforced: "Du kan inte inaktivera lokal inloggning om 2FA har genomdrivits. Inaktivera genomdriven 2FA innan du inaktiverar lokala inloggningar."
@@ -563,6 +557,8 @@ sv:
         raw: "Inlägg"
       user_profile:
         bio_raw: "Om mig"
+      user:
+        password: "Lösenord"
     errors:
       models:
         topic:
@@ -845,11 +841,7 @@ sv:
     revoke_failed: "Misslyckades att återkalla ditt konto hos %{provider_name}."
     connected: "(kopplad)"
   activation:
-    action: "Klicka här för att aktivera ditt konto"
     already_done: "Tyvärr är denna kontoaktiveringslänk inte längre giltig. Kanske har ditt konto redan aktiverats?"
-    please_continue: "Ditt nya konto har bekräftats; du kommer att skickas till startsidan."
-    continue_button: "Fortsätt till %{site_name}"
-    welcome_to: "Välkommen till %{site_name}!"
     approval_required: "En moderator måste manuellt godkänna ditt nya konto innan du kan komma åt detta forum. Du kommer få e-post när ditt konto har godkänts!"
     missing_session: "Vi kan inte se om ditt konto har skapats, se till att du har aktiverat cookies."
     activated: "Detta konto har redan aktiverats."
@@ -919,8 +911,6 @@ sv:
     pop3_authentication_error: "Det uppstod ett problem med de angivna POP3-autentiseringsuppgifterna. Kontrollera användarnamn och lösenord och försök igen."
     imap_authentication_error: "Det uppstod ett problem med de angivna IMAP-autentiseringsuppgifterna. Kontrollera användarnamn och lösenord och försök igen."
     imap_no_response_error: "Det uppstod ett fel vid kommunikation med IMAP-servern. %{message}"
-    smtp_authentication_error: "Det uppstod ett problem med de angivna SMTP-autentiseringsuppgifterna. Kontrollera användarnamn och lösenord och försök igen."
-    authentication_error_gmail_app_password: 'Programspecifikt lösenord krävs. Läs mer i <a target="_blank" href="https://support.google.com/accounts/answer/185833">den här Google Hjälp-artikeln</a>'
     smtp_server_busy_error: "SMTP-servern är för närvarande upptagen. Försök igen senare."
     smtp_unhandled_error: "Det uppstod ett ohanterat fel vid kommunikation med SMTP-servern. %{message}"
     imap_unhandled_error: "Det uppstod ett ohanterat fel vid kommunikation med IMAP-servern. %{message}"
@@ -1342,6 +1332,8 @@ sv:
         user_agent: "Användaragenter"
         page_views: "Sidvisningar"
       description: "Lista över användaragenter för sökrobotar, sorterad efter sidvisningar."
+    web_hook_events_daily_aggregate:
+      xaxis: "Dag"
     suspicious_logins:
       title: "Misstänkta inloggningar"
       labels:
@@ -1394,6 +1386,12 @@ sv:
         user: Användare
         qtt_like: Mottagna gillningar
       description: "Topp 10-användare som har fått gillningar från ett brett spektrum av personer."
+    topic_view_stats:
+      labels:
+        topic: Ämne
+        logged_in_views: Inloggad
+        anon_views: Anonym
+        total_views: Totalt
   dashboard:
     problem:
       rails_env: "Din server kör i %{env}-läge."
@@ -1402,8 +1400,6 @@ sv:
       ram: "Din server körs med mindre än 1 GB minne. Det rekommenderas minst 1 GB minne."
       subfolder_ends_in_slash: "Inställningarna för dina undermappar är inte korrekt; DISCOURSE_RELATIV_URL_ROOT slutar med ett snedstreck."
       missing_mailgun_api_key: "Servern är konfigurerad att skicka e-post via Mailgun, men du har inte tillhandahållit en API-nyckel som ska användas för att verifiera webhook-meddelandena."
-      out_of_date_themes: "Uppdateringar finns tillgängliga för följande teman:"
-      unreachable_themes: "Vi kunde inte kontrollera uppdateringar för följande teman:"
       google_analytics_version: "Din Discourse använder för närvarande Google Analytics 3, som inte längre kommer att stödjas efter juli 2023. <a href='https://meta.discourse.org/t/260498'>Uppgradera till Google Analytics 4</a> nu för att fortsätta att få värdefulla insikter i, och analyser av, din webbplats prestanda."
     back_from_logster_text: "Tillbaka till webbplatsen"
   site_settings:
@@ -1500,7 +1496,6 @@ sv:
     email_custom_headers: "En lista över anpassade e-postrubriker, avgränsad med vertikalstreck"
     email_subject: "Anpassningsbart ämnesformat för vanliga e-postmeddelanden. Se <a href='https://meta.discourse.org/t/customize-subject-format-for-standard-emails/20801' target='_blank'>https://meta.discourse.org/t/customize-subject-format-for-standard-emails/20801</a>"
     detailed_404: "Ger mer information till användarna om varför de inte kan komma åt ett visst ämne. Notera: Det här är mindre säkert eftersom användare vet om att en URL länkar till ett giltigt ämne."
-    enforce_second_factor: "Kräv att användare aktiverar tvåfaktorsautentisering innan de kan komma åt Discourse UI. Välj \"alla\" för att tillämpa det för alla användare. Välj \"personal\" för att tillämpa det endast för personalanvändare. Den här inställningen påverkar inte autentiseringen av API eller 'DiscourseConnect provider'."
     force_https: "Tvinga din webbplats att endast använda HTTPS. VARNING: bocka INTE i det här innan du kan verifiera att HTTPS verkligen fungerar överallt! Har du kontrollerat din CDN, alla sociala inloggningar och alla externa logotyper/beroenden för att säkerställa att de alla också är HTTPS-kompatibla?"
     summary_score_threshold: "Minsta poäng för att ett inlägg ska inkluderas i 'Sammanfatta det här ämnet'"
     summary_posts_required: "Minsta antal inlägg i ett ämne innan 'Sammanfatta det här ämnet' möjliggörs. Ändringar i denna inställning kommer att genomföras retroaktivt inom en vecka."
@@ -1590,7 +1585,6 @@ sv:
     max_reply_history: "Högsta antal svar för att utvidga vid utvidgning av som-svar-till"
     topics_per_period_in_top_summary: "Standardinställning för antal toppämnen som visas i toppämnessammanfattningen."
     topics_per_period_in_top_page: "Antal toppämnen som visas i den utvidgade 'Visa mer'-toppämnen."
-    redirect_users_to_top_page: "Omdirigera automatiskt nya och långtidsfrånvarande användare till början av sidan."
     top_page_default_timeframe: "Standardtidsperiod i början av sidan för anonyma användare (justeras automatiskt för inloggade användare baserat på deras senaste besök)."
     prioritize_username_in_ux: "Använd användarnamn först på användarsidan, användarkortet och inlägg (om detta inaktiverats så visas namnet först)"
     enable_rich_text_paste: "Aktivera automatisk HTML vid Markdown-konvertering när du klistrar in text i redigeraren. (Experimentell)"
@@ -1670,11 +1664,9 @@ sv:
     s3_endpoint: "Ändpunkten kan ändras för att säkerhetskopiera till en S3-kompatibel tjänst som DigitalOcean Spaces eller Minio. VARNING: Lämna tomt om du använder AWS S3."
     s3_configure_tombstone_policy: "Aktivera automatisk raderingspolicy för Tombstone uppladdningar. VIKTIGT: Om det är inaktiverat kommer inget utrymme att återtas efter att överföringar har tagits bort."
     s3_disable_cleanup: "Förhindra borttagning av äldre säkerhetskopior från S3 när det finns fler säkerhetskopior än högsta tillåtna."
-    enable_s3_inventory: "Generera rapporter och verifiera uppladdningar med Amazon S3 inventering. VIKTIGT: kräver giltiga S3-referenser (både åtkomstnyckel-ID och hemlig åtkomstnyckel)."
     s3_use_acls: "AWS rekommenderar att inte använda ACL:er på S3-behållare. Om du följer detta råd ska det här alternativet avmarkeras. Det måste vara aktiverat om du använder säkra uppladdningar."
     backup_time_of_day: "UTC-tid på dygnet då säkerhetskopieringen sker."
     backup_with_uploads: "Inkludera uppladdning i schemalagda säkerhetskopieringar. Inaktivering av det här kommer endast att säkerhetskopiera databasen."
-    backup_location: "Plats där säkerhetskopior lagras. VIKTIGT: S3 kräver giltiga S3-referenser som anges i Fil-inställningarna."
     backup_gzip_compression_level_for_uploads: "Nivå av Gzip-komprimering som används för att komprimera överföringar."
     include_thumbnails_in_backups: "Inkludera genererade miniatyrbilder i säkerhetskopior. Inaktivering av detta kommer att göra säkerhetskopior mindre, men kräver en ny omläggning av alla inlägg efter en återställning."
     active_user_rate_limit_secs: "Hur frekvent vi uppdaterar 'last_seen_at'-fältet, i sekunder"
@@ -2018,7 +2010,6 @@ sv:
     embed_post_limit: "Högsta antal inlägg att bädda in."
     embed_username_required: "Användarnamn krävs för skapade av ämne."
     notify_about_reviewable_item_after: "Om det finns granskningsbara objekt som inte har hanterats efter så många timmar, skicka ett personligt meddelande till moderatorer. Ställ in på 0 för att inaktivera."
-    delete_merged_stub_topics_after_days: "Antal dagar att vänta innan helt sammanslagna stub-ämnen raderas automatiskt. Ställ in till 0 för att aldrig radera stub-ämnen."
     prevent_anons_from_downloading_files: "Förhindra att anonyma användare hämtar bilagor."
     secure_uploads: 'Begränsar åtkomst för ALLA uppladdningar (bilder, video, ljud, text, pdf, zip med flera). Om "login required" har aktiverats kan endast inloggade användare komma åt uppladdningar. Annars begränsas åtkomst endast till uppladdning av media i privata meddelanden samt privata kategorier. VARNING: Den här inställningen är komplex och kräver djupa administrativa kunskaper. Se detaljer i <a target="_blank" href="https://meta.discourse.org/t/-/140017">ämnet för säkra uppladdningar i Meta</a>.'
     secure_uploads_allow_embed_images_in_emails: "Gör det möjligt att bädda in säkra bilder som normalt skulle begränsas i e-postmeddelanden, under förutsättning att deras storlek är mindre än inställningen för säkra medias maxstorlek för inbäddning av bild, 'secure uploads max email embed image size kb'."
@@ -2083,7 +2074,6 @@ sv:
     enable_offline_indicator: "Visa ett meddelande för användare när det upptäcks att de inte har någon nätverksanslutning"
     default_sidebar_link_to_filtered_list: "Låt länkar i navigeringsmenyn länka till filtrerad lista som standard."
     default_sidebar_show_count_of_new_items: "Låt länkar i navigeringsmenyn visa antalet nya objekt istället för utmärkelser som standard."
-    default_sidebar_switch_panel_position: "Placering av panelknappar för sidofältsomkoppling"
     retain_web_hook_events_period_days: "Antal dagar för att behålla register över webhook-händelsedata."
     retry_web_hook_events: "Försök automatiskt igen för misslyckade händelser för webhooken 4 gånger. Tidsspannet mellan försöken är 1, 5, 25 och 125 minuter."
     revoke_api_keys_unused_days: "Antal dagar sedan en API-nyckel senast användes innan den automatiskt återkallas (0 för aldrig)"
@@ -2109,7 +2099,6 @@ sv:
     suppress_overlapping_tags_in_list: "Om taggen matchar orden i ämnets titel exakt visas inte taggen"
     remove_muted_tags_from_latest: "Visa inte ämnen som taggats med tystade taggar i listan med senaste ämnen."
     force_lowercase_tags: "Tvinga alla nya taggar att vara helt i små bokstäver."
-    create_post_for_category_and_tag_changes: "Skapa ett litet åtgärdsinlägg när ett ämnes kategori eller taggar ändras"
     automatically_clean_unused_tags: "Ta dagligen och automatiskt bort taggar som inte används i några ämnen eller privata meddelanden."
     watched_precedence_over_muted: "Avisera mig om ämnen i kategorier eller taggar som jag bevakar och också tillhör ett som jag har tystat"
     company_name: "Namn på ditt företag eller organisation. Om det lämnas tomt tillhandahålls inte användarvillkor eller integritetsmeddelande."
@@ -2384,7 +2373,6 @@ sv:
     email_too_long: "E-postadressen du tillhandahöll är för lång. E-postadresser kan på sin höjd vara 254 tecken och domännamn 253 tecken."
     wrong_invite_code: "Inbjudningskoden som du har angett var felaktig."
     reserved_username: "Användarnamnet är inte tillåtet."
-    missing_user_field: "Du har inte fyllt i alla användarfält"
     auth_complete: "Autentisering är färdig."
     click_to_continue: "Klicka här för att fortsätta."
     already_logged_in: "Tyvärr är denna inbjudan avsedd för nya användare, som inte redan har ett befintligt konto."
@@ -3664,6 +3652,7 @@ sv:
     Redigera det första inlägget i det här ämnet för att ändra innehållet på sidan %{page_name}.
   guidelines_topic:
     title: "Vanliga frågor/riktlinjer"
+    guidelines_title: "Riktlinjer"
   tos_topic:
     title: "Villkor"
     body: |
@@ -4255,17 +4244,18 @@ sv:
           default_locale:
             label: "Språk"
       privacy:
-        title: "Medlemserfarenhet"
         fields:
           login_required:
-            placeholder: "Privat"
-            extra_description: "Endast inloggade användare kan komma åt det här forumet"
+            label: "Synlighet"
+            choices:
+              public:
+                label: "Offentligt"
+              private:
+                label: "Privat"
           invite_only:
-            placeholder: "Endast med inbjudan"
-            extra_description: "Användare måste bjudas in av betrodda användare eller personal, men därefter kan användare registrera sig på egen hand"
-          must_approve_users:
-            placeholder: "Kräv godkännande"
-            extra_description: "Användare måste godkännas av personalen"
+            choices:
+              invite_only:
+                label: "Endast med inbjudan"
           chat_enabled:
             placeholder: "Aktivera chatt"
             extra_description: "Engagera dina medlemmar i realtid"

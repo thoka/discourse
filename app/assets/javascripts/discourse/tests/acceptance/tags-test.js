@@ -285,7 +285,7 @@ acceptance("Tag info", function (needs) {
     [
       "/tags/c/faq/4/planters/l/latest.json",
       "/tags/c/feature/2/planters/l/latest.json",
-      "/tags/c/feature/2/planters/l/top.json",
+      "/tags/c/feature/2/planters/l/hot.json",
       "/tags/c/feature/2/none/planters/l/latest.json",
     ].forEach((url) => {
       server.get(url, () => {
@@ -377,6 +377,23 @@ acceptance("Tag info", function (needs) {
         tag_info: {
           id: 13,
           name: "happy-monkey",
+          description: "happy monkey description",
+          topic_count: 1,
+          staff: false,
+          synonyms: [],
+          tag_group_names: [],
+          category_ids: [],
+        },
+        categories: [],
+      });
+    });
+
+    server.get("/tag/happy-monkey2/info", () => {
+      return helper.response({
+        __rest_serializer: "1",
+        tag_info: {
+          id: 13,
+          name: "happy-monkey2",
           description: "happy monkey description",
           topic_count: 1,
           staff: false,
@@ -565,8 +582,8 @@ acceptance("Tag info", function (needs) {
     await click(".nav-item_latest a[href]");
     assert.strictEqual(currentURL(), "/tags/c/feature/2/planters/l/latest");
 
-    await click(".nav-item_top a[href]");
-    assert.strictEqual(currentURL(), "/tags/c/feature/2/planters/l/top");
+    await click(".nav-item_hot a[href]");
+    assert.strictEqual(currentURL(), "/tags/c/feature/2/planters/l/hot");
   });
 
   test("admin can manage tags", async function (assert) {

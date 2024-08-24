@@ -52,9 +52,6 @@ zh_TW:
   remove_posts_deleted_by_author: "已由作者刪除"
   redirect_warning: "我們無法確認您選擇的連結是否已被發送到論壇上，若您想繼續此動作，選擇以下的連結。"
   on_another_topic: "在另一個話題中"
-  topic_tag_changed:
-    added: "已新增 %{added}"
-    removed: "已移除 %{removed}"
   inline_oneboxer:
     topic_page_title_post_number: "#%{post_number}"
     topic_page_title_post_number_by_user: "#%{post_number} %{username}"
@@ -259,6 +256,7 @@ zh_TW:
   read_full_topic: "閱讀整個話題"
   private_message_abbrev: "消息"
   rss_description:
+    hot: "熱門話題"
     latest: "最新討論話題"
     top: "熱門討論話題"
     top_all: "最熱門話題"
@@ -365,6 +363,8 @@ zh_TW:
         raw: "內容"
       user_profile:
         bio_raw: "關於我"
+      user:
+        password: "密碼"
     errors:
       models:
         topic:
@@ -568,11 +568,7 @@ zh_TW:
   associated_accounts:
     revoke_failed: "無法使用%{provider_name}刪除你的帳戶。"
   activation:
-    action: "點擊此處啟用你的帳戶"
     already_done: "抱歉，此帳號啟用連結已經失效。可能你的帳號已經啟用了。"
-    please_continue: "你的新帳號已啟用；即將轉到主頁。"
-    continue_button: "繼續連接至 %{site_name}"
-    welcome_to: "歡迎來到%{site_name}！"
     approval_required: "你的論壇帳號需要由板主手動審核後才可使用。當你的帳號獲得批准，你將收到電子郵件通知。"
     missing_session: "無法確認你是否註冊了帳戶，請確定你已經啟用了 cookie。"
     activated: "抱歉，這個帳號已被啟用。"
@@ -998,6 +994,8 @@ zh_TW:
         user_agent: "使用者代理"
         page_views: "頁面瀏覽次數"
       description: "網路爬蟲使用者代理清單，按頁面瀏覽量排序"
+    web_hook_events_daily_aggregate:
+      xaxis: "天"
     suspicious_logins:
       title: "可疑登入"
       labels:
@@ -1044,6 +1042,12 @@ zh_TW:
       labels:
         user: 使用者
         qtt_like: 收到的讚
+    topic_view_stats:
+      labels:
+        topic: 話題
+        logged_in_views: 已登入
+        anon_views: 匿名
+        total_views: 總數
   dashboard:
     problem:
       rails_env: "伺服器現在運行 %{env} 模式。"
@@ -1052,8 +1056,6 @@ zh_TW:
       ram: "伺服器記憶體少於 1GB，建議配置至少 1GB 記憶體"
       subfolder_ends_in_slash: "你的子目錄設置不正確；DISCOURSE_RELATIVE_URL_ROOT以斜杠結尾。"
       missing_mailgun_api_key: "伺服器設置使用 Mailgun 寄送電子郵件，但你尚未設置用來驗證 webhook 訊息的 API 鑰匙。"
-      out_of_date_themes: "以下主題可更新："
-      unreachable_themes: "我們無法檢查以下主題是否可更新："
       google_analytics_version: "您的 Discourse 目前正在使用 Google Analytics 3，將在 2023 年 7 月後失去支援。 <a href='https://meta.discourse.org/t/260498'>立即升級到 Google Analytics 4</a> 以繼續接收有關您網站性能的寶貴見解和分析。"
   site_settings:
     disabled: "停用"
@@ -1157,7 +1159,6 @@ zh_TW:
     max_reply_history: "擴展回覆到某帖時顯示的最大回覆數量"
     topics_per_period_in_top_summary: "預設推薦話題的顯示數量"
     topics_per_period_in_top_page: "在展開 \"顯示更多\" 推薦話題列表的顯示數量"
-    redirect_users_to_top_page: "將新使用者或長時間未使用的使用者自動重新導向至熱門頁面"
     prioritize_username_in_ux: "在使用者頁、使用者卡片和貼文上優先顯示使用者名（未選時，暱稱將先顯示）"
     enable_rich_text_paste: "自動啟用 HTML 轉換 Markdown 格式（實驗性功能）"
     email_token_valid_hours: "\"忘記密碼\" / \"重啟帳號\" token 有效的小時數 (n)"
@@ -1192,10 +1193,8 @@ zh_TW:
     s3_backup_bucket: "遠端備份 bucket ，注意：請確定是私有的 bucket"
     s3_endpoint: "Discourse 備份空間有支援其他第三方服務，可修改備份空間存向 DigitalOcean Spaces、Minio或是Amazon S3。警告：如果使用Amazon S3，請留白。"
     s3_configure_tombstone_policy: "啟用上傳的自動刪除功能。重要提醒：如果禁用此功能，在檔案刪除後，不會回收空間。"
-    enable_s3_inventory: "使用Amazon S3 清單生成報告並驗證上傳。注意：需要設定Amazon S3 驗證資料（包括Access Key ID、Secret Access Key）。"
     backup_time_of_day: "備份的 UTC 時間"
     backup_with_uploads: "在備份日程中包括上傳。關閉此項僅備份資料庫。"
-    backup_location: "讀取備份資料的位置。注意：Amazon S3 需要在“文件”設定中輸入有效的 S3 驗證資料。"
     backup_gzip_compression_level_for_uploads: "Gzip壓縮等級用於壓縮上傳圖片。"
     include_thumbnails_in_backups: "在備份中包含生成的縮圖。禁用此選項會使備份檔案大小變得更小，但需要在還原後重新啟動所有貼文。"
     active_user_rate_limit_secs: "更新“最後一次見到”資料的頻率，單位為秒"
@@ -1627,7 +1626,6 @@ zh_TW:
     password_too_long: "密碼不能超過 200 個字符。"
     email_too_long: "你輸入的郵件太長了。郵箱名不得超過 254 字元，域名必須不超過 253 字元。"
     reserved_username: "該使用者名不可被使用。"
-    missing_user_field: "你還沒有填寫完所有使用者字段"
     auth_complete: "已完成認證。"
     click_to_continue: "點擊此處繼續。"
     second_factor_title: "兩步驟驗證"
@@ -2565,6 +2563,7 @@ zh_TW:
     編輯本主題的第一帖以改變 %{page_name} 頁面的內容。
   guidelines_topic:
     title: "FAQ / 使用守則"
+    guidelines_title: "守則"
   tos_topic:
     title: "服務條款"
   privacy_topic:
@@ -2852,12 +2851,16 @@ zh_TW:
       privacy:
         fields:
           login_required:
-            placeholder: "私密"
-            extra_description: "使用者必須登入後才能訪問此社群"
+            label: "能見度"
+            choices:
+              public:
+                label: "公開"
+              private:
+                label: "私密"
           invite_only:
-            placeholder: "僅限邀請"
-          must_approve_users:
-            extra_description: "使用者必須經過工作人員的批准"
+            choices:
+              invite_only:
+                label: "僅限邀請"
       styling:
         fields:
           styling_preview:

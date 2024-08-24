@@ -183,7 +183,6 @@ da:
       s3_backup_requires_s3_settings: "Du kan ikke bruge S3 som backupplacering, medmindre du har angivet '%{setting_name}'."
       s3_bucket_reused: "Du kan ikke bruge den samme spand til 's3_upload_bucket' og 's3_backup_bucket'. Vælg en anden spand, eller brug en anden sti til hver spand."
       share_quote_facebook_requirements: "Du skal indstille et Facebook-app-id for at aktivere citatdeling for Facebook."
-      second_factor_cannot_enforce_with_socials: "Du kan ikke gennemtvinge 2FA med sociale logins aktiveret. Du skal først deaktivere login via: %{auth_provider_names}"
       second_factor_cannot_be_enforced_with_disabled_local_login: "Du kan ikke gennemtvinge 2FA, hvis lokale logins er deaktiveret."
       second_factor_cannot_be_enforced_with_discourse_connect_enabled: "Du kan ikke gennemtvinge 2FA, hvis DiscourseConnect er aktiveret."
       local_login_cannot_be_disabled_if_second_factor_enforced: "Du kan ikke deaktivere lokalt login, hvis 2FA gennemtvinges. Deaktiver gennemtvunget 2FA, før du deaktiverer lokale logins."
@@ -475,6 +474,8 @@ da:
         raw: "Brødtekst"
       user_profile:
         bio_raw: "Om mig"
+      user:
+        password: "Adgangskode"
     errors:
       models:
         topic:
@@ -715,11 +716,7 @@ da:
     revoke_failed: "Det lykkedes ikke at tilbagekalde din konto med %{provider_name}."
     connected: "(tilsluttet)"
   activation:
-    action: "Klik her for at aktivere din konto"
     already_done: "Beklager, dette bekræftelses-link er ikke længere gyldigt. Måske er din konto allerede aktiv?"
-    please_continue: "Din nye konto er bekræftet; du bliver nu omdirigeret til forsiden."
-    continue_button: "Fortsæt til %{site_name}"
-    welcome_to: "Velkommen til %{site_name}!"
     approval_required: "En moderator skal manuelt godkende din nye konto før du kan tilgå forummet. Du får en e-mail, når din konto er godkendt!"
     missing_session: "Vi kan ikke se om din konto blev oprettet, venligst tjek at cookies er accepteret."
     activated: "Beklager, denne konto er allerede blevet aktiveret."
@@ -782,7 +779,6 @@ da:
     pop3_authentication_error: "Der var et problem med de angivne POP3-legitimationsoplysninger, tjek brugernavnet og adgangskoden, og prøv igen."
     imap_authentication_error: "Der var et problem med de leverede IMAP-legitimationsoplysninger, tjek brugernavnet og adgangskoden, og prøv igen."
     imap_no_response_error: "Der opstod en fejl under kommunikation med IMAP-serveren. %{message}"
-    smtp_authentication_error: "Der var et problem med de angivne SMTP-legitimationsoplysninger, tjek brugernavnet og adgangskoden, og prøv igen."
     smtp_server_busy_error: "SMTP-serveren er i øjeblikket optaget, prøv igen senere."
     smtp_unhandled_error: "Der opstod en uhåndteret fejl under kommunikation med SMTP-serveren. %{message}"
     connection_error: "Der var et problem med forbindelsen til serveren, tjek serverens navn og port og prøv igen."
@@ -1174,6 +1170,8 @@ da:
       labels:
         user_agent: "Bruger Agent"
         page_views: "Sidevisninger"
+    web_hook_events_daily_aggregate:
+      xaxis: "Dag"
     suspicious_logins:
       title: "Mistænkelige Logins"
       labels:
@@ -1220,6 +1218,12 @@ da:
         user: Bruger
         qtt_like: Likes modtaget
       description: "Top 10 over brugere, der har fået 'Synes godt om' fra en lang række personer."
+    topic_view_stats:
+      labels:
+        topic: Emne
+        logged_in_views: Logget ind
+        anon_views: Anonym
+        total_views: Total
   dashboard:
     problem:
       rails_env: "Din server kører i %{env}-tilstand."
@@ -1228,8 +1232,6 @@ da:
       ram: "Din server kører med mindre end 1 GB samlet hukommelse. Det anbefales at have mindst 1 GB hukommelse."
       subfolder_ends_in_slash: "Din undermappe opsætning er forkert; DISCOURSE_RELATIVE_URL_ROOT ender med en skråstreg."
       missing_mailgun_api_key: "Serveren er konfigureret til at sende e-mails via Mailgun, men du har ikke angivet en API-nøgle, der bruges til at bekræfte webhook-meddelelserne."
-      out_of_date_themes: "Opdateringer er tilgængelige for følgende temaer:"
-      unreachable_themes: "Vi kunne ikke tjekke for opdateringer til følgende temaer:"
       google_analytics_version: "Din Discourse bruger i øjeblikket Google Analytics 3, som ikke længere vil blive understøttet efter juli 2023. <a href='https://meta.discourse.org/t/260498'>Opgrader til Google Analytics 4</a> nu for fortsat at modtage værdifulde indsigter og analyser af dit websteds ydeevne."
   site_settings:
     disabled: "deaktiveret"
@@ -1332,7 +1334,6 @@ da:
     send_tl2_promotion_message: "Send nye brugere af tillidsniveau 2 en besked om forfremmelse."
     topics_per_period_in_top_summary: "Antallet af top emner der vises som standard i top emner"
     topics_per_period_in_top_page: "Antallet af top emner der vises når 'Vis Mere' er aktiveret."
-    redirect_users_to_top_page: "Automatisk omdirigere af nye og længere tids fraværende brugere til top siden."
     prioritize_username_in_ux: "Vis brugernavn først på brugersiden, brugerkort og indlæg (når deaktiveret vises navnet først)"
     enable_rich_text_paste: "Aktivér automatisk HTML til Markdown-konvertering, når du indsætter tekst i editoren. (Eksperimentel)"
     send_old_credential_reminder_days: "Påmind om gamle legitimationsoplysninger efter dage"
@@ -1526,7 +1527,6 @@ da:
     allowed_embed_selectors: "En kommasepareret liste over CSS-elementer, der er tilladt i embeds."
     embed_post_limit: "Maksimum antal indlæg, der skal indlejres."
     embed_username_required: "Brugernavnet til oprettelse af emne er påkrævet."
-    delete_merged_stub_topics_after_days: "Antal dage, der skal ventes, før automatisk sletning af fuldt sammenflettede stub emner. Sæt til 0 for aldrig at slette stub emner."
     enable_emoji_shortcuts: "Almindelig smiley-tekst såsom :) :p :( vil blive konverteret til humørikoner"
     emoji_autocomplete_min_chars: "Minimum antal tegn krævet for at aktivere autofuldførelses humørikoner-popup"
     enable_inline_emoji_translation: "Aktiverer oversættelse for inline humørikoner (uden mellemrum eller tegnsætning før)"
@@ -1705,7 +1705,6 @@ da:
     password_too_long: "Kodeord er begrænset til 200 tegn."
     email_too_long: "Den mailadresse, du har opgivet, er for lang. Navnet i mailadressen må ikke overstige 254 tegn, og domænenavnet må ikke overstige 253 tegn."
     reserved_username: "Dette brugernavn er ikke tilladt."
-    missing_user_field: "Du har ikke udfyldt alle felterne"
     auth_complete: "Godkendelsen er gennemført."
     click_to_continue: "Klik her for at fortsætte."
     second_factor_title: "To-faktor Godkendelse"
@@ -2834,6 +2833,7 @@ da:
     Rediger det første indlæg i dette emne for at ændre indholdet af siden %{page_name}
   guidelines_topic:
     title: "OSS/Retningslinjer"
+    guidelines_title: "Retningslinier"
   tos_topic:
     title: "Vilkår"
   privacy_topic:
@@ -3143,8 +3143,12 @@ da:
       privacy:
         fields:
           login_required:
-            placeholder: "Privat"
-            extra_description: "Kun brugere, der er logget ind, har adgang til dette fællesskab"
+            label: "Synlighed"
+            choices:
+              public:
+                label: "Offentlig"
+              private:
+                label: "Privat"
           chat_enabled:
             placeholder: "Aktiver chat"
       styling:

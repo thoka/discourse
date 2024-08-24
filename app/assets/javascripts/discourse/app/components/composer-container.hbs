@@ -195,22 +195,24 @@
                   {{/if}}
 
                   {{#if this.composer.canEditTags}}
-                    <MiniTagChooser
-                      @value={{this.composer.model.tags}}
-                      @onChange={{fn (mut this.composer.model.tags)}}
-                      @options={{hash
-                        disabled=this.composer.disableTagsChooser
-                        categoryId=this.composer.model.categoryId
-                        minimum=this.composer.model.minimumRequiredTags
-                      }}
-                    />
-                    <PluginOutlet
-                      @name="after-composer-tag-input"
-                      @outletArgs={{hash composer=this.composer.model}}
-                    />
-                    <PopupInputTip
-                      @validation={{this.composer.tagValidation}}
-                    />
+                    <div class="tags-input">
+                      <MiniTagChooser
+                        @value={{this.composer.model.tags}}
+                        @onChange={{fn (mut this.composer.model.tags)}}
+                        @options={{hash
+                          disabled=this.composer.disableTagsChooser
+                          categoryId=this.composer.model.categoryId
+                          minimum=this.composer.model.minimumRequiredTags
+                        }}
+                      />
+                      <PluginOutlet
+                        @name="after-composer-tag-input"
+                        @outletArgs={{hash composer=this.composer.model}}
+                      />
+                      <PopupInputTip
+                        @validation={{this.composer.tagValidation}}
+                      />
+                    </div>
                   {{/if}}
 
                   <PluginOutlet
@@ -330,7 +332,7 @@
               class="btn btn-default no-text mobile-preview"
               title={{i18n "composer.show_preview"}}
               {{on "click" this.composer.togglePreview}}
-              aria-label={{i18n "preview"}}
+              aria-label={{i18n "composer.show_preview"}}
             >
               {{d-icon "desktop"}}
             </a>
@@ -338,6 +340,7 @@
             {{#if this.composer.showPreview}}
               <DButton
                 @action={{this.composer.togglePreview}}
+                @title="composer.hide_preview"
                 @ariaLabel="composer.hide_preview"
                 @icon="pencil-alt"
                 class="hide-preview"

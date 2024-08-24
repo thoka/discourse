@@ -351,11 +351,20 @@
             "is_flag": {
               "type": "boolean"
             },
-            "is_custom_flag": {
+            "require_message": {
               "type": "boolean"
             },
             "enabled": {
               "type": "boolean"
+            },
+            "applies_to": {
+              "type": "array"
+            },
+            "is_used": {
+              "type": "boolean"
+            },
+            "position": {
+              "type": "integer"
             }
           },
           "required": [
@@ -365,8 +374,10 @@
             "description",
             "short_description",
             "is_flag",
-            "is_custom_flag",
-            "enabled"
+            "require_message",
+            "enabled",
+            "applies_to",
+            "is_used"
           ]
         }
     },
@@ -395,11 +406,20 @@
             "is_flag": {
               "type": "boolean"
             },
-            "is_custom_flag": {
+            "require_message": {
               "type": "boolean"
             },
             "enabled": {
               "type": "boolean"
+            },
+            "applies_to": {
+              "type": "array"
+            },
+            "is_used": {
+              "type": "boolean"
+            },
+            "position": {
+              "type": "integer"
             }
           },
           "required": [
@@ -409,8 +429,10 @@
             "description",
             "short_description",
             "is_flag",
-            "is_custom_flag",
-            "enabled"
+            "require_message",
+            "enabled",
+            "applies_to",
+            "is_used"
           ]
         }
     },
@@ -821,6 +843,9 @@
       "type": "array"
     },
     "denied_emojis" : {
+      "type": "array"
+    },
+    "valid_flag_applies_to_types" : {
       "type": "array"
     },
     "navigation_menu_site_top_tags": {

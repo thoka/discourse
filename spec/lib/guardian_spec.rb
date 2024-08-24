@@ -309,6 +309,10 @@ RSpec.describe Guardian do
     fab!(:suspended_user) do
       Fabricate(:user, suspended_till: 1.week.from_now, suspended_at: 1.day.ago)
     end
+    let!(:plugin) { Plugin::Instance.new }
+    let!(:modifier) { :guardian_can_send_private_message }
+    let!(:deny_block) { Proc.new { false } }
+    let!(:allow_block) { Proc.new { true } }
 
     it "returns false when the user is nil" do
       expect(Guardian.new(nil).can_send_private_message?(user)).to be_falsey
@@ -339,6 +343,17 @@ RSpec.describe Guardian do
       user.update!(trust_level: TrustLevel[1])
       Group.user_trust_level_change!(user.id, TrustLevel[1])
       expect(Guardian.new(user).can_send_private_message?(another_user)).to be_falsey
+    end
+
+    it "allows plugins to control if user can send PM" do
+      DiscoursePluginRegistry.register_modifier(plugin, modifier, &deny_block)
+      expect(Guardian.new(user).can_send_private_message?(user)).to be_falsey
+
+      DiscoursePluginRegistry.register_modifier(plugin, modifier, &allow_block)
+      expect(Guardian.new(user).can_send_private_message?(user)).to be_truthy
+    ensure
+      DiscoursePluginRegistry.unregister_modifier(plugin, modifier, &deny_block)
+      DiscoursePluginRegistry.unregister_modifier(plugin, modifier, &allow_block)
     end
 
     context "when personal_message_enabled_groups does not contain the user" do
@@ -4452,6 +4467,26 @@ RSpec.describe Guardian do
         guardian = Guardian.new(user, ActionDispatch::Request.new(env))
         expect(guardian.can_delete_reviewable_queued_post?(queued_post)).to eq(true)
       end
+    end
+  end
+
+  describe "#is_developer?" do
+    after { Developer.rebuild_cache }
+
+    it "returns true if user is an admin and has an associated `Developer` object" do
+      Developer.create!(user: admin)
+
+      expect(Guardian.new(admin).is_developer?).to eq(true)
+    end
+
+    it "returns false if user is an admin but does not have an associated `Developer` object" do
+      expect(Guardian.new(admin).is_developer?).to eq(false)
+    end
+
+    it "returns true if user's email has been configured as part of `Rails.configuration.developer_emails`" do
+      Rails.configuration.stubs(:developer_emails).returns([user.email])
+
+      expect(Guardian.new(user).is_developer?).to eq(true)
     end
   end
 end

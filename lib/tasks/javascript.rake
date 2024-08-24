@@ -65,15 +65,8 @@ end
 
 def dependencies
   [
-    { source: "ace-builds/src-min-noconflict/ace.js", destination: "ace.js", public: true },
-    {
-      source: "@json-editor/json-editor/dist/jsoneditor.js",
-      package_name: "@json-editor/json-editor",
-      public: true,
-    },
     { source: "chart.js/dist/chart.min.js", public: true },
     { source: "chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js", public: true },
-    { source: "diffhtml/dist/diffhtml.min.js", public: true },
     { source: "magnific-popup/dist/jquery.magnific-popup.min.js", public: true },
     { source: "pikaday/pikaday.js", public: true },
     { source: "moment/moment.js" },
@@ -161,11 +154,15 @@ task "javascript:update_constants" => :environment do
 
     export const AUTO_GROUPS = #{auto_groups.to_json};
 
+    export const GROUP_SMTP_SSL_MODES = #{Group.smtp_ssl_modes.to_json};
+
     export const MAX_NOTIFICATIONS_LIMIT_PARAMS = #{NotificationsController::INDEX_LIMIT};
 
     export const TOPIC_VISIBILITY_REASONS = #{Topic.visibility_reasons.to_json};
 
     export const SYSTEM_FLAG_IDS = #{PostActionType.types.to_json}
+
+    export const SITE_SETTING_REQUIRES_CONFIRMATION_TYPES = #{SiteSettings::TypeSupervisor::REQUIRES_CONFIRMATION_TYPES.to_json}
   JS
 
   pretty_notifications = Notification.types.map { |n| "  #{n[0]}: #{n[1]}," }.join("\n")
@@ -236,25 +233,6 @@ task "javascript:update" => "clean_up" do
         dest = "#{path}/#{filename}"
 
         FileUtils.mkdir_p(path) unless File.exist?(path)
-
-        if src.include? "ace.js"
-          versions["ace/ace.js"] = versions.delete("ace.js")
-
-          themes = %w[theme-chrome theme-chaos]
-
-          themes.each do |file|
-            versions["ace/#{file}.js"] = "#{package_dir_name}/#{package_version}/#{file}.js"
-          end
-
-          ace_root = "#{library_src}/ace-builds/src-min-noconflict/"
-
-          addtl_files = %w[ext-searchbox mode-html mode-scss mode-sql mode-yaml worker-html].concat(
-            themes,
-          )
-
-          dest_path = dest.split("/")[0..-2].join("/")
-          addtl_files.each { |file| FileUtils.cp_r("#{ace_root}#{file}.js", dest_path) }
-        end
       end
     else
       dest = "#{vendor_js}/#{filename}"

@@ -1,2 +1,16 @@
-<h2>{{i18n "admin.new_features.title"}}</h2>
-<DashboardNewFeatures />
+<div class="admin-config-area">
+  <AdminPageHeader
+    @titleLabel="admin.dashboard.new_features.title"
+    @descriptionLabel="admin.dashboard.new_features.subtitle"
+    @learnMoreUrl="https://meta.discourse.org/tags/c/announcements/67/release-notes"
+  >
+    <:breadcrumbs>
+      <DBreadcrumbsItem
+        @path="/admin/whats-new"
+        @label={{i18n "admin.dashboard.new_features.title"}}
+      />
+    </:breadcrumbs>
+  </AdminPageHeader>
+
+  <DashboardNewFeatures />
+</div>

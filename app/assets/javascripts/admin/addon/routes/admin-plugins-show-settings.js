@@ -1,5 +1,5 @@
 import Route from "@ember/routing/route";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import SiteSetting from "admin/models/site-setting";
 
 export default class AdminPluginsShowSettingsRoute extends Route {
@@ -9,10 +9,12 @@ export default class AdminPluginsShowSettingsRoute extends Route {
     filter: { replace: true },
   };
 
-  model(params) {
+  async model(params) {
     const plugin = this.modelFor("adminPlugins.show");
-    return SiteSetting.findAll({ plugin: plugin.name }).then((settings) => {
-      return { plugin, settings, initialFilter: params.filter };
-    });
+    return {
+      plugin,
+      settings: await SiteSetting.findAll({ plugin: plugin.name }),
+      initialFilter: params.filter,
+    };
   }
 }
