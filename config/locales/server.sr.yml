@@ -146,6 +146,11 @@ sr:
             password:
               common: "je jedna od 10000 najčešće korišćenih lozinki. Molimo Vas izaberite sigurniju lozinku."
               same_as_username: "je ista kao vaše korisničko ime. Molimo Vas izaberite sigurniju šifru."
+        user_password:
+          attributes:
+            password:
+              common: "je jedna od 10000 najčešće korišćenih lozinki. Molimo Vas izaberite sigurniju lozinku."
+              same_as_username: "je ista kao vaše korisničko ime. Molimo Vas izaberite sigurniju šifru."
       <<: *errors
   general_category_name: "Opšti"
   staff_category_name: "Osoblje"
@@ -223,8 +228,6 @@ sr:
     title: "Resetujte Šifru"
   change_email:
     max_secondary_emails_error: "Dosegli ste maksimalni dozvoljeni broj sekundarne e-pošte."
-  activation:
-    welcome_to: "Добро дошли на пројекат %{site_name}!"
   reviewable_score_types:
     needs_approval:
       title: "Potrebno odobrenje"
@@ -343,6 +346,11 @@ sr:
       labels:
         user: Korisnik
         qtt_like: Primljeno Lajkova
+    topic_view_stats:
+      labels:
+        topic: Tema
+        anon_views: Anonimno
+        total_views: Ukupno
   site_settings:
     min_topic_title_length: "Minimalna dozvoljena dužina naslova teme u znakovima"
     max_topic_title_length: "Maksimalna dozvoljena dužina naslova teme u znakovima"
@@ -424,6 +432,8 @@ sr:
     boolean_yes: "Da"
     boolean_no: "Ne"
     rate_limit_error: "Poruke mogu biti preuzimate jednom na dan, molimo pokušajte sutra."
+  guidelines_topic:
+    guidelines_title: "Smernice"
   tos_topic:
     title: "Uslovi Korišćenja"
   privacy_topic:

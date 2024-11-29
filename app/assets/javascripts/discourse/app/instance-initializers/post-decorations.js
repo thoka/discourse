@@ -14,7 +14,7 @@ import { parseAsync } from "discourse/lib/text";
 import { setTextDirections } from "discourse/lib/text-direction";
 import { tokenRange } from "discourse/lib/utilities";
 import { iconHTML, iconNode } from "discourse-common/lib/icon-library";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export default {
   initialize(owner) {
@@ -129,13 +129,13 @@ export default {
         }
 
         if (props.title) {
-          openPopupBtn.title = I18n.t(props.title);
+          openPopupBtn.title = i18n(props.title);
         }
 
         if (props.label && capabilities.touch) {
           openPopupBtn.innerHTML = `
           <span class="d-button-label">
-            ${I18n.t(props.label)}
+            ${i18n(props.label)}
           </div>`;
         }
 
@@ -156,7 +156,16 @@ export default {
       function generateFullScreenTableModal(event) {
         const table = event.currentTarget.parentElement.nextElementSibling;
         const tempTable = table.cloneNode(true);
-        modal.show(FullscreenTableModal, { model: { tableHtml: tempTable } });
+        const cookedWrapper = document.createElement("div");
+        cookedWrapper.classList.add("cooked");
+        if (siteSettings.display_footnotes_inline) {
+          cookedWrapper.classList.add("inline-footnotes");
+        }
+        cookedWrapper.dataset.refPostId = this.id;
+        cookedWrapper.appendChild(tempTable);
+        modal.show(FullscreenTableModal, {
+          model: { tableHtml: cookedWrapper },
+        });
       }
 
       function generateSpreadsheetModal() {
@@ -190,7 +199,7 @@ export default {
             title: "table_builder.edit.btn_edit",
             label: "table_builder.edit.btn_edit",
             icon: {
-              name: "pencil-alt",
+              name: "pencil",
               class: "edit-table-icon",
             },
           });
@@ -228,7 +237,7 @@ export default {
           buttonWrapper.append(expandTableBtn);
           expandTableBtn.addEventListener(
             "click",
-            generateFullScreenTableModal,
+            generateFullScreenTableModal.bind(attrs),
             false
           );
           table.parentNode.insertBefore(buttonWrapper, table);

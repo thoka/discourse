@@ -4,41 +4,32 @@ import directoryFixtures from "discourse/tests/fixtures/directory-fixtures";
 import pretender, { response } from "discourse/tests/helpers/create-pretender";
 import {
   acceptance,
-  exists,
   query,
   queryAll,
 } from "discourse/tests/helpers/qunit-helpers";
 import { cloneJSON } from "discourse-common/lib/object";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 acceptance("User Directory", function () {
   test("Visit Page", async function (assert) {
     await visit("/u");
-    assert.ok(
-      document.body.classList.contains("users-page"),
-      "has the body class"
-    );
-    assert.ok(
-      exists(".directory .directory-table .directory-table__row"),
-      "has a list of users"
-    );
+    assert.dom(document.body).hasClass("users-page", "has the body class");
+    assert
+      .dom(".directory .directory-table .directory-table__row")
+      .exists("has a list of users");
   });
 
   test("Visit All Time", async function (assert) {
     await visit("/u?period=all");
-    assert.ok(exists(".time-read"), "has time read column");
+    assert.dom(".time-read").exists("has time read column");
   });
 
   test("Visit Without Usernames", async function (assert) {
     await visit("/u?exclude_usernames=system");
-    assert.ok(
-      document.body.classList.contains("users-page"),
-      "has the body class"
-    );
-    assert.ok(
-      exists(".directory .directory-table .directory-table__row"),
-      "has a list of users"
-    );
+    assert.dom(document.body).hasClass("users-page", "has the body class");
+    assert
+      .dom(".directory .directory-table .directory-table__row")
+      .exists("has a list of users");
   });
 
   test("Visit With Group Exclusion", async function (assert) {
@@ -59,16 +50,42 @@ acceptance("User Directory", function () {
     );
   });
 
+  test("Searchable user fields display as links", async function (assert) {
+    pretender.get("/directory_items", () => {
+      return response(cloneJSON(directoryFixtures["directory_items"]));
+    });
+
+    await visit("/u");
+
+    assert
+      .dom(
+        ".directory .directory-table__body .directory-table__row:first-child .directory-table__value--user-field a"
+      )
+      .exists("User field is displayed as a link");
+
+    assert
+      .dom(
+        ".directory .directory-table__body .directory-table__row:first-child .directory-table__value--user-field a"
+      )
+      .hasAttribute(
+        "href",
+        "/u?name=Blue&order=likes_received",
+        "The link points to the correct URL"
+      );
+
+    assert
+      .dom(
+        ".directory .directory-table__body .directory-table__row:first-child .directory-table__value--user-field a"
+      )
+      .hasText("Blue", "Link text is correct");
+  });
+
   test("Visit With Group Filter", async function (assert) {
     await visit("/u?group=trust_level_0");
-    assert.ok(
-      document.body.classList.contains("users-page"),
-      "has the body class"
-    );
-    assert.ok(
-      exists(".directory .directory-table .directory-table__row"),
-      "has a list of users"
-    );
+    assert.dom(document.body).hasClass("users-page", "has the body class");
+    assert
+      .dom(".directory .directory-table .directory-table__row")
+      .exists("has a list of users");
   });
 
   test("Custom user fields are present", async function (assert) {
@@ -78,7 +95,7 @@ acceptance("User Directory", function () {
       ".directory .directory-table__body .directory-table__row:first-child .directory-table__value--user-field"
     );
 
-    assert.strictEqual(firstRowUserField.textContent, "Blue");
+    assert.strictEqual(firstRowUserField.textContent.trim(), "Blue");
   });
 
   test("Can sort table via keyboard", async function (assert) {
@@ -89,10 +106,9 @@ acceptance("User Directory", function () {
 
     await triggerKeyEvent(secondHeading, "keypress", "Enter");
 
-    assert.ok(
-      query(`${secondHeading} .d-icon-chevron-up`),
-      "list has been sorted"
-    );
+    assert
+      .dom(`${secondHeading} .d-icon-chevron-up`)
+      .exists("list has been sorted");
   });
 
   test("Visit with no users", async function (assert) {
@@ -110,7 +126,7 @@ acceptance("User Directory", function () {
     assert
       .dom(".empty-state-body")
       .hasText(
-        I18n.t("directory.no_results.body"),
+        i18n("directory.no_results.body"),
         "a JIT message is shown when there are no users"
       );
   });
@@ -130,7 +146,7 @@ acceptance("User Directory", function () {
     assert
       .dom(".empty-state-body")
       .hasText(
-        I18n.t("directory.no_results_with_search"),
+        i18n("directory.no_results_with_search"),
         "a different JIT message is used when there are no results for the search term"
       );
   });

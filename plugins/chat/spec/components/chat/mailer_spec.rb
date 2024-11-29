@@ -23,7 +23,9 @@ describe Chat::Mailer do
   end
 
   def expect_enqueued
-    expect_enqueued_with(job:, args:) { described_class.send_unread_mentions_summary }
+    expect {
+      expect_enqueued_with(job:, args:) { described_class.send_unread_mentions_summary }
+    }.to_not output.to_stderr_from_any_process
     expect(Jobs::UserEmail.jobs.size).to eq(1)
   end
 
@@ -144,6 +146,11 @@ describe Chat::Mailer do
 
       it "does not queue a chat summary email when sender has been deleted" do
         other.destroy!
+        expect_not_enqueued
+      end
+
+      it "does not queue a chat summary email when chat message was created by the SDK" do
+        chat_message.update!(created_by_sdk: true)
         expect_not_enqueued
       end
 

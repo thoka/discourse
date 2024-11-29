@@ -51,7 +51,9 @@ class UserSerializer < UserCardSerializer
                      :custom_avatar_template,
                      :has_title_badges,
                      :muted_usernames,
+                     :can_mute_users,
                      :ignored_usernames,
+                     :can_ignore_users,
                      :allowed_pm_usernames,
                      :mailing_list_posts_per_day,
                      :can_change_bio,
@@ -75,7 +77,11 @@ class UserSerializer < UserCardSerializer
   ###
   #
   def user_notification_schedule
-    object.user_notification_schedule || UserNotificationSchedule::DEFAULT
+    UserNotificationScheduleSerializer.new(
+      object.user_notification_schedule,
+      scope: scope,
+      root: false,
+    ).as_json || UserNotificationSchedule::DEFAULT
   end
 
   def mailing_list_posts_per_day
@@ -84,7 +90,11 @@ class UserSerializer < UserCardSerializer
   end
 
   def groups
-    object.groups.order(:id).visible_groups(scope.user).members_visible_groups(scope.user)
+    if scope.user == object
+      object.groups.order(:id).visible_groups(scope.user)
+    else
+      object.groups.order(:id).visible_groups(scope.user).members_visible_groups(scope.user)
+    end
   end
 
   def group_users
@@ -147,7 +157,7 @@ class UserSerializer < UserCardSerializer
         .map do |k|
           {
             id: k.id,
-            application_name: k.application_name,
+            application_name: k.client.application_name,
             scopes: k.scopes.map { |s| I18n.t("user_api_key.scopes.#{s.name}") },
             created_at: k.created_at,
             last_used_at: k.last_used_at,
@@ -176,7 +186,7 @@ class UserSerializer < UserCardSerializer
   end
 
   def include_user_passkeys?
-    SiteSetting.enable_passkeys?
+    SiteSetting.enable_passkeys? && user_is_current_user
   end
 
   def bio_raw
@@ -254,8 +264,16 @@ class UserSerializer < UserCardSerializer
     MutedUser.where(user_id: object.id).joins(:muted_user).pluck(:username)
   end
 
+  def can_mute_users
+    scope.can_mute_users?
+  end
+
   def ignored_usernames
     IgnoredUser.where(user_id: object.id).joins(:ignored_user).pluck(:username)
+  end
+
+  def can_ignore_users
+    scope.can_ignore_users?
   end
 
   def allowed_pm_usernames

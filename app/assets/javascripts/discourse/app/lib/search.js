@@ -15,10 +15,19 @@ import User from "discourse/models/user";
 import getURL from "discourse-common/lib/get-url";
 import { deepMerge } from "discourse-common/lib/object";
 import { findRawTemplate } from "discourse-common/lib/raw-templates";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 const translateResultsCallbacks = [];
 const MAX_RECENT_SEARCHES = 5; // should match backend constant with the same name
+
+const logSearchLinkClickedCallbacks = [];
+
+export function addLogSearchLinkClickedCallbacks(fn) {
+  logSearchLinkClickedCallbacks.push(fn);
+}
+export function resetLogSearchLinkClickedCallbacks() {
+  logSearchLinkClickedCallbacks.clear();
+}
 
 export function addSearchResultsCallback(callback) {
   translateResultsCallbacks.push(callback);
@@ -182,15 +191,15 @@ export function searchContextDescription(type, name) {
   if (type) {
     switch (type) {
       case "topic":
-        return I18n.t("search.context.topic");
+        return i18n("search.context.topic");
       case "user":
-        return I18n.t("search.context.user", { username: name });
+        return i18n("search.context.user", { username: name });
       case "category":
-        return I18n.t("search.context.category", { category: name });
+        return i18n("search.context.category", { category: name });
       case "tag":
-        return I18n.t("search.context.tag", { tag: name });
+        return i18n("search.context.tag", { tag: name });
       case "private_messages":
-        return I18n.t("search.context.private_messages");
+        return i18n("search.context.private_messages");
     }
   }
 }
@@ -259,6 +268,14 @@ export function updateRecentSearches(currentUser, term) {
 }
 
 export function logSearchLinkClick(params) {
+  if (
+    logSearchLinkClickedCallbacks.length &&
+    !logSearchLinkClickedCallbacks.some((fn) => fn(params))
+  ) {
+    // Return early if any callbacks return false
+    return;
+  }
+
   ajax("/search/click", {
     type: "POST",
     data: {

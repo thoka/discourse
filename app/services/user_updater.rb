@@ -24,6 +24,7 @@ class UserUpdater
     email_messages_level
     external_links_in_new_tab
     enable_quoting
+    enable_smart_lists
     enable_defer
     color_scheme_id
     dark_scheme_id
@@ -41,7 +42,8 @@ class UserUpdater
     allow_private_messages
     enable_allowed_pm_users
     homepage_id
-    hide_profile_and_presence
+    hide_profile
+    hide_presence
     text_size
     title_count_mode
     timezone
@@ -266,6 +268,13 @@ class UserUpdater
         end
       end
       DiscourseEvent.trigger(:user_updated, user)
+
+      if attributes[:custom_fields].present? && user.needs_required_fields_check?
+        UserHistory.create!(
+          action: UserHistory.actions[:filled_in_required_fields],
+          acting_user_id: user.id,
+        )
+      end
     end
 
     saved

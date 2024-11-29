@@ -6,19 +6,10 @@ import { service } from "@ember/service";
 import PluginOutlet from "discourse/components/plugin-outlet";
 import concatClass from "discourse/helpers/concat-class";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
+import { applyValueTransformer } from "discourse/lib/transformer";
 import DiscourseURL from "discourse/lib/url";
 import getURL from "discourse-common/lib/get-url";
 import HomeLogoContents from "./home-logo-contents";
-
-let hrefCallback;
-
-export function registerHomeLogoHrefCallback(callback) {
-  hrefCallback = callback;
-}
-
-export function clearHomeLogoHrefCallback() {
-  hrefCallback = null;
-}
 
 export default class HomeLogo extends Component {
   @service session;
@@ -28,11 +19,7 @@ export default class HomeLogo extends Component {
   darkModeAvailable = this.session.darkModeAvailable;
 
   get href() {
-    if (hrefCallback) {
-      return hrefCallback();
-    }
-
-    return getURL("/");
+    return applyValueTransformer("home-logo-href", getURL("/"));
   }
 
   get showMobileLogo() {
@@ -68,23 +55,27 @@ export default class HomeLogo extends Component {
   }
 
   logoResolver(name, opts = {}) {
-    // get alternative logos for browser dark dark mode switching
-    if (opts.dark) {
-      return this.siteSettings[`site_${name}_dark_url`];
-    }
+    let url;
 
-    // try dark logos first when color scheme is dark
-    // this is independent of browser dark mode
-    // hence the fallback to normal logos
-    if (this.session.defaultColorSchemeIsDark) {
-      return (
+    if (opts.dark) {
+      // get alternative logos for browser dark dark mode switching
+      url = this.siteSettings[`site_${name}_dark_url`];
+    } else if (this.session.defaultColorSchemeIsDark) {
+      // try dark logos first when color scheme is dark
+      // this is independent of browser dark mode
+      // hence the fallback to normal logos
+      url =
         this.siteSettings[`site_${name}_dark_url`] ||
         this.siteSettings[`site_${name}_url`] ||
-        ""
-      );
+        "";
+    } else {
+      url = this.siteSettings[`site_${name}_url`] || "";
     }
 
-    return this.siteSettings[`site_${name}_url`] || "";
+    return applyValueTransformer("home-logo-image-url", url, {
+      name,
+      dark: opts.dark,
+    });
   }
 
   @action

@@ -7,6 +7,44 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.39.0] - 2024-11-27
+
+- Added `addTrackedPostProperty` which allows plugins/TCs to add a new tracked property to the post model.
+
+## [1.38.0] - 2024-10-30
+
+- Added `registerMoreTopicsTab` and "more-topics-tabs" value transformer that allows to add or remove new tabs to the "more topics" (suggested/related) area.
+
+## [1.37.3] - 2024-10-24
+
+- Added `disableDefaultKeyboardShortcuts` which allows plugins/TCs to disable default keyboard shortcuts.
+
+## [1.37.2] - 2024-10-02
+
+- Fixed comments and text references to Font Awesome 5 in favor of the more generic Font Awesome due to core now having the latest version and no longer needing to specify version 5.
+
+## [1.37.1] - 2024-08-21
+
+- Added support for `shortcut` in `addComposerToolbarPopupMenuOption` which allows to add a keyboard shortcut to the popup menu option.
+
+## [1.37.0] - 2024-08-19
+
+- Added `addAboutPageActivity` which allows plugins/TCs to register a custom site activity item in the new /about page. Requires the server-side `register_stat` plugin API.
+
+## [1.36.0] - 2024-08-06
+
+- Added `addLogSearchLinkClickedCallbacks` which allows plugins/TCs to register a callback when a search link is clicked and before a search log is created
+
+## [1.35.0] - 2024-07-30
+
+- Added `registerBehaviorTransformer` which allows registering a transformer callback to override behavior defined in Discourse modules
+- Added `addBehaviorTransformerName` which allows plugins/TCs to register a new transformer to override behavior defined in their modules
+
+## [1.34.0] - 2024-06-06
+
+- Added `registerValueTransformer` which allows registering a transformer callback to override values defined in Discourse modules
+- Added `addValueTransformerName` which allows plugins/TCs to register a new transformer to override values defined in their modules
+
 ## [1.33.0] - 2024-06-06
 
 - Added `addCustomUserFieldValidationCallback` which allows to set a callback to change the validation and user facing message when attempting to save the signup form.

@@ -1,6 +1,6 @@
 import Component from "@glimmer/component";
-import { getOwner } from "@ember/application";
 import { concat } from "@ember/helper";
+import { getOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import { modifier } from "ember-modifier";
 import { and } from "truth-helpers";
@@ -23,6 +23,10 @@ export default class DTooltip extends Component {
   registerTrigger = modifier((element) => {
     this.tooltipInstance.trigger = element;
     this.options.onRegisterApi?.(this.tooltipInstance);
+
+    return () => {
+      this.tooltipInstance.destroy();
+    };
   });
 
   get options() {

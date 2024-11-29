@@ -1,15 +1,19 @@
 import { concat } from "@ember/helper";
 import emoji from "discourse/helpers/emoji";
-import I18n from "discourse-i18n";
+import escape from "discourse-common/lib/escape";
+import { i18n } from "discourse-i18n";
 
 const title = (description, endsAt, timezone) => {
-  let content = description;
+  let content = escape(description);
+
   if (endsAt) {
     const until = moment
       .tz(endsAt, timezone)
-      .format(I18n.t("dates.long_date_without_year"));
-    content += `\n${I18n.t("until")} ${until}`;
+      .format(i18n("dates.long_date_without_year"));
+
+    content += `\n${i18n("until")} ${until}`;
   }
+
   return content;
 };
 

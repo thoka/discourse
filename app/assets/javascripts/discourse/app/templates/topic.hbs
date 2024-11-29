@@ -50,38 +50,51 @@
       >
         {{#if this.editingTopic}}
           <div class="edit-topic-title">
-            <PrivateMessageGlyph
-              @shouldShow={{this.model.isPrivateMessage}}
-              @tagName=""
-            />
+            <PrivateMessageGlyph @shouldShow={{this.model.isPrivateMessage}} />
 
-            <TextField
-              @id="edit-title"
-              @value={{this.buffered.title}}
-              @maxlength={{this.siteSettings.max_topic_title_length}}
-              @autofocus="true"
-            />
+            <PluginOutlet
+              @name="edit-topic-title"
+              @outletArgs={{hash model=this.model buffered=this.buffered}}
+            >
+              <TextField
+                @id="edit-title"
+                @value={{this.buffered.title}}
+                @maxlength={{this.siteSettings.max_topic_title_length}}
+                @autofocus="true"
+              />
+            </PluginOutlet>
 
             {{#if this.showCategoryChooser}}
-              <CategoryChooser
-                @value={{this.buffered.category_id}}
-                @onChange={{action "topicCategoryChanged"}}
-                class="small"
-              />
+              <PluginOutlet
+                @name="edit-topic-category"
+                @outletArgs={{hash model=this.model buffered=this.buffered}}
+              >
+                <CategoryChooser
+                  @value={{this.buffered.category_id}}
+                  @onChange={{action "topicCategoryChanged"}}
+                  class="small"
+                />
+              </PluginOutlet>
             {{/if}}
 
             {{#if this.canEditTags}}
-              <MiniTagChooser
-                @value={{this.buffered.tags}}
-                @onChange={{action "topicTagsChanged"}}
-                @options={{hash
-                  filterable=true
-                  categoryId=this.buffered.category_id
-                  minimum=this.minimumRequiredTags
-                  filterPlaceholder="tagging.choose_for_topic"
-                  useHeaderFilter=true
-                }}
-              />
+              <PluginOutlet
+                @name="edit-topic-tags"
+                @outletArgs={{hash model=this.model buffered=this.buffered}}
+              >
+                <MiniTagChooser
+                  @value={{this.buffered.tags}}
+                  @onChange={{action "topicTagsChanged"}}
+                  @options={{hash
+                    filterable=true
+                    categoryId=this.buffered.category_id
+                    minimum=this.minimumRequiredTags
+                    filterPlaceholder="tagging.choose_for_topic"
+                    useHeaderFilter=true
+                  }}
+                />
+              </PluginOutlet>
+
             {{/if}}
 
             <span>
@@ -101,7 +114,7 @@
               />
               <DButton
                 @action={{action "cancelEditingTopic"}}
-                @icon="times"
+                @icon="xmark"
                 @ariaLabel="composer.cancel"
                 class="btn-default cancel-edit"
               />
@@ -113,7 +126,7 @@
                   class="remove-featured-link"
                   title={{i18n "composer.remove_featured_link"}}
                 >
-                  {{d-icon "times-circle"}}
+                  {{d-icon "circle-xmark"}}
                   {{this.featuredLinkDomain}}
                 </a>
               {{/if}}
@@ -129,12 +142,10 @@
                   @href={{this.pmPath}}
                   @title="topic_statuses.personal_message.title"
                   @ariaLabel="user.messages.inbox"
-                  @tagName=""
                 />
               {{else}}
                 <PrivateMessageGlyph
                   @shouldShow={{this.model.isPrivateMessage}}
-                  @tagName=""
                 />
               {{/if}}
             {{/unless}}
@@ -156,7 +167,7 @@
                 {{on "click" this.editTopic}}
                 class="edit-topic"
                 title={{i18n "edit_topic"}}
-              >{{d-icon "pencil-alt"}}</a>
+              >{{d-icon "pencil"}}</a>
             {{/if}}
 
             <PluginOutlet
@@ -165,7 +176,13 @@
             />
           </h1>
 
-          <TopicCategory @topic={{this.model}} class="topic-category" />
+          <PluginOutlet
+            @name="topic-category-wrapper"
+            @outletArgs={{hash topic=this.model}}
+          >
+            <TopicCategory @topic={{this.model}} class="topic-category" />
+          </PluginOutlet>
+
         {{/if}}
       </TopicTitle>
 
@@ -216,6 +233,20 @@
         />
       </div>
 
+      {{#if (and this.showBottomTopicMap this.loadedAllPosts)}}
+        <div class="topic-map --bottom">
+          <TopicMap
+            @model={{this.model}}
+            @topicDetails={{this.model.details}}
+            @postStream={{this.model.postStream}}
+            @showPMMap={{eq this.model.archetype "private_message"}}
+            @showInvite={{route-action "showInvite"}}
+            @removeAllowedGroup={{action "removeAllowedGroup"}}
+            @removeAllowedUser={{action "removeAllowedUser"}}
+          />
+        </div>
+      {{/if}}
+
       <PluginOutlet @name="above-timeline" @connectorTagName="div" />
 
       <TopicNavigation
@@ -261,7 +292,6 @@
             @convertToPublicTopic={{action "convertToPublicTopic"}}
             @convertToPrivateMessage={{action "convertToPrivateMessage"}}
             @fullscreen={{info.topicProgressExpanded}}
-            @mobileView={{this.site.mobileView}}
           />
         {{else}}
           <TopicProgress
@@ -282,8 +312,6 @@
             </span>
             <TopicAdminMenu
               @topic={{this.model}}
-              @openUpwards="true"
-              @rightSide="true"
               @toggleMultiSelect={{action "toggleMultiSelect"}}
               @showTopicSlowModeUpdate={{route-action
                 "showTopicSlowModeUpdate"
@@ -361,8 +389,6 @@
                 @toggleWiki={{action "toggleWiki"}}
                 @showTopReplies={{action "showTopReplies"}}
                 @cancelFilter={{action "cancelFilter"}}
-                @collapseSummary={{action "collapseSummary"}}
-                @showSummary={{action "showSummary"}}
                 @removeAllowedUser={{action "removeAllowedUser"}}
                 @removeAllowedGroup={{action "removeAllowedGroup"}}
                 @topVisibleChanged={{action "topVisibleChanged"}}
@@ -406,15 +432,9 @@
                         </span>
                       </div>
                       <div class="post-contents-wrapper">
-                        <ReviewableCreatedBy
-                          @user={{this.currentUser}}
-                          @tagName=""
-                        />
+                        <ReviewableCreatedBy @user={{this.currentUser}} />
                         <div class="post-contents">
-                          <ReviewableCreatedByName
-                            @user={{this.currentUser}}
-                            @tagName=""
-                          />
+                          <ReviewableCreatedByName @user={{this.currentUser}} />
                           <div class="post-body"><CookText
                               @rawText={{pending.raw}}
                             /></div>
@@ -427,7 +447,7 @@
                         />
                         <DButton
                           @label="review.delete"
-                          @icon="trash-alt"
+                          @icon="trash-can"
                           @action={{fn (action "deletePending") pending}}
                           class="btn-danger"
                         />
@@ -555,9 +575,7 @@
             @replyToPost={{action "replyToPost"}}
           />
         {{else}}
-          <div id="topic-footer-buttons">
-            <AnonymousTopicFooterButtons @topic={{this.model}} />
-          </div>
+          <AnonymousTopicFooterButtons @topic={{this.model}} />
         {{/if}}
       {{/if}}
 
@@ -597,7 +615,7 @@
             {{else}}
               <DButton
                 @action={{action "retryLoading"}}
-                @icon="sync"
+                @icon="arrows-rotate"
                 @label="errors.buttons.again"
                 class="btn-primary topic-retry"
               />

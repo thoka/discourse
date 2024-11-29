@@ -193,7 +193,7 @@ module CookedProcessorMixin
     if upload && upload.width && upload.width > 0
       @size_cache[url] = [upload.width, upload.height]
     else
-      @size_cache[url] = FinalDestination::FastImage.size(absolute_url)
+      @size_cache[url] = FastImage.size(absolute_url)
     end
   rescue Zlib::BufError, URI::Error, OpenSSL::SSL::SSLError
     # FastImage.size raises BufError for some gifs, leave it.
@@ -260,7 +260,7 @@ module CookedProcessorMixin
     img.name = "span"
     img.set_attribute("class", "broken-image")
     img.set_attribute("title", I18n.t("post.image_placeholder.broken"))
-    img << "<svg class=\"fa d-icon d-icon-unlink svg-icon\" aria-hidden=\"true\"><use href=\"#unlink\"></use></svg>"
+    img << "<svg class=\"fa d-icon d-icon-link-slash svg-icon\" aria-hidden=\"true\"><use href=\"#link-slash\"></use></svg>"
     img.remove_attribute("src")
     img.remove_attribute("width")
     img.remove_attribute("height")

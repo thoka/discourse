@@ -1,7 +1,7 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
-import { getOwner } from "@ember/application";
 import { action } from "@ember/object";
+import { getOwner } from "@ember/owner";
 import { cancel, next } from "@ember/runloop";
 import { service } from "@ember/service";
 import { isPresent } from "@ember/utils";
@@ -25,8 +25,7 @@ import {
 } from "discourse/lib/user-status-on-autocomplete";
 import { cloneJSON } from "discourse-common/lib/object";
 import { findRawTemplate } from "discourse-common/lib/raw-templates";
-import I18n from "discourse-i18n";
-import ChatModalChannelSummary from "discourse/plugins/chat/discourse/components/chat/modal/channel-summary";
+import { i18n } from "discourse-i18n";
 import { chatComposerButtons } from "discourse/plugins/chat/discourse/lib/chat-composer-buttons";
 import ChatMessageInteractor from "discourse/plugins/chat/discourse/lib/chat-message-interactor";
 import TextareaInteractor from "discourse/plugins/chat/discourse/lib/textarea-interactor";
@@ -396,13 +395,6 @@ export default class ChatComposer extends Component {
     }
   }
 
-  @action
-  showChannelSummaryModal() {
-    this.modal.show(ChatModalChannelSummary, {
-      model: { channelId: this.args.channel.id },
-    });
-  }
-
   #addMentionedUser(userData) {
     const user = this.store.createRecord("user", userData);
     this.draft.mentionedUsers.set(user.id, user);
@@ -590,7 +582,7 @@ export default class ChatComposer extends Component {
           })
           .then((list) => {
             if (list?.length) {
-              list.push({ label: I18n.t("composer.more_emoji"), term });
+              list.push({ label: i18n("composer.more_emoji"), term });
             }
             return list;
           });

@@ -1,14 +1,16 @@
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { empty, equal, notEmpty } from "@ember/object/computed";
+import { next } from "@ember/runloop";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import { or } from "truth-helpers";
 import GlimmerComponentWithDeprecatedParentView from "discourse/components/glimmer-component-with-deprecated-parent-view";
 import concatClass from "discourse/helpers/concat-class";
+import element from "discourse/helpers/element";
 import icon from "discourse-common/helpers/d-icon";
 import deprecated from "discourse-common/lib/deprecated";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 const ACTION_AS_STRING_DEPRECATION_ARGS = [
   "DButton no longer supports @action as a string. Please refactor to use an closure action instead.",
@@ -49,21 +51,21 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
 
   get computedTitle() {
     if (this.args.title) {
-      return I18n.t(this.args.title);
+      return i18n(this.args.title);
     }
     return this.args.translatedTitle;
   }
 
   get computedLabel() {
     if (this.args.label) {
-      return I18n.t(this.args.label);
+      return i18n(this.args.label);
     }
     return this.args.translatedLabel;
   }
 
   get computedAriaLabel() {
     if (this.args.ariaLabel) {
-      return I18n.t(this.args.ariaLabel);
+      return i18n(this.args.ariaLabel);
     }
     if (this.args.translatedAriaLabel) {
       return this.args.translatedAriaLabel;
@@ -75,6 +77,15 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
       return "true";
     }
     if (this.args.ariaExpanded === false) {
+      return "false";
+    }
+  }
+
+  get computedAriaPressed() {
+    if (this.args.ariaPressed === true) {
+      return "true";
+    }
+    if (this.args.ariaPressed === false) {
       return "false";
     }
   }
@@ -102,7 +113,7 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
   }
 
   _triggerAction(event) {
-    const { action: actionVal, route } = this.args;
+    const { action: actionVal, route, routeModels } = this.args;
 
     if (actionVal || route) {
       if (actionVal) {
@@ -118,20 +129,29 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
             );
           }
         } else if (typeof actionVal === "object" && actionVal.value) {
-          if (forwardEvent) {
-            actionVal.value(actionParam, event);
-          } else {
-            actionVal.value(actionParam);
-          }
+          // Using `next()` to optimise INP
+          next(() =>
+            forwardEvent
+              ? actionVal.value(actionParam, event)
+              : actionVal.value(actionParam)
+          );
         } else if (typeof actionVal === "function") {
-          if (forwardEvent) {
-            actionVal(actionParam, event);
-          } else {
-            actionVal(actionParam);
-          }
+          // Using `next()` to optimise INP
+          next(() =>
+            forwardEvent
+              ? actionVal(actionParam, event)
+              : actionVal(actionParam)
+          );
         }
       } else if (route) {
-        this.router.transitionTo(route);
+        if (routeModels) {
+          const routeModelsArray = Array.isArray(routeModels)
+            ? routeModels
+            : [routeModels];
+          this.router.transitionTo(route, ...routeModelsArray);
+        } else {
+          this.router.transitionTo(route);
+        }
       }
 
       event.preventDefault();
@@ -142,18 +162,14 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
   }
 
   get wrapperElement() {
-    const { href, type } = this.args;
-
-    return href
-      ? <template><a href={{href}} ...attributes>{{yield}}</a></template>
-      : <template>
-          <button type={{or type "button"}} ...attributes>{{yield}}</button>
-        </template>;
+    return element(this.args.href ? "a" : "button");
   }
 
   <template>
     {{! template-lint-disable no-pointer-down-event-binding }}
     <this.wrapperElement
+      href={{@href}}
+      type={{unless @href (or @type "button")}}
       {{! For legacy compatibility. Prefer passing class as attributes. }}
       class={{concatClass
         @class
@@ -167,6 +183,7 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
       form={{@form}}
       aria-controls={{@ariaControls}}
       aria-expanded={{this.computedAriaExpanded}}
+      aria-pressed={{this.computedAriaPressed}}
       tabindex={{@tabindex}}
       disabled={{this.isDisabled}}
       title={{this.computedTitle}}

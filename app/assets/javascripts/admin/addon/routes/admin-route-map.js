@@ -14,10 +14,6 @@ export default function () {
         path: "/dashboard/reports",
         resetNamespace: true,
       });
-      this.route("admin.dashboardNewFeatures", {
-        path: "/dashboard/whats-new",
-        resetNamespace: true,
-      });
     });
 
     this.route(
@@ -72,15 +68,32 @@ export default function () {
           }
         );
 
-        this.route("adminUserFields", {
-          path: "/user_fields",
-          resetNamespace: true,
-        });
-        this.route("adminEmojis", { path: "/emojis", resetNamespace: true });
-        this.route("adminPermalinks", {
-          path: "/permalinks",
-          resetNamespace: true,
-        });
+        this.route(
+          "adminUserFields",
+          { path: "/user_fields", resetNamespace: true },
+          function () {
+            this.route("new");
+            this.route("edit", { path: "/:id/edit" });
+            this.route("index", { path: "/" });
+          }
+        );
+        this.route(
+          "adminEmojis",
+          { path: "/emojis", resetNamespace: true },
+          function () {
+            this.route("new");
+            this.route("index", { path: "/" });
+            this.route("settings");
+          }
+        );
+        this.route(
+          "adminPermalinks",
+          { path: "/permalinks", resetNamespace: true },
+          function () {
+            this.route("new");
+            this.route("edit", { path: "/:permalink_id" });
+          }
+        );
         this.route("adminEmbedding", {
           path: "/embedding",
           resetNamespace: true,
@@ -146,6 +159,7 @@ export default function () {
       { path: "/backups", resetNamespace: true },
       function () {
         this.route("logs");
+        this.route("settings");
       }
     );
 
@@ -215,9 +229,15 @@ export default function () {
       function () {
         this.route("flags", function () {
           this.route("index", { path: "/" });
+          this.route("new");
+          this.route("edit", { path: "/:flag_id" });
+          this.route("settings");
         });
 
         this.route("about");
+        this.route("lookAndFeel", { path: "/look-and-feel" }, function () {
+          this.route("themes");
+        });
       }
     );
 
@@ -236,5 +256,13 @@ export default function () {
       path: "/whats-new",
       resetNamespace: true,
     });
+
+    this.route(
+      "adminSection",
+      { path: "/section", resetNamespace: true },
+      function () {
+        this.route("account");
+      }
+    );
   });
 }

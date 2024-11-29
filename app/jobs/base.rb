@@ -69,6 +69,7 @@ module Jobs
 
           MethodProfiler.ensure_discourse_instrumentation!
           MethodProfiler.start
+          @data["live_slots_start"] = GC.stat[:heap_live_slots]
         end
       end
 
@@ -86,6 +87,8 @@ module Jobs
           @data["redis_calls"] = profile.dig(:redis, :calls) || 0 # Redis commands
           @data["net_duration"] = profile.dig(:net, :duration) || 0 # Redis Duration (s)
           @data["net_calls"] = profile.dig(:net, :calls) || 0 # Redis commands
+          @data["live_slots_finish"] = GC.stat[:heap_live_slots]
+          @data["live_slots"] = @data["live_slots_finish"] - @data["live_slots_start"]
 
           if exception.present?
             @data["exception"] = exception # Exception - if job fails a json encoded exception
@@ -137,7 +140,7 @@ module Jobs
       end
 
       def enabled?
-        ENV["DISCOURSE_LOG_SIDEKIQ"] == "1"
+        Discourse.enable_sidekiq_logging?
       end
 
       def self.mutex
@@ -381,11 +384,13 @@ module Jobs
 
     # Simulate the args being dumped/parsed through JSON
     parsed_opts = JSON.parse(JSON.dump(opts))
-    Discourse.deprecate(<<~TEXT.squish, since: "2.9", drop_from: "3.0") if opts != parsed_opts
+    if opts != parsed_opts
+      Discourse.deprecate(<<~TEXT.squish, since: "2.9", drop_from: "3.0", output_in_test: true)
         #{klass.name} was enqueued with argument values which do not cleanly serialize to/from JSON.
         This means that the job will be run with slightly different values than the ones supplied to `enqueue`.
         Argument values should be strings, booleans, numbers, or nil (or arrays/hashes of those value types).
       TEXT
+    end
     opts = parsed_opts
 
     if ::Jobs.run_later?

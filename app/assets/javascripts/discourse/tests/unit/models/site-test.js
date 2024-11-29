@@ -1,4 +1,4 @@
-import { getOwner } from "@ember/application";
+import { getOwner } from "@ember/owner";
 import { setupTest } from "ember-qunit";
 import { module, test } from "qunit";
 import Site from "discourse/models/site";
@@ -8,7 +8,7 @@ module("Unit | Model | site", function (hooks) {
 
   test("create", function (assert) {
     const store = getOwner(this).lookup("service:store");
-    assert.ok(store.createRecord("site"), "it can create with no parameters");
+    assert.true(!!store.createRecord("site"), "can create with no parameters");
   });
 
   test("instance", function (assert) {

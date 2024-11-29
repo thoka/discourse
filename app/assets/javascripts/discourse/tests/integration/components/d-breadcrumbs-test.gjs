@@ -3,7 +3,7 @@ import { module, test } from "qunit";
 import DBreadcrumbsContainer from "discourse/components/d-breadcrumbs-container";
 import DBreadcrumbsItem from "discourse/components/d-breadcrumbs-item";
 import { setupRenderingTest } from "discourse/tests/helpers/component-test";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 
 module(
   "Component | DBreadcrumbsContainer and DBreadcrumbsItem",
@@ -13,8 +13,8 @@ module(
     test("it renders a DBreadcrumbsContainer with multiple DBreadcrumbsItems", async function (assert) {
       await render(<template>
         <DBreadcrumbsContainer />
-        <DBreadcrumbsItem @route="admin" @label={{i18n "admin_title"}} />
-        <DBreadcrumbsItem @route="about" @label={{i18n "about.simple_title"}} />
+        <DBreadcrumbsItem @path="/admin" @label={{i18n "admin_title"}} />
+        <DBreadcrumbsItem @path="/about" @label={{i18n "about.simple_title"}} />
       </template>);
 
       assert
@@ -28,7 +28,7 @@ module(
           @additionalLinkClasses="some-class"
           @additionalItemClasses="other-class"
         />
-        <DBreadcrumbsItem @route="admin" @label={{i18n "admin_title"}} />
+        <DBreadcrumbsItem @path="/admin" @label={{i18n "admin_title"}} />
       </template>);
 
       assert.dom(".d-breadcrumbs .d-breadcrumbs__item.other-class").exists();
@@ -43,7 +43,7 @@ module(
       await render(<template>
         <DBreadcrumbsContainer />
         <DBreadcrumbsContainer />
-        <DBreadcrumbsItem @route="admin" @label={{i18n "admin_title"}} />
+        <DBreadcrumbsItem @path="/admin" @label={{i18n "admin_title"}} />
       </template>);
 
       assert.dom(".d-breadcrumbs").exists({ count: 2 });

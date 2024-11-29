@@ -2,7 +2,7 @@ import { service } from "@ember/service";
 import { Promise } from "rsvp";
 import { SEARCH_PRIORITIES } from "discourse/lib/constants";
 import DiscourseRoute from "discourse/routes/discourse";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 let _newCategoryColor = "0088CC";
 let _newCategoryTextColor = "FFFFFF";
@@ -57,11 +57,12 @@ export default class NewCategory extends DiscourseRoute {
       search_priority: SEARCH_PRIORITIES.normal,
       required_tag_groups: [],
       form_template_ids: [],
+      minimum_required_tags: 0,
     });
   }
 
   titleToken() {
-    return I18n.t("category.create");
+    return i18n("category.create");
   }
 
   groupPermissions() {

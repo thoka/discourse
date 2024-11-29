@@ -16,7 +16,7 @@
   // positions are relative to the .d-header .panel div
   top: 100%; // directly underneath .panel
   right: -10px; // 10px to the right of .panel - adjust as needed
-  max-height: 80vh;
+  max-height: calc(100dvh - var(--header-offset) - 1em);
   border-radius: var(--d-border-radius-large);
 }
 
@@ -93,7 +93,7 @@
   }
 
   .sidebar-filter {
-    width: calc(320px - 2 * var(--d-sidebar-row-horizontal-padding));
+    width: 100%;
   }
 }
 
@@ -126,9 +126,14 @@
 
     .btn {
       display: flex;
-      padding: 0.857em;
       position: relative;
-      border-radius: 0px;
+      border-radius: 0;
+      padding: 0.857em;
+      @media screen and (max-height: 400px) {
+        // helps with 400% zoom level
+        font-size: var(--font-down-1);
+        padding: 0.5em 0.875em;
+      }
 
       .d-icon {
         color: var(--primary-medium);
@@ -140,6 +145,11 @@
         right: 6px;
         top: 6px;
         font-size: var(--font-down-3);
+        @media screen and (max-height: 400px) {
+          // helps with 400% zoom level
+          right: 0;
+          top: 0;
+        }
       }
 
       &.active {
@@ -198,6 +208,9 @@
       .d-icon {
         padding-top: 0;
       }
+      &.enabled .d-icon {
+        color: var(--tertiary);
+      }
     }
 
     .set-user-status {
@@ -225,6 +238,11 @@
       .d-icon-toggle-on {
         color: var(--tertiary);
       }
+    }
+
+    hr {
+      border-top: 1px solid var(--primary-low);
+      width: 100%;
     }
   }
 }
@@ -338,8 +356,8 @@
     font-size: var(--font-down-1);
   }
 
-  .sidebar-admin-header__row {
-    width: calc(320px - 2 * var(--d-sidebar-row-horizontal-padding));
+  .sidebar-panel-header__row {
+    width: 100%;
   }
 
   .sidebar-sections {
@@ -571,6 +589,7 @@
 .user-notifications-list.show-avatars {
   li.notification,
   li.bookmark,
+  li.reviewable,
   li.message {
     a {
       color: var(--primary);
@@ -649,14 +668,14 @@
   width: 100%;
   position: fixed;
   background-color: rgba(0, 0, 0, 0.3);
-  top: var(--header-top);
+  top: 0;
   left: 0;
   display: none;
   touch-action: pan-y pinch-zoom;
 }
 
 .menu-panel.slide-in {
-  top: var(--header-top);
+  top: 0;
   box-sizing: border-box;
   // ensure there's always space to click outside on tiny devices
   max-width: 90vw;
@@ -667,11 +686,5 @@
   }
   box-shadow: 0px 0 30px -2px rgba(0, 0, 0, 0.5);
 
-  --base-height: calc(var(--100dvh) - var(--header-top));
-
-  height: var(--base-height);
-
-  html.footer-nav-ipad & {
-    height: calc(var(--base-height) - var(--footer-nav-height));
-  }
+  height: var(--100dvh);
 }

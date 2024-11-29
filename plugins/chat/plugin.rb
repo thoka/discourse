@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # name: chat
-# about: Adds chat functionality.
+# about: Adds chat functionality to your site so it can natively support both long-form and short-form communication needs of your online community.
 # meta_topic_id: 230881
 # version: 0.4
 # authors: Kane York, Mark VanLandingham, Martin Brennan, Joffrey Jaffeux
@@ -18,6 +18,7 @@ register_asset "stylesheets/mobile/index.scss", :mobile
 
 register_svg_icon "comments"
 register_svg_icon "comment-slash"
+register_svg_icon "comment-dots"
 register_svg_icon "lock"
 register_svg_icon "clipboard"
 register_svg_icon "file-audio"
@@ -26,7 +27,7 @@ register_svg_icon "file-image"
 register_svg_icon "stop-circle"
 
 # route: /admin/plugins/chat
-add_admin_route "chat.admin.title", "chat"
+add_admin_route "chat.admin.title", "chat", use_new_show_route: true
 
 GlobalSetting.add_default(:allow_unsecure_chat_uploads, false)
 
@@ -49,6 +50,7 @@ after_initialize do
 
   register_user_custom_field_type(Chat::LAST_CHAT_CHANNEL_ID, :integer)
   DiscoursePluginRegistry.serialized_current_user_fields << Chat::LAST_CHAT_CHANNEL_ID
+  DiscoursePluginRegistry.register_flag_applies_to_type("Chat::Message", self)
 
   UserUpdater::OPTION_ATTR.push(:chat_enabled)
   UserUpdater::OPTION_ATTR.push(:only_chat_push_notifications)
@@ -66,6 +68,7 @@ after_initialize do
 
     Guardian.prepend Chat::GuardianExtensions
     UserNotifications.prepend Chat::UserNotificationsExtension
+    Notifications::ConsolidationPlan.prepend Chat::NotificationConsolidationExtension
     UserOption.prepend Chat::UserOptionExtension
     Category.prepend Chat::CategoryExtension
     Reviewable.prepend Chat::ReviewableExtension
@@ -133,7 +136,7 @@ after_initialize do
 
   add_to_serializer(:user_card, :can_chat_user) do
     return false if !SiteSetting.chat_enabled
-    return false if scope.user.blank? || scope.user.id == object.id
+    return false if scope.user.blank?
     return false if !scope.user.user_option.chat_enabled || !object.user_option.chat_enabled
 
     scope.can_direct_message? && Guardian.new(object).can_chat?
@@ -141,7 +144,7 @@ after_initialize do
 
   add_to_serializer(:hidden_profile, :can_chat_user) do
     return false if !SiteSetting.chat_enabled
-    return false if scope.user.blank? || scope.user.id == object.id
+    return false if scope.user.blank?
     return false if !scope.user.user_option.chat_enabled || !object.user_option.chat_enabled
 
     scope.can_direct_message? && Guardian.new(object).can_chat?
@@ -269,12 +272,6 @@ after_initialize do
     object.chat_separate_sidebar_mode
   end
 
-  add_to_serializer(
-    :upload,
-    :thumbnail,
-    include_condition: -> { SiteSetting.chat_enabled && SiteSetting.create_thumbnails },
-  ) { object.thumbnail }
-
   on(:site_setting_changed) do |name, old_value, new_value|
     user_option_field = Chat::RETENTION_SETTINGS_TO_USER_OPTION_FIELDS[name.to_sym]
     begin
@@ -292,10 +289,7 @@ after_initialize do
     end
 
     if name == :chat_allowed_groups
-      Jobs.enqueue(
-        Jobs::Chat::AutoRemoveMembershipHandleChatAllowedGroupsChange,
-        new_allowed_groups: new_value,
-      )
+      Jobs.enqueue(Jobs::Chat::AutoJoinUsers, event: "chat_allowed_groups_changed")
     end
   end
 
@@ -304,11 +298,8 @@ after_initialize do
     Chat::PostNotificationHandler.new(post, notified).handle
   end
 
-  on(:group_destroyed) do |group, user_ids|
-    Jobs.enqueue(
-      Jobs::Chat::AutoRemoveMembershipHandleDestroyedGroup,
-      destroyed_group_user_ids: user_ids,
-    )
+  on(:group_destroyed) do |group, _user_ids|
+    Chat::AutoLeaveChannels.call(params: { group_id: group.id, event: :group_destroyed })
   end
 
   register_presence_channel_prefix("chat") do |channel_name|
@@ -319,25 +310,22 @@ after_initialize do
   end
 
   register_presence_channel_prefix("chat-reply") do |channel_name|
-    if chat_channel_id = channel_name[%r{/chat-reply/(\d+)}, 1]
-      chat_channel = Chat::Channel.find(chat_channel_id)
+    if (
+         channel_id, thread_id =
+           channel_name.match(%r{^/chat-reply/(\d+)(?:/thread/(\d+))?$})&.captures
+       )
+      chat_channel = nil
+      if thread_id
+        chat_channel = Chat::Thread.find_by!(id: thread_id, channel_id: channel_id).channel
+      else
+        chat_channel = Chat::Channel.find(channel_id)
+      end
 
       PresenceChannel::Config.new.tap do |config|
         config.allowed_group_ids = chat_channel.allowed_group_ids
         config.allowed_user_ids = chat_channel.allowed_user_ids
         config.public = !chat_channel.read_restricted?
       end
-    end
-  rescue ActiveRecord::RecordNotFound
-    nil
-  end
-
-  register_presence_channel_prefix("chat-user") do |channel_name|
-    if user_id = channel_name[%r{/chat-user/(chat|core)/(\d+)}, 2]
-      user = User.find(user_id)
-      config = PresenceChannel::Config.new
-      config.allowed_user_ids = [user.id]
-      config
     end
   rescue ActiveRecord::RecordNotFound
     nil
@@ -353,52 +341,31 @@ after_initialize do
 
   on(:user_seen) do |user|
     if user.last_seen_at == user.first_seen_at
-      Chat::Channel
-        .where(auto_join_users: true)
-        .each do |channel|
-          Chat::ChannelMembershipManager.new(channel).enforce_automatic_user_membership(user)
-        end
+      Chat::AutoJoinChannels.call(params: { user_id: user.id })
     end
   end
 
   on(:user_confirmed_email) do |user|
-    if user.active?
-      Chat::Channel
-        .where(auto_join_users: true)
-        .each do |channel|
-          Chat::ChannelMembershipManager.new(channel).enforce_automatic_user_membership(user)
-        end
-    end
+    Chat::AutoJoinChannels.call(params: { user_id: user.id }) if user.active?
   end
 
-  on(:user_added_to_group) do |user, group|
-    channels_to_add =
-      Chat::Channel
-        .distinct
-        .where(auto_join_users: true, chatable_type: "Category")
-        .joins(
-          "INNER JOIN category_groups ON category_groups.category_id = chat_channels.chatable_id",
-        )
-        .where(category_groups: { group_id: group.id })
-
-    channels_to_add.each do |channel|
-      Chat::ChannelMembershipManager.new(channel).enforce_automatic_user_membership(user)
-    end
+  on(:user_added_to_group) do |user, _group|
+    Chat::AutoJoinChannels.call(params: { user_id: user.id })
   end
 
-  on(:user_removed_from_group) do |user, group|
-    Jobs.enqueue(Jobs::Chat::AutoRemoveMembershipHandleUserRemovedFromGroup, user_id: user.id)
+  on(:user_removed_from_group) do |user, _group|
+    Chat::AutoLeaveChannels.call(params: { user_id: user.id, event: :user_removed_from_group })
   end
 
   on(:category_updated) do |category|
     # There's a bug on core where this event is triggered with an `#update` result (true/false)
-    if category.is_a?(Category) && category_channel = Chat::Channel.find_by(chatable: category)
-      if category_channel.auto_join_users
-        Chat::ChannelMembershipManager.new(category_channel).enforce_automatic_channel_memberships
-      end
+    next unless category.is_a?(Category)
+    next unless category_channel = Chat::Channel.find_by(chatable: category)
 
-      Jobs.enqueue(Jobs::Chat::AutoRemoveMembershipHandleCategoryUpdated, category_id: category.id)
+    if category_channel.auto_join_users
+      Chat::AutoJoinChannels.call(params: { category_id: category.id })
     end
+    Chat::AutoLeaveChannels.call(params: { category_id: category.id, event: :category_updated })
   end
 
   # outgoing webhook events
@@ -440,6 +407,11 @@ after_initialize do
     put "/admin/plugins/chat/hooks/:incoming_chat_webhook_id" =>
           "chat/admin/incoming_webhooks#update",
         :constraints => StaffConstraint.new
+    get "/admin/plugins/chat/hooks/new" => "chat/admin/incoming_webhooks#new",
+        :constraints => StaffConstraint.new
+    get "/admin/plugins/chat/hooks/:incoming_chat_webhook_id" =>
+          "chat/admin/incoming_webhooks#show",
+        :constraints => StaffConstraint.new
     delete "/admin/plugins/chat/hooks/:incoming_chat_webhook_id" =>
              "chat/admin/incoming_webhooks#destroy",
            :constraints => StaffConstraint.new
@@ -449,32 +421,36 @@ after_initialize do
         }
   end
 
-  if defined?(DiscourseAutomation)
-    add_automation_scriptable("send_chat_message") do
-      field :chat_channel_id, component: :text, required: true
-      field :message, component: :message, required: true, accepts_placeholders: true
-      field :sender, component: :user
+  add_automation_scriptable("send_chat_message") do
+    field :chat_channel_id, component: :text, required: true
+    field :message, component: :message, required: true, accepts_placeholders: true
+    field :sender, component: :user
 
-      placeholder :channel_name
+    placeholder :channel_name
+    placeholder :post_quote, triggerable: :post_created_edited
 
-      triggerables [:recurring]
+    triggerables %i[recurring topic_tags_changed post_created_edited]
 
-      script do |context, fields, automation|
-        sender = User.find_by(username: fields.dig("sender", "value")) || Discourse.system_user
-        channel = Chat::Channel.find_by(id: fields.dig("chat_channel_id", "value"))
+    script do |context, fields, automation|
+      sender = User.find_by(username: fields.dig("sender", "value")) || Discourse.system_user
+      channel = Chat::Channel.find_by(id: fields.dig("chat_channel_id", "value"))
+      placeholders = { channel_name: channel.title(sender) }.merge(context["placeholders"] || {})
 
-        placeholders = { channel_name: channel.title(sender) }.merge(context["placeholders"] || {})
+      if context["kind"] == "post_created_edited"
+        placeholders[:post_quote] = utils.build_quote(context["post"])
+      end
 
-        creator =
-          ::Chat::CreateMessage.call(
+      creator =
+        ::Chat::CreateMessage.call(
+          guardian: sender.guardian,
+          params: {
             chat_channel_id: channel.id,
-            guardian: sender.guardian,
             message: utils.apply_placeholders(fields.dig("message", "value"), placeholders),
-          )
+          },
+        )
 
-        if creator.failure?
-          Rails.logger.warn "[discourse-automation] Chat message failed to send:\n#{creator.inspect_steps.inspect}\n#{creator.inspect_steps.error}"
-        end
+      if creator.failure?
+        Rails.logger.warn "[discourse-automation] Chat message failed to send:\n#{creator.inspect_steps.inspect}\n#{creator.inspect_steps.error}"
       end
     end
   end
@@ -497,9 +473,7 @@ after_initialize do
 
   register_email_unsubscriber("chat_summary", EmailControllerHelper::ChatSummaryUnsubscriber)
 
-  register_stat("chat_messages", show_in_ui: true, expose_via_api: true) do
-    Chat::Statistics.about_messages
-  end
+  register_stat("chat_messages", expose_via_api: true) { Chat::Statistics.about_messages }
   register_stat("chat_users", expose_via_api: true) { Chat::Statistics.about_users }
   register_stat("chat_channels", expose_via_api: true) { Chat::Statistics.about_channels }
 
@@ -531,7 +505,15 @@ after_initialize do
     Proc.new { |user| Jobs.enqueue(Jobs::Chat::DeleteUserMessages, user_id: user.id) },
   )
 
+  register_notification_consolidation_plan(
+    Chat::NotificationConsolidationExtension.watched_thread_message_plan,
+  )
+
   register_bookmarkable(Chat::MessageBookmarkable)
+
+  # When we eventually allow secure_uploads in chat, this will need to be
+  # removed. Depending on the channel, uploads may end up being secure.
+  UploadSecurity.register_custom_public_type("chat-composer")
 end
 
 if Rails.env == "test"

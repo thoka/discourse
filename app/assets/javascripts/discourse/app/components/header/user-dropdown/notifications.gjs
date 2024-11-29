@@ -7,16 +7,17 @@ import {
   addExtraUserClasses,
   renderAvatar,
 } from "discourse/helpers/user-avatar";
+import { applyValueTransformer } from "discourse/lib/transformer";
 import icon from "discourse-common/helpers/d-icon";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 import UserTip from "../../user-tip";
 import UserStatusBubble from "./user-status-bubble";
+
+const DEFAULT_AVATAR_SIZE = "medium";
 
 export default class Notifications extends Component {
   @service currentUser;
   @service siteSettings;
-
-  avatarSize = "medium";
 
   get avatar() {
     const avatarAttrs = addExtraUserClasses(this.currentUser, {});
@@ -29,6 +30,13 @@ export default class Notifications extends Component {
         name: this.siteSettings.enable_names && this.currentUser.name,
         ...avatarAttrs,
       })
+    );
+  }
+
+  get avatarSize() {
+    return applyValueTransformer(
+      "header-notifications-avatar-size",
+      DEFAULT_AVATAR_SIZE
     );
   }
 
@@ -56,6 +64,7 @@ export default class Notifications extends Component {
         @titleText={{i18n "user_tips.first_notification.title"}}
         @contentText={{i18n "user_tips.first_notification.content"}}
         @showSkipButton={{true}}
+        @priority={{1000}}
       />
     {{/if}}
 
@@ -67,7 +76,10 @@ export default class Notifications extends Component {
     {{/if}}
 
     {{#if this.isInDoNotDisturb}}
-      <div class="do-not-disturb-background">{{icon "discourse-dnd"}}</div>
+      <div
+        class="do-not-disturb-background"
+        title={{i18n "notifications.paused"}}
+      >{{icon "discourse-dnd"}}</div>
     {{else}}
       {{#if this.currentUser.new_personal_messages_notifications_count}}
         <a

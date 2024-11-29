@@ -5,14 +5,12 @@ import { alias, notEmpty } from "@ember/object/computed";
 import { service } from "@ember/service";
 import { isEmpty } from "@ember/utils";
 import { observes } from "@ember-decorators/object";
-import $ from "jquery";
 import { Promise } from "rsvp";
 import { ajax } from "discourse/lib/ajax";
 import { setting } from "discourse/lib/computed";
 import cookie, { removeCookie } from "discourse/lib/cookie";
 import { userPath } from "discourse/lib/url";
 import { emailValid } from "discourse/lib/utilities";
-import { wavingHandURL } from "discourse/lib/waving-hand-url";
 import NameValidation from "discourse/mixins/name-validation";
 import PasswordValidation from "discourse/mixins/password-validation";
 import UserFieldsValidation from "discourse/mixins/user-fields-validation";
@@ -21,7 +19,7 @@ import { findAll } from "discourse/models/login-method";
 import User from "discourse/models/user";
 import discourseDebounce from "discourse-common/lib/debounce";
 import discourseComputed, { bind } from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export default class CreateAccount extends Component.extend(
   PasswordValidation,
@@ -41,6 +39,8 @@ export default class CreateAccount extends Component.extend(
   userFields = null;
   isDeveloper = false;
   maskPassword = true;
+  passwordValidationVisible = false;
+  emailValidationVisible = false;
 
   @notEmpty("model.authOptions") hasAuthOptions;
   @setting("enable_local_logins") canCreateLocal;
@@ -107,11 +107,6 @@ export default class CreateAccount extends Component.extend(
     return this.formSubmitted;
   }
 
-  @discourseComputed()
-  wavingHandURL() {
-    return wavingHandURL();
-  }
-
   @discourseComputed("userFields", "hasAtLeastOneLoginButton", "hasAuthOptions")
   modalBodyClasses(userFields, hasAtLeastOneLoginButton, hasAuthOptions) {
     const classes = [];
@@ -138,9 +133,51 @@ export default class CreateAccount extends Component.extend(
   }
 
   @discourseComputed
+  showFullname() {
+    return this.siteSettings.enable_names;
+  }
+
+  @discourseComputed
   fullnameRequired() {
+    return this.siteSettings.full_name_required;
+  }
+
+  @discourseComputed(
+    "emailValidation.ok",
+    "emailValidation.reason",
+    "emailValidationVisible"
+  )
+  showEmailValidation(
+    emailValidationOk,
+    emailValidationReason,
+    emailValidationVisible
+  ) {
     return (
-      this.siteSettings.full_name_required || this.siteSettings.enable_names
+      emailValidationOk || (emailValidationReason && emailValidationVisible)
+    );
+  }
+
+  @discourseComputed(
+    "passwordValidation.ok",
+    "passwordValidation.reason",
+    "passwordValidationVisible"
+  )
+  showPasswordValidation(
+    passwordValidationOk,
+    passwordValidationReason,
+    passwordValidationVisible
+  ) {
+    return (
+      passwordValidationOk ||
+      (passwordValidationReason && passwordValidationVisible)
+    );
+  }
+
+  @discourseComputed("usernameValidation.reason")
+  showUsernameInstructions(usernameValidationReason) {
+    return (
+      this.siteSettings.show_signup_form_username_instructions &&
+      !usernameValidationReason
     );
   }
 
@@ -152,7 +189,7 @@ export default class CreateAccount extends Component.extend(
   @discourseComputed
   disclaimerHtml() {
     if (this.site.tos_url && this.site.privacy_policy_url) {
-      return I18n.t("create_account.disclaimer", {
+      return i18n("create_account.disclaimer", {
         tos_link: this.site.tos_url,
         privacy_link: this.site.privacy_policy_url,
       });
@@ -188,8 +225,8 @@ export default class CreateAccount extends Component.extend(
     if (isEmpty(email)) {
       return EmberObject.create(
         Object.assign(failedAttrs, {
-          message: I18n.t("user.email.required"),
-          reason: forceValidationReason ? I18n.t("user.email.required") : null,
+          message: i18n("user.email.required"),
+          reason: forceValidationReason ? i18n("user.email.required") : null,
         })
       );
     }
@@ -197,7 +234,7 @@ export default class CreateAccount extends Component.extend(
     if (rejectedEmails.includes(email) || !emailValid(email)) {
       return EmberObject.create(
         Object.assign(failedAttrs, {
-          reason: I18n.t("user.email.invalid"),
+          reason: i18n("user.email.invalid"),
         })
       );
     }
@@ -208,7 +245,7 @@ export default class CreateAccount extends Component.extend(
     ) {
       return EmberObject.create({
         ok: true,
-        reason: I18n.t("user.email.authenticated", {
+        reason: i18n("user.email.authenticated", {
           provider: this.authProviderDisplayName(
             this.get("model.authOptions.auth_provider")
           ),
@@ -218,12 +255,22 @@ export default class CreateAccount extends Component.extend(
 
     return EmberObject.create({
       ok: true,
-      reason: I18n.t("user.email.ok"),
+      reason: i18n("user.email.ok"),
     });
   }
 
   @action
+  togglePasswordValidation() {
+    this.set(
+      "passwordValidationVisible",
+      Boolean(this.passwordValidation.reason)
+    );
+  }
+
+  @action
   checkEmailAvailability() {
+    this.set("emailValidationVisible", Boolean(this.emailValidation.reason));
+
     if (
       !this.emailValidation.ok ||
       this.serverAccountEmail === this.model.accountEmail
@@ -251,7 +298,7 @@ export default class CreateAccount extends Component.extend(
             serverAccountEmail: this.model.accountEmail,
             serverEmailValidation: EmberObject.create({
               ok: true,
-              reason: I18n.t("user.email.ok"),
+              reason: i18n("user.email.ok"),
             }),
           });
         }
@@ -388,20 +435,19 @@ export default class CreateAccount extends Component.extend(
           this._challengeExpiry = 1;
 
           // Trigger the browser's password manager using the hidden static login form:
-          const $hidden_login_form = $("#hidden-login-form");
-          $hidden_login_form
-            .find("input[name=username]")
-            .val(attrs.accountUsername);
-          $hidden_login_form
-            .find("input[name=password]")
-            .val(attrs.accountPassword);
-          $hidden_login_form
-            .find("input[name=redirect]")
-            .val(userPath("account-created"));
-          $hidden_login_form.submit();
+          const hiddenLoginForm = document.querySelector("#hidden-login-form");
+          if (hiddenLoginForm) {
+            hiddenLoginForm.querySelector("input[name=username]").value =
+              attrs.accountUsername;
+            hiddenLoginForm.querySelector("input[name=password]").value =
+              attrs.accountPassword;
+            hiddenLoginForm.querySelector("input[name=redirect]").value =
+              userPath("account-created");
+            hiddenLoginForm.submit();
+          }
           return new Promise(() => {}); // This will never resolve, the page will reload instead
         } else {
-          this.set("flash", result.message || I18n.t("create_account.failed"));
+          this.set("flash", result.message || i18n("create_account.failed"));
           if (result.is_developer) {
             this.set("isDeveloper", true);
           }
@@ -427,7 +473,7 @@ export default class CreateAccount extends Component.extend(
       () => {
         this.set("formSubmitted", false);
         removeCookie("destination_url");
-        return this.set("flash", I18n.t("create_account.failed"));
+        return this.set("flash", i18n("create_account.failed"));
       }
     );
   }
@@ -440,9 +486,17 @@ export default class CreateAccount extends Component.extend(
     if (!url) {
       return;
     }
-    return I18n.t("create_account.associate", {
+    return i18n("create_account.associate", {
       associate_link: url,
-      provider: I18n.t(`login.${provider}.name`),
+      provider: i18n(`login.${provider}.name`),
+    });
+  }
+
+  @action
+  scrollInputIntoView(event) {
+    event.target.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
     });
   }
 
@@ -461,6 +515,8 @@ export default class CreateAccount extends Component.extend(
   createAccount() {
     this.set("flash", "");
     this.set("forceValidationReason", true);
+    this.set("emailValidationVisible", true);
+    this.set("passwordValidationVisible", true);
 
     const validation = [
       this.emailValidation,

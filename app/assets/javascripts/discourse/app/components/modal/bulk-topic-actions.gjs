@@ -1,9 +1,9 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
-import { getOwner } from "@ember/application";
 import { Input } from "@ember/component";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
+import { getOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import { Promise } from "rsvp";
@@ -16,7 +16,7 @@ import { topicLevels } from "discourse/lib/notification-levels";
 import Category from "discourse/models/category";
 import Topic from "discourse/models/topic";
 import autoFocus from "discourse/modifiers/auto-focus";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 import CategoryChooser from "select-kit/components/category-chooser";
 import TagChooser from "select-kit/components/tag-chooser";
 

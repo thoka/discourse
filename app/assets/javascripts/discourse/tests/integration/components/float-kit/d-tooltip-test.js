@@ -1,7 +1,6 @@
-import { getOwner } from "@ember/application";
+import { getOwner } from "@ember/owner";
 import {
   click,
-  find,
   render,
   triggerEvent,
   triggerKeyEvent,
@@ -17,6 +16,10 @@ module("Integration | Component | FloatKit | d-tooltip", function (hooks) {
 
   async function hover() {
     await triggerEvent(".fk-d-tooltip__trigger", "mousemove");
+  }
+
+  async function leave() {
+    await triggerEvent(".fk-d-tooltip__trigger", "mouseleave");
   }
 
   async function close() {
@@ -52,7 +55,7 @@ module("Integration | Component | FloatKit | d-tooltip", function (hooks) {
       hbs`<DTooltip @inline={{true}} @onRegisterApi={{this.onRegisterApi}} />`
     );
 
-    assert.ok(this.api instanceof DTooltipInstance);
+    assert.true(this.api instanceof DTooltipInstance);
   });
 
   test("@onShow", async function (assert) {
@@ -63,7 +66,7 @@ module("Integration | Component | FloatKit | d-tooltip", function (hooks) {
 
     await hover();
 
-    assert.strictEqual(this.test, true);
+    assert.true(this.test);
   });
 
   test("@onClose", async function (assert) {
@@ -74,7 +77,7 @@ module("Integration | Component | FloatKit | d-tooltip", function (hooks) {
     await hover();
     await close();
 
-    assert.strictEqual(this.test, true);
+    assert.true(this.test);
   });
 
   test("-expanded class", async function (assert) {
@@ -218,33 +221,63 @@ module("Integration | Component | FloatKit | d-tooltip", function (hooks) {
     );
     await hover();
 
-    assert.ok(
-      find(".fk-d-tooltip__content")
-        .getAttribute("style")
-        .includes("max-width: 20px;")
-    );
+    assert
+      .dom(".fk-d-tooltip__content")
+      .hasAttribute("style", /max-width: 20px;/);
   });
 
   test("applies position", async function (assert) {
     await render(hbs`<DTooltip @inline={{true}} @label="label" />`);
     await hover();
 
-    assert.ok(
-      find(".fk-d-tooltip__content").getAttribute("style").includes("left: ")
-    );
-    assert.ok(
-      find(".fk-d-tooltip__content").getAttribute("style").includes("top: ")
-    );
+    assert.dom(".fk-d-tooltip__content").hasAttribute("style", /left: /);
+    assert.dom(".fk-d-tooltip__content").hasAttribute("style", /top: /);
   });
 
   test("a tooltip can be closed by identifier", async function (assert) {
     await render(
       hbs`<DTooltip @inline={{true}} @label="label" @identifier="test">test</DTooltip>`
     );
-    await open();
+    await hover();
 
     await getOwner(this).lookup("service:tooltip").close("test");
 
     assert.dom(".fk-d-tooltip__content.test-content").doesNotExist();
+  });
+
+  test("a tooltip is triggered/untriggered by click on mobile", async function (assert) {
+    this.site.mobileView = true;
+
+    await render(hbs`<DTooltip @inline={{true}} @label="label" />`);
+    await click(".fk-d-tooltip__trigger");
+
+    assert.dom(".fk-d-tooltip__content").exists();
+
+    await click(".fk-d-tooltip__trigger");
+
+    assert.dom(".fk-d-tooltip__content").doesNotExist();
+  });
+
+  test("a tooltip is triggered/untriggered by click on desktop", async function (assert) {
+    await render(hbs`<DTooltip @inline={{true}} @label="label" />`);
+    await click(".fk-d-tooltip__trigger");
+
+    assert.dom(".fk-d-tooltip__content").exists();
+
+    await click(".fk-d-tooltip__trigger");
+
+    assert.dom(".fk-d-tooltip__content").doesNotExist();
+  });
+
+  test("a tooltip is triggered/untriggered by hover on desktop", async function (assert) {
+    await render(hbs`<DTooltip @inline={{true}} @label="label" />`);
+
+    await hover();
+
+    assert.dom(".fk-d-tooltip__content").exists();
+
+    await leave();
+
+    assert.dom(".fk-d-tooltip__content").doesNotExist();
   });
 });

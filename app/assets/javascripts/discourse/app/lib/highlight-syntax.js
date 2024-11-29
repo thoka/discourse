@@ -1,4 +1,4 @@
-import DEBUG from "@glimmer/env";
+import { DEBUG } from "@glimmer/env";
 import { waitForPromise } from "@ember/test-waiters";
 import mergeHTMLPlugin from "discourse/lib/highlight-syntax-merge-html-plugin";
 import { isTesting } from "discourse-common/config/environment";
@@ -40,6 +40,10 @@ export default async function highlightSyntax(elem, siteSettings, session) {
         lang = m[1];
         break;
       }
+    }
+
+    if (lang === "auto" && e.innerHTML.length > 1000) {
+      return;
     }
 
     const canHighlight = lang && (lang === "auto" || hljs.getLanguage(lang));

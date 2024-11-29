@@ -7,7 +7,7 @@ import * as AvatarUtils from "discourse-common/lib/avatar-utils";
 import deprecated from "discourse-common/lib/deprecated";
 import escape from "discourse-common/lib/escape";
 import getURL from "discourse-common/lib/get-url";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 let _defaultHomepage;
 
@@ -80,23 +80,20 @@ export function highlightPost(postNumber) {
   }
 
   const element = container.querySelector(".topic-body, .small-action-desc");
-  if (!element || element.classList.contains("highlighted")) {
+  if (!element) {
     return;
   }
 
-  element.classList.add("highlighted");
-
   if (postNumber > 1) {
+    // Transport screenreader to correct post by focusing it
     element.setAttribute("tabindex", "0");
+    element.addEventListener(
+      "focusin",
+      () => element.removeAttribute("tabindex"),
+      { once: true }
+    );
     element.focus();
   }
-
-  const removeHighlighted = function () {
-    element.classList.remove("highlighted");
-    element.removeAttribute("tabindex");
-    element.removeEventListener("animationend", removeHighlighted);
-  };
-  element.addEventListener("animationend", removeHighlighted);
 }
 
 export function emailValid(email) {
@@ -372,6 +369,24 @@ export function slugify(string) {
     .replace(/-+$/, ""); // Remove trailing dashes
 }
 
+export function unicodeSlugify(string) {
+  try {
+    return string
+      .trim()
+      .toLowerCase()
+      .normalize("NFD") // normalize the string to remove diacritics
+      .replace(/\s|_+/g, "-") // replace spaces and underscores with dashes
+      .replace(/[^\p{Letter}\d\-]+/gu, "") // Remove non-letter characters except for dashes
+      .replace(/--+/g, "-") // replace multiple dashes with a single dash
+      .replace(/^-+/, "") // Remove leading dashes
+      .replace(/-+$/, ""); // Remove trailing dashes
+  } catch {
+    // in case the regex construct \p{Letter} is not supported by the browser
+    // fall back to the basic slugify function
+    return slugify(string);
+  }
+}
+
 export function toNumber(input) {
   return typeof input === "number" ? input : parseFloat(input);
 }
@@ -407,7 +422,7 @@ export function areCookiesEnabled() {
     let ret = document.cookie.includes("cookietest=");
     document.cookie = "cookietest=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
     return ret;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -476,10 +491,10 @@ export function translateModKey(string) {
   } else {
     string = string
       .toLowerCase()
-      .replace("shift", I18n.t("shortcut_modifier_key.shift"))
-      .replace("ctrl", I18n.t("shortcut_modifier_key.ctrl"))
-      .replace("meta", I18n.t("shortcut_modifier_key.ctrl"))
-      .replace("alt", I18n.t("shortcut_modifier_key.alt"));
+      .replace("shift", i18n("shortcut_modifier_key.shift"))
+      .replace("ctrl", i18n("shortcut_modifier_key.ctrl"))
+      .replace("meta", i18n("shortcut_modifier_key.ctrl"))
+      .replace("alt", i18n("shortcut_modifier_key.alt"));
   }
 
   return string;
@@ -632,27 +647,32 @@ export function getCaretPosition(element, options) {
  * Generate markdown table from an array of objects
  * Inspired by https://github.com/Ygilany/array-to-table
  *
- * @param  {Array} array       Array of objects
- * @param  {Array} columns     Column headings
- * @param  {String} colPrefix  Table column prefix
+ * @param  {Array<Record<string, string | undefined>>}          array       Array of objects
+ * @param  {String[]}                                           columns     Column headings
+ * @param  {String}                                             colPrefix   Table column prefix
+ * @param  {("left" | "center" | "right" | null)[] | undefined} alignments  Table alignments
  *
  * @return {String} Markdown table
  */
-export function arrayToTable(array, cols, colPrefix = "col") {
+export function arrayToTable(array, cols, colPrefix = "col", alignments) {
   let table = "";
 
   // Generate table headers
   table += "|";
   table += cols.join(" | ");
-  table += "|\r\n|";
+  table += "|\n|";
+
+  const alignMap = {
+    left: ":--",
+    center: ":-:",
+    right: "--:",
+  };
 
   // Generate table header separator
   table += cols
-    .map(function () {
-      return "---";
-    })
+    .map((_, index) => alignMap[String(alignments?.[index])] || "---")
     .join(" | ");
-  table += "|\r\n";
+  table += "|\n";
 
   // Generate table body
   array.forEach(function (item) {
@@ -661,12 +681,11 @@ export function arrayToTable(array, cols, colPrefix = "col") {
     table +=
       cols
         .map(function (_key, index) {
-          return String(item[`${colPrefix}${index}`] || "").replace(
-            /\r?\n|\r/g,
-            " "
-          );
+          return String(item[`${colPrefix}${index}`] || "")
+            .replace(/\r?\n|\r/g, " ")
+            .replaceAll("|", "\\|");
         })
-        .join(" | ") + "|\r\n";
+        .join(" | ") + "|\n";
   });
 
   return table;
@@ -746,4 +765,20 @@ export function cleanNullQueryParams(params) {
 
 export function getElement(node) {
   return node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+}
+
+export function isPrimaryTab() {
+  return new Promise((resolve) => {
+    if (capabilities.supportsServiceWorker) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        resolve(event.data.primaryTab);
+      });
+
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.active.postMessage({ action: "primaryTab" });
+      });
+    } else {
+      resolve(true);
+    }
+  });
 }

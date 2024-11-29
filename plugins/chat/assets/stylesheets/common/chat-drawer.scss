@@ -8,6 +8,10 @@ body.composer-open .chat-drawer-outlet-container {
   width: 15px;
   height: 15px;
   z-index: z("composer", "content");
+
+  .is-collapsed & {
+    display: none;
+  }
 }
 
 html:not(.rtl) {
@@ -25,8 +29,8 @@ html.rtl {
 }
 
 .chat-drawer-outlet-container {
-  // higher than timeline, lower than composer, lower than user card (bump up below)
-  z-index: z("usercard");
+  // higher than timeline, lower than composer, dropdown, and user card
+  z-index: z("chat-drawer");
   position: fixed;
   right: var(--composer-right, 20px);
   left: 0;
@@ -76,9 +80,10 @@ html.rtl {
     }
   }
 
-  &:not(.is-expanded) {
+  &.is-collapsed {
     min-height: 0 !important;
     height: auto !important;
+    max-width: 25vw;
   }
 
   .chat-channel,

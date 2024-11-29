@@ -1,4 +1,4 @@
-import { getOwner } from "@ember/application";
+import { getOwner } from "@ember/owner";
 import { click, render } from "@ember/test-helpers";
 import { hbs } from "ember-cli-htmlbars";
 import { module, test } from "qunit";
@@ -21,6 +21,6 @@ module("Integration | Component | da-boolean-field", function (hooks) {
     await click("input");
 
     assert.dom("input").isChecked();
-    assert.strictEqual(this.field.metadata.value, true);
+    assert.true(this.field.metadata.value);
   });
 });

@@ -243,6 +243,202 @@ RSpec.describe Middleware::RequestTracker do
       expect(ApplicationRequest.page_view_anon.first.count).to eq(1)
     end
 
+    describe "topic views" do
+      fab!(:topic)
+      fab!(:post) { Fabricate(:post, topic: topic) }
+      fab!(:user) { Fabricate(:user, active: true) }
+
+      let!(:auth_cookie) do
+        token = UserAuthToken.generate!(user_id: user.id)
+        create_auth_cookie(
+          token: token.unhashed_auth_token,
+          user_id: user.id,
+          trust_level: user.trust_level,
+          issued_at: 5.minutes.ago,
+        )
+      end
+
+      def log_topic_view(authenticated: false, deferred: false)
+        headers = { "action_dispatch.remote_ip" => "127.0.0.1" }
+
+        headers["HTTP_COOKIE"] = "_t=#{auth_cookie};" if authenticated
+
+        if deferred
+          headers["HTTP_DISCOURSE_DEFERRED_TRACK_VIEW"] = "1"
+          headers["HTTP_DISCOURSE_DEFERRED_TRACK_VIEW_TOPIC_ID"] = topic.id
+          path = "/message-bus/abcde/poll"
+        else
+          headers["HTTP_DISCOURSE_TRACK_VIEW"] = "1"
+          headers["HTTP_DISCOURSE_TRACK_VIEW_TOPIC_ID"] = topic.id
+          path = URI.parse(topic.url).path
+        end
+
+        data =
+          Middleware::RequestTracker.get_data(
+            env(path: path, **headers),
+            ["200", { "Content-Type" => "text/html" }],
+            0.1,
+          )
+        Middleware::RequestTracker.log_request(data)
+        data
+      end
+
+      it "logs deferred topic views correctly for logged in users" do
+        data = log_topic_view(authenticated: true, deferred: true)
+
+        expect(data[:topic_id]).to eq(topic.id)
+        expect(data[:request_remote_ip]).to eq("127.0.0.1")
+        expect(data[:current_user_id]).to eq(user.id)
+        CachedCounting.flush
+
+        expect(TopicViewItem.exists?(topic_id: topic.id, user_id: user.id, ip_address: nil)).to eq(
+          true,
+        )
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 0,
+            logged_in_views: 1,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(true)
+      end
+
+      it "does not log deferred topic views for topics the user cannot access" do
+        topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
+        log_topic_view(authenticated: true, deferred: true)
+        CachedCounting.flush
+        expect(TopicViewItem.exists?(topic_id: topic.id, user_id: user.id, ip_address: nil)).to eq(
+          false,
+        )
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 0,
+            logged_in_views: 1,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(false)
+      end
+
+      it "logs deferred topic views correctly for anonymous" do
+        data = log_topic_view(authenticated: false, deferred: true)
+
+        expect(data[:topic_id]).to eq(topic.id)
+        expect(data[:request_remote_ip]).to eq("127.0.0.1")
+        expect(data[:current_user_id]).to eq(nil)
+        CachedCounting.flush
+
+        expect(
+          TopicViewItem.exists?(topic_id: topic.id, user_id: nil, ip_address: "127.0.0.1"),
+        ).to eq(true)
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 1,
+            logged_in_views: 0,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(true)
+      end
+
+      it "does not log deferred topic views for topics the anonymous user cannot access" do
+        topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
+        log_topic_view(authenticated: false, deferred: true)
+        CachedCounting.flush
+
+        expect(
+          TopicViewItem.exists?(topic_id: topic.id, user_id: nil, ip_address: "127.0.0.1"),
+        ).to eq(false)
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 1,
+            logged_in_views: 0,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(false)
+      end
+
+      it "logs explicit topic views correctly for logged in users" do
+        data = log_topic_view(authenticated: true, deferred: false)
+
+        expect(data[:topic_id]).to eq(topic.id)
+        expect(data[:request_remote_ip]).to eq("127.0.0.1")
+        expect(data[:current_user_id]).to eq(user.id)
+        CachedCounting.flush
+
+        expect(TopicViewItem.exists?(topic_id: topic.id, user_id: user.id, ip_address: nil)).to eq(
+          true,
+        )
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 0,
+            logged_in_views: 1,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(true)
+      end
+
+      it "does not log explicit topic views for topics the user cannot access" do
+        topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
+        log_topic_view(authenticated: true, deferred: false)
+        CachedCounting.flush
+
+        expect(TopicViewItem.exists?(topic_id: topic.id, user_id: user.id, ip_address: nil)).to eq(
+          false,
+        )
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 0,
+            logged_in_views: 1,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(false)
+      end
+
+      it "logs explicit topic views correctly for anonymous" do
+        data = log_topic_view(authenticated: false, deferred: false)
+
+        expect(data[:topic_id]).to eq(topic.id)
+        expect(data[:request_remote_ip]).to eq("127.0.0.1")
+        expect(data[:current_user_id]).to eq(nil)
+        CachedCounting.flush
+
+        expect(
+          TopicViewItem.exists?(topic_id: topic.id, user_id: nil, ip_address: "127.0.0.1"),
+        ).to eq(true)
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 1,
+            logged_in_views: 0,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(true)
+      end
+
+      it "does not log explicit topic views for topics the anonymous user cannot access" do
+        topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
+        log_topic_view(authenticated: false, deferred: false)
+        CachedCounting.flush
+
+        expect(
+          TopicViewItem.exists?(topic_id: topic.id, user_id: nil, ip_address: "127.0.0.1"),
+        ).to eq(false)
+        expect(
+          TopicViewStat.exists?(
+            topic_id: topic.id,
+            anonymous_views: 1,
+            logged_in_views: 0,
+            viewed_at: Time.zone.now.to_date,
+          ),
+        ).to eq(false)
+      end
+    end
+
     context "when ignoring anonymous page views" do
       let(:anon_data) do
         Middleware::RequestTracker.get_data(
@@ -309,21 +505,19 @@ RSpec.describe Middleware::RequestTracker do
   end
 
   describe "rate limiting" do
+    let(:fake_logger) { FakeLogger.new }
+
     before do
       RateLimiter.enable
       RateLimiter.clear_all_global!
 
-      @orig_logger = Rails.logger
-      Rails.logger = @fake_logger = FakeLogger.new
-
+      Rails.logger.broadcast_to(fake_logger)
       # rate limiter tests depend on checks for retry-after
       # they can be sensitive to clock skew during test runs
       freeze_time_safe
     end
 
-    use_redis_snapshotting
-
-    after { Rails.logger = @orig_logger }
+    after { Rails.logger.stop_broadcasting_to(fake_logger) }
 
     let :middleware do
       app = lambda { |env| [200, {}, ["OK"]] }
@@ -365,7 +559,7 @@ RSpec.describe Middleware::RequestTracker do
         status, _ = middleware.call(env1)
         status, _ = middleware.call(env1)
 
-        expect(@fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(
+        expect(fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(
           warn_count,
         )
         expect(status).to eq(429)
@@ -481,9 +675,7 @@ RSpec.describe Middleware::RequestTracker do
         status, _ = middleware.call(env1)
         status, _ = middleware.call(env1)
 
-        expect(@fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(
-          0,
-        )
+        expect(fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(0)
         expect(status).to eq(200)
       end
     end
@@ -495,7 +687,7 @@ RSpec.describe Middleware::RequestTracker do
       status, _ = middleware.call(env)
       status, headers = middleware.call(env)
 
-      expect(@fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(1)
+      expect(fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(1)
       expect(status).to eq(429)
       expect(headers["Retry-After"]).to eq("10")
     end
@@ -507,7 +699,7 @@ RSpec.describe Middleware::RequestTracker do
       status, _ = middleware.call(env)
       status, _ = middleware.call(env)
 
-      expect(@fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(1)
+      expect(fake_logger.warnings.count { |w| w.include?("Global rate limit exceeded") }).to eq(1)
       expect(status).to eq(200)
     end
 
@@ -883,12 +1075,11 @@ RSpec.describe Middleware::RequestTracker do
   end
 
   describe "error handling" do
-    before do
-      @original_logger = Rails.logger
-      Rails.logger = @fake_logger = FakeLogger.new
-    end
+    let(:fake_logger) { FakeLogger.new }
 
-    after { Rails.logger = @original_logger }
+    before { Rails.logger.broadcast_to(fake_logger) }
+
+    after { Rails.logger.stop_broadcasting_to(fake_logger) }
 
     it "logs requests even if they cause exceptions" do
       app = lambda { |env| raise RateLimiter::LimitExceeded, 1 }
@@ -896,7 +1087,7 @@ RSpec.describe Middleware::RequestTracker do
       expect { tracker.call(env) }.to raise_error(RateLimiter::LimitExceeded)
       CachedCounting.flush
       expect(ApplicationRequest.stats).to include("http_total_total" => 1)
-      expect(@fake_logger.warnings).to be_empty
+      expect(fake_logger.warnings).to be_empty
     end
   end
 end

@@ -30,6 +30,7 @@
     align-items: baseline;
     gap: 0.33em;
     color: var(--primary-high);
+    min-width: 0;
 
     &:before {
       content: "";
@@ -43,6 +44,7 @@
       color: currentColor;
       text-overflow: ellipsis;
       overflow: hidden;
+      min-width: 0;
     }
 
     &.--has-parent {
@@ -109,17 +111,6 @@
     height: 8px;
     width: 8px;
     border-radius: 50%;
-  }
-
-  // Click count
-
-  &.clicks {
-    font-weight: normal;
-    background-color: var(--primary-low);
-    top: -1px;
-    color: var(--primary-medium);
-    position: relative;
-    border: none;
   }
 }
 

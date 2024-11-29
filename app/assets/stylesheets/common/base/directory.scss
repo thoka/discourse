@@ -4,6 +4,11 @@
 }
 
 .directory {
+  .directory-value-list-item:not(:empty)
+    ~ .directory-value-list-item:not(:empty):before {
+    content: "| ";
+  }
+
   margin-bottom: 100px;
   background: var(--d-content-background);
 
@@ -73,10 +78,6 @@
   .d-modal__footer {
     justify-content: space-between;
   }
-}
-
-.edit-user-directory-columns-modal .modal-inner-container {
-  min-width: 450px;
 }
 
 @container (min-width: 47em) {

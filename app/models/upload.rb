@@ -8,7 +8,7 @@ class Upload < ActiveRecord::Base
 
   SHA1_LENGTH = 40
   SEEDED_ID_THRESHOLD = 0
-  URL_REGEX ||= %r{(/original/\dX[/\.\w]*/(\h+)[\.\w]*)}
+  URL_REGEX = %r{(/original/\dX[/\.\w]*/(\h+)[\.\w]*)}
   MAX_IDENTIFY_SECONDS = 5
   DOMINANT_COLOR_COMMAND_TIMEOUT_SECONDS = 5
 
@@ -27,6 +27,7 @@ class Upload < ActiveRecord::Base
   has_many :upload_references, dependent: :destroy
   has_many :posts, through: :upload_references, source: :target, source_type: "Post"
   has_many :topic_thumbnails
+  has_many :badges, foreign_key: :image_upload_id, dependent: :nullify
 
   attr_accessor :for_group_message
   attr_accessor :for_theme

@@ -445,6 +445,15 @@ lt:
             ip_address:
               blocked: "Naujos registracijos neleidžiamos iš jūsų IP adreso."
               max_new_accounts_per_registration_ip: "Naujos registracijos neleidžiamos iš jūsų IP adreso (pasiekta maksimali riba). Susisiekite su administracija."
+        user_password:
+          attributes:
+            password:
+              common: "yra vienas iš 10000 populiariausių slaptažodžių. Prašome pasirinkti saugesnį slaptažodį."
+              same_as_username: "yra toks pats kaip jūsų vartotojo vardas. Naudokite saugesnį slaptažodį."
+              same_as_email: "yra toks pats, kaip jūsų el. paštas. Prašome naudoti saugesnį slaptažodį."
+              same_as_current: "yra toks pats kaip jūsų dabartinis slaptažodis."
+              same_as_name: "yra toks pats kaip jūsų vardas."
+              unique_characters: "yra per daug pasikartojančių simbolių. Naudokite saugesnį slaptažodį."
         user_profile:
           attributes:
             featured_topic_id:
@@ -710,11 +719,7 @@ lt:
     revoke_failed: "Nepavyko anuliuoti paskyros naudojant %{provider_name}."
     connected: "(prijungtas)"
   activation:
-    action: "Spustelėkite čia, kad suaktyvintumėte savo paskyrą"
     already_done: "Deja, ši paskyros patvirtinimo nuoroda nebegalioja. Galbūt jūsų paskyra jau aktyvi?"
-    please_continue: "Jūsų nauja paskyra patvirtinta; būsite nukreipti į pagrindinį puslapį."
-    continue_button: "Tęsti į %{site_name}"
-    welcome_to: "Sveiki atvykę į %{site_name}!"
     approval_required: "Moderatorius turi rankiniu būdu patvirtinti jūsų naują paskyrą, kad galėtumėte prisijungti prie šio forumo. Gausite el. laišką, kai jūsų paskyra bus patvirtinta!"
     missing_session: "Negalime aptikti, ar jūsų paskyra buvo sukurta, įsitikinkite, kad įjungėte slapukus."
     activated: "Atsiprašome, ši paskyra jau aktyvuota."
@@ -934,12 +939,12 @@ lt:
       yaxis: "Diena"
       description: "Vartotojų, kurie per šį laikotarpį padidino savo patikimumo lygį, skaičius."
     consolidated_page_views:
-      title: "Konsoliduotos puslapio peržiūros"
+      title_legacy: "Konsoliduotos puslapio peržiūros"
       xaxis:
         page_view_anon: "Anoniminiai vartotojai"
         page_view_logged_in: "Prisijungę vartotojai"
       yaxis: "Diena"
-      description: "Puslapių peržiūros prisijungusiems vartotojams, anoniminiams vartotojams ir tikrinimo programoms."
+      description_legacy: "Puslapių peržiūros prisijungusiems vartotojams, anoniminiams vartotojams ir tikrinimo programoms."
       labels:
         post: Įrašai
         editor: Redaguotojas
@@ -952,6 +957,9 @@ lt:
       yaxis: "Diena"
     consolidated_page_views_browser_detection:
       yaxis: "Diena"
+    site_traffic:
+      yaxis: "Diena"
+      description_link: "https://meta.discourse.org/t/understanding-pageviews-and-the-site-traffic-report/324062"
     dau_by_mau:
       title: "DAU/MAU"
       xaxis: "Diena"
@@ -1092,6 +1100,9 @@ lt:
       title: "Puslapio peržiūros"
       xaxis: "Diena"
       yaxis: "Iš viso puslapių peržiūrų"
+    page_view_legacy_total_reqs:
+      xaxis: "Diena"
+      yaxis: "Iš viso puslapių peržiūrų"
     page_view_logged_in_mobile_reqs:
       title: "Prisijungę prie puslapių peržiūros"
       xaxis: "Diena"
@@ -1144,6 +1155,8 @@ lt:
     web_crawlers:
       labels:
         page_views: "Puslapio peržiūros"
+    web_hook_events_daily_aggregate:
+      xaxis: "Diena"
     suspicious_logins:
       title: "Įtartini prisijungimai"
       labels:
@@ -1191,10 +1204,15 @@ lt:
       labels:
         user: Narys
         qtt_like: Gauta patikimų
+    topic_view_stats:
+      labels:
+        topic: Tema
+        logged_in_views: Prisijungęs
+        anon_views: Anonimas
+        total_views: Viso
   dashboard:
     problem:
       rails_env: "Jūsų serveris veikia %{env} režimu."
-      out_of_date_themes: "Galimi naujiniai šioms temoms:"
   site_settings:
     disabled: "uždrausta"
     display_local_time_in_user_card: "Rodyti vietinį laiką pagal vartotojo laiko juostą, kai atidaroma vartotojo kortelė."
@@ -1252,7 +1270,6 @@ lt:
     tl3_additional_edits_per_day_multiplier: "Padidinkite tl3 (įprasto) pakeitimų limitą per dieną, padaugindami iš šio skaičiaus"
     tl4_additional_edits_per_day_multiplier: "Padidinkite tl4 (lyderio) pakeitimų limitą per dieną, padaugindami iš šio skaičiaus"
     num_tl3_flags_to_silence_new_user: "Jei naujo vartotojo įrašai gauna tiek daug žymų iš num_tl3_users_to_silence_new_user skirtingų 3 patikimumo lygio vartotojų, paslėpkite visus jų įrašus ir neleiskite skelbti ateityje. 0, kad išjungtumėte."
-    must_approve_users: "Darbuotojai turi patvirtinti visas naujas vartotojų paskyras, prieš jiems leidžiant pasiekti svetainę."
     persistent_sessions: "Vartotojai liks prisijungę, kai interneto naršyklė bus uždaryta"
     maximum_session_age: "Vartotojas liks prisijungęs n valandų nuo paskutinio apsilankymo"
     ga_version: "Naudojama „Google Universal Analytics“ versija: v3 (analytics.js), v4 (gtag)"
@@ -1269,7 +1286,6 @@ lt:
     suppress_reply_when_quoting: "Nerodykite išplečiamojo atsakymo į įrašą, kai atsakoma į citatas."
     topics_per_period_in_top_summary: "Populiariausių temų skaičius, rodomas numatytojoje populiariausių temų suvestinėje."
     topics_per_period_in_top_page: "Populiariausių temų, rodomų išplėstinėse „Rodyti daugiau“ populiariausiose temose, skaičius."
-    redirect_users_to_top_page: "Automatiškai nukreipti naujus ir ilgai nedalyvaujančius vartotojus į viršutinį puslapį."
     prioritize_username_in_ux: "Pirmiausia rodyti vartotojo vardą vartotojo puslapyje, vartotojo kortelėje ir įrašuose (kai pirmas rodomas išjungtas vardas)"
     max_favorite_badges: "Maksimalus ženklelių skaičius, kurį vartotojas gali pasirinkti"
     invite_expiry_days: "Kiek laiko galioja vartotojo kvietimo raktai, dienomis"
@@ -1368,7 +1384,6 @@ lt:
     reset_bounce_score_after_days: "Automatiškai iš naujo nustatyti atmetimo balą po X dienų."
     blocked_attachment_content_types: "Raktinių žodžių, naudojamų įtraukiant priedus pagal turinio tipą, sąrašas."
     blocked_attachment_filenames: "Raktinių žodžių, naudojamų blokuoti priedus pagal failo pavadinimą, sąrašas."
-    forwarded_emails_behaviour: "Kaip apdoroti persiųstą el. laišką Discourse"
     always_show_trimmed_content: "Visada rodyti apkarpytas gaunamų el. laiškų dalis. ĮSPĖJIMAS: gali atskleisti el. pašto adresus."
     trim_incoming_emails: "Apkarpykite dalį gaunamų el. laiškų, kurie nėra svarbūs."
     relative_date_duration: "Dienų skaičius po paskelbimo, kai paskelbimo datos bus rodomos kaip santykinės (7 d.), o ne absoliučios (vasario 20 d.)."
@@ -1446,15 +1461,6 @@ lt:
       empty_selectable_avatars: "Prieš įgalindami šį nustatymą, pirmiausia turite įkelti bent du pasirinktus avatarus."
       allowed_unicode_usernames:
         leading_trailing_slash: "Reguliarioji išraiška neturi prasidėti ir baigtis pasviruoju brūkšniu."
-    keywords:
-      clean_up_inactive_users_after_days:
-      - ""
-      - "neaktyvus"
-      - ""
-      purge_unactivated_users_grace_period_days:
-      - ""
-      - "neaktyvus"
-      - ""
     placeholder:
       discourse_connect_provider_secrets:
         key: "www.example.com"
@@ -1522,7 +1528,6 @@ lt:
     email_too_long: "Jūsų pateiktas el. pašto adresas per ilgas. Pašto dėžutės pavadinimai turi būti ne ilgesni kaip 254 simboliai, o domenų vardai – ne ilgesni kaip 253 simboliai."
     wrong_invite_code: "Įvestas pakvieto kodas buvo neteisingas."
     reserved_username: "Šis vartotojo vardas neleidžiamas."
-    missing_user_field: "Neužpildėte visų vartotojo laukų"
     auth_complete: "Autentifikavimas baigtas."
     click_to_continue: "Jei norite tęsti, paspauskite čia."
     already_logged_in: "Atsiprašau! Šis kvietimas skirtas naujiems vartotojams, kurie dar neturi esamos paskyros."
@@ -2204,7 +2209,7 @@ lt:
         Sveiki atvykę į %{site_name}!
 
         Spustelėkite šią nuorodą, kad patvirtintumėte ir suaktyvintumėte naują paskyrą:
-        %{base_url}/u/activ-account/%{email_token}
+        %{base_url}/u/activate-account/%{email_token}
 
         Jei aukščiau pateiktos nuorodos negalima spustelėti, pabandykite ją nukopijuoti ir įklijuoti į savo žiniatinklio naršyklės adreso juostą.
     activation_reminder:
@@ -2313,6 +2318,7 @@ lt:
     Redaguoti pirmutinį įrašą kad pakeisti turinį %{page_name} puslapio.
   guidelines_topic:
     title: "DUK/Gairės"
+    guidelines_title: "Instrukcijos"
   tos_topic:
     title: "Paslaugų teikimo sąlygos"
   privacy_topic:
@@ -2593,8 +2599,12 @@ lt:
       privacy:
         fields:
           login_required:
-            placeholder: "Privatu"
-            extra_description: "Tik prisijungę vartotojai gali pasiekti šią bendruomenę"
+            label: "Matomumas"
+            choices:
+              public:
+                label: "Vieša"
+              private:
+                label: "Privatu"
       styling:
         fields:
           color_scheme:

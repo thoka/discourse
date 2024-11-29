@@ -1,4 +1,4 @@
-import { getOwner } from "@ember/application";
+import { getOwner } from "@ember/owner";
 import { visit } from "@ember/test-helpers";
 import { test } from "qunit";
 import Site from "discourse/models/site";
@@ -10,7 +10,11 @@ acceptance("Acceptance | Globals", function () {
   test("Globals function as expected", async function (assert) {
     await visit("/");
 
-    assert.ok(window.Discourse, "window.Discourse is present");
+    assert.notStrictEqual(
+      window.Discourse,
+      undefined,
+      "window.Discourse is present"
+    );
 
     assert.strictEqual(
       window.Discourse,

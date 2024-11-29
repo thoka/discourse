@@ -108,7 +108,6 @@ th:
       topic_html: 'กระทู้: <span class="topic-title">%{topicTitle}</span>'
       post: "โพสต์ #%{postNumber} โดย @%{username}"
       close: "ปิด"
-      twitter: "แชร์บนทวิตเตอร์"
       facebook: "แชร์บนเฟสบุ๊ค"
       email: "ส่งทางอีเมล"
       url: "คัดลอกและแชร์ URL"
@@ -240,7 +239,14 @@ th:
       like_count: "ถูกใจ"
       topic_count: "กระทู้"
       post_count: "โพสต์"
-      contact_info: "ในกรณีที่เกิดเหตุฉุกเฉินหรือประเด็นสำคัญที่ส่งผลต่อเว็บไซต์นี้ กรุณาติดต่อเราที่ %{contact_info}"
+      activities:
+        topics:
+          other: "%{formatted_number} กระทู้"
+        posts:
+          other: "%{formatted_number} โพส"
+        periods:
+          last_7_days: "ใน 7 วันที่ผ่านมา"
+          today: "วันนี้"
     bookmarked:
       title: "บุ๊กมาร์ก"
       edit_bookmark: "แก้ไขบุ๊กมาร์ก"
@@ -517,6 +523,8 @@ th:
         email:
           title: "อีเมล"
           last_updated_by: "โดย"
+          ssl_modes:
+            none: "ไม่มี"
           credentials:
             username: "ชื่อผู้ใช้"
             password: "รหัสผ่าน"
@@ -696,6 +704,7 @@ th:
       copied: "คัดลอกแล้ว"
     user_fields:
       none: "(เลือกตัวเลือก)"
+      optional: (ทางเลือก)
     user:
       said: "%{username}:"
       profile: "โปรไฟล์"
@@ -726,7 +735,8 @@ th:
         to: "ถึง"
       activity_stream: "กิจกรรม"
       read: "อ่าน"
-      preferences: "การตั้งค่า"
+      preferences:
+        title: "การตั้งค่า"
       feature_topic_on_profile:
         open_search: "เลือกกระทู้ใหม่"
         title: "เลือกกระทู้"
@@ -810,7 +820,6 @@ th:
       ignored_users: "ละเว้นแล้ว"
       ignored_users_instructions: "ระงับโพสต์ การแจ้งเตือน และข้อความส่วนตัวทั้งหมดจากผู้ใช้เหล่านี้"
       tracked_topics_link: "แสดง"
-      automatically_unpin_topics: "ยกเลิกปักหมุดกระทู้อัตโนมัติเมื่อถึงท้ายหน้า"
       apps: "แอป"
       api_approved: "อนุมัติแล้ว:"
       api_last_used_at: "ใช้ครั้งสุดท้ายเมื่อ:"
@@ -912,7 +921,6 @@ th:
         destroy: "ลบอีเมล"
         add_email: "เพิ่มอีเมลสำรอง"
         no_secondary: "ไม่มีอีเมลสำรอง"
-        instructions: "ไม่แสดงเป็นสาธารณะ"
         ok: "เราจะส่งอีเมลไปหาคุณเพื่อยืนยัน"
         required: "กรุณากรอกที่อยู่อีเมล"
         invalid: "กรุณาใส่อีเมลที่ถูกต้อง"
@@ -925,10 +933,13 @@ th:
         cancel: "ยกเลิก"
         not_connected: "(ไม่เชื่อมต่อ)"
         confirm_modal_title: "เชื่อมต่อ%{provider}บัญชี"
+      activate_account:
+        continue_button: "เสร็จสิ้น!"
+        welcome_to: "ยินดีต้อนรับสู่ %{site_name}!"
       name:
         title: "ชื่อ"
-        instructions: "ชื่อเต็มของคุณ (ไม่บังคับ)."
-        instructions_required: "ชื่อเต็มของคุณ."
+        instructions: "ชื่อเต็มของคุณ (ไม่บังคับ)"
+        instructions_required: "ชื่อเต็มของคุณ"
         required: "กรุณากรอกชื่อ"
         too_short: "ชื่อของคุณสั้นไป"
         ok: "ชื่อของคุณเหมาะสม"
@@ -1063,6 +1074,9 @@ th:
           title: "ลิงก์คำเชิญ"
           success: "สร้างลิงก์คำเชิญสำเร็จแล้ว!"
           error: "มีข้อผิดพลาดในการสร้างลิงก์คำเชิญ"
+        invite:
+          update_invite: "อัปเดต"
+          cancel: "ยกเลิก"
       password:
         title: "รหัสผ่าน"
         common: "รหัสผ่านง่ายเกินไป"
@@ -1070,7 +1084,7 @@ th:
         same_as_email: "รหัสผ่านเหมือนกับอีเมลของคุณ"
         ok: "รหัสผ่านของคุณเหมาะสม"
         instructions:
-          other: "อย่างน้อย %{count} ตัวอักษร."
+          other: "อย่างน้อย %{count} ตัวอักษร"
         required: "กรุณากรอกรหัสผ่าน"
       summary:
         title: "สรุปภาพรวม"
@@ -1157,6 +1171,10 @@ th:
     modal:
       close: "ปิด"
       dismiss_error: "ละทิ้งข้อผิดพลาด"
+    form_kit:
+      optional: ทางเลือก
+      errors:
+        required: "ต้องการ"
     close: "ปิด"
     logout: "คุณได้ออกจากระบบ"
     refresh: "รีเฟรช"
@@ -1204,7 +1222,12 @@ th:
     search_hint: "ชื่อผู้ใช้ อีเมล หรือที่อยู่ไอพี"
     create_account:
       disclaimer: "เมื่อลงทะเบียน คุณได้ยอมรับ <a href='%{privacy_link}' target='blank'>นโยบายความเป็นส่วนตัว</a> และ <a href='%{tos_link}' target='blank'> เงื่อนไขการบริการ</a>"
+      title: "สมัคร"
       failed: "มีบางอย่างผิดพลาด อีเมลนี้อาจถูกลงทะเบียนไว้แล้ว กดลิงก์หากลืมรหัสผ่าน"
+      progress_bar:
+        signup: "สมัคร"
+        approve: "อนุมัติ"
+        login: "เข้าสู่ระบบ"
     forgot_password:
       title: "รีเซ็ตรหัสผ่าน"
       action: "ฉันลืมรหัสผ่าน"
@@ -1224,6 +1247,7 @@ th:
       logging_in_as: กำลังเข้าสู่ระบบด้วย %{email}
       confirm_button: เสร็จสิ้นการเข้าสู่ระบบ
     login:
+      title: "เข้าสู่ระบบ"
       username: "ชื่อผู้ใช้"
       password: "รหัสผ่าน"
       show_password: "แสดง"
@@ -1400,7 +1424,6 @@ th:
       enter_fullscreen: "ขยายหน้าเขียนกระทู้เต็มจอ"
       exit_fullscreen: "ออกจากหน้าเขียนกระทู้เต็มจอ"
       modal_ok: "ตกลง"
-      modal_cancel: "ยกเลิก"
       cant_send_pm: "ขออภัย คุณไม่สามารถส่งข้อความหา %{username} ได้"
       yourself_confirm:
         title: "คุณลืมเพิ่มผู้รับหรือไม่"
@@ -1622,6 +1645,8 @@ th:
         top: "ไม่มีกระทู้ยอดนิยมอีกแล้ว"
         bookmarks: "ไม่มีกระทู้ที่บุ๊กมาร์กอีกแล้ว"
     topic_bulk_actions:
+      dismiss:
+        name: "ซ่อน"
       close_topics:
         name: "ปิด"
         optional: (ทางเลือก)
@@ -1954,12 +1979,15 @@ th:
         like: "ถูกใจโพสต์นี้"
         has_liked: "คุณได้ถูกใจโพสต์นี้แล้ว"
         read_indicator: "สมาชิกที่อ่านโพสต์นี้"
+        undo_like_action: "เลิกถูกใจ"
         undo_like: "เลิกถูกใจ"
         edit: "แก้ไขโพสต์นี้"
         edit_action: "แก้ไข"
         edit_anonymous: "ขออภัย คุณต้องเข้าสู่ระบบเพื่อแก้ไขโพสต์นี้"
+        flag_action: "ธง"
         delete: "ลบโพสต์นี้"
         undelete: "เลิกลบโพสต์นี้"
+        share_action: "แบ่งปัน"
         share: "แบ่งปันลิงก์ไปยังโพสต์นี้"
         more: "อื่นๆ"
         delete_replies:
@@ -1969,6 +1997,7 @@ th:
           all_replies:
             other: "ใช่ และทั้งหมด %{count}คำตอบ"
           just_the_post: "ไม่ แค่โพสต์นี้เท่านั้น"
+        admin_action: "ผู้ดูแลระบบ"
         publish_page: "การเผยแพร่เพจ"
         unhide: "เลิกซ่อน"
         lock_post: "ล็อกโพสต์"
@@ -2129,6 +2158,8 @@ th:
       links_title: "ลิงก์ยอดนิยม"
       clicks:
         other: "%{count} คลิก"
+      views: "ดู"
+      read: อ่าน
     post_links:
       title:
         other: "อีก %{count}"
@@ -2156,6 +2187,7 @@ th:
     pending_posts:
       label: "อยู่ระหว่างการพิจารณา"
       label_with_count: "กำลังรอ (%{count})"
+    posters: "ผู้โพสต์"
     original_post: "โพสต์ต้นฉบับ"
     views: "ดู"
     views_lowercase:
@@ -2459,6 +2491,8 @@ th:
               content: "หัวข้อ"
             faq:
               content: "คำถามที่พบบ่อย"
+            guidelines:
+              content: "คู่มือ"
             groups:
               content: "กลุ่ม"
             users:
@@ -2469,6 +2503,8 @@ th:
                 other: "%{count}แบบร่าง"
             review:
               content: "รีวิว"
+            invite:
+              content: "เชิญ"
     until: "จนถึง:"
     form_templates:
       upload_field:
@@ -2491,6 +2527,7 @@ th:
         show: "แสดง"
         about: "เกี่ยวกับ"
   admin_js:
+    settings: "การตั้งค่า"
     admin:
       title: "ผู้ดูแลระบบดิสคอส"
       moderator: "ผู้ดูแล"
@@ -2509,6 +2546,7 @@ th:
         updates_available: "มีการอัปเดต"
         installed_version: "ติดตั้งแล้ว"
         latest_version: "ล่าสุด"
+        dismiss_notice: "ซ่อน"
         new_features:
           learn_more: "เรียนรู้เพิ่มเติม..."
         last_checked: "ตรวจล่าสุด"
@@ -2664,16 +2702,39 @@ th:
           rejected: "ถูกปฏิเสธ"
       security:
         title: "ความปลอดภัย"
-        sidebar_link:
-          security: "ความปลอดภัย"
-          spam: "ขยะ"
+      section_landing_pages:
+        account:
+          title: "บัญชี"
+          backups:
+            title: "สำรอง"
       config_areas:
         about:
+          company_name: "ชื่อ"
           optional: "(ทางเลือก)"
           update: "อัปเดต"
+          saved: "บันทึกแล้ว!"
+        flags:
+          description: "รายละเอียด"
+          enabled: "เปิดใช้"
+          edit: "แก้ไข"
+          delete: "ลบ"
+          delete_confirm: 'คุณแน่ใจหรือว่าต้องการลบ "%{name}"'
+          flags_tab: "ธง"
+          form:
+            save: "บันทึก"
+            name: "ชื่อ"
+            description: "รายละเอียด"
+            invalid_applies_to: "ต้องการ"
+            topic: "หัวข้อ"
+            post: "โพสต์"
+        look_and_feel:
+          themes:
+            title: "ธีม"
+        user_fields:
+          type: "ชนิด"
+          delete: "ลบ"
       plugins:
         title: "ปลั้กอิน"
-        installed: "ปลั้กอินที่ติดตั้งแล้ว"
         name: "ชื่อ"
         none_installed: "คุณยังไม่มีปลั้กอินใดๆติดตั้ง"
         version: "เวอร์ชัน"
@@ -2983,6 +3044,11 @@ th:
         status: "สถานะ"
         show_emails: "แสดงอีเมล"
         hide_emails: "ซ่อนอีเมล"
+        bulk_actions:
+          delete:
+            confirmation_modal:
+              close: "ปิด"
+              confirm: "ลบ"
         nav:
           new: "ใหม่"
           active: "ใช้งานอยู่"
@@ -3103,8 +3169,6 @@ th:
           external_avatar_url: "URL ของรูปโปรไฟล์"
       user_fields:
         title: "ช่องข้อมูลผู้ใช้"
-        help: "เพิ่มช่องที่คุณสามารถใส่ข้อมูลเพิ่มได้"
-        create: "สร้างช่องข้อมูลผู้ใช้"
         untitled: "ไม่ได้ตั้งชื่อ"
         name: "ชื่อช่อง"
         type: "ประเภทช่อง"
@@ -3123,18 +3187,10 @@ th:
         requirement:
           optional:
             title: "ทางเลือก"
-        editable:
-          enabled: "แก้ไขได้"
-          disabled: "แก้ไขไม่ได้"
         show_on_profile:
           title: "แสดงในข้อมูลสาธารณะ"
-          enabled: "แสดงแสดงในข้อมูลส่วนตัว"
-          disabled: "ไม่แสดงในข้อมูลส่วนตัว"
-        show_on_user_card:
-          enabled: "แสดงบนการ์ดผู้ใช้"
-          disabled: "ไม่แสดงบนการ์ดผู้ใช้"
         field_types:
-          text: "ช่องข้อความ"
+          text: "ข้อความ"
           confirm: "การยืนยัน"
           dropdown: "ดร็อปดาวน์"
       site_text:
@@ -3151,6 +3207,8 @@ th:
       settings:
         reset: "ล้าง"
         none: "ไม่มี"
+        save: "บันทึก"
+        cancel: "ยกเลิก"
       site_settings:
         title: "การตั้งค่า"
         no_results: "ไม่มีผลการค้นหา"
@@ -3193,6 +3251,7 @@ th:
         file_types_list:
           add_image_types: "รูปภาพ"
       badges:
+        status: สถานะ
         title: เหรียญ
         new_badge: เหรียญใหม่
         new: ใหม่
@@ -3200,8 +3259,6 @@ th:
         badge: เหรียญ
         display_name: ชื่อที่ใช้แสดง
         description: รายละเอียด
-        long_description: รายละเอียดแบบยาว
-        badge_type: ประเภทเหรียญ
         badge_grouping: กลุ่ม
         badge_groupings:
           modal_title: การจัดกลุ่มเหรียญ
@@ -3217,6 +3274,8 @@ th:
         disabled: ปิดใช้งานแล้ว
         icon: ไอคอน
         image: ภาพ
+        select_an_icon: "เลือกไอคอน"
+        upload_an_image: "อัปโหลดรูปภาพ"
         trigger_type:
           none: "อัปเดตรายวัน"
           post_revision: "เมื่อผู้ใช้แก้ไขหรือสร้างโพสต์"
@@ -3231,13 +3290,11 @@ th:
             with_post: <span class="username">%{username}</span> สำหรับโพสต์ใน %{link}
             with_post_time: <span class="username">%{username}</span> สำหรับโพสต์ใน %{link} เมื่อ <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> เมื่อ <span class="time">%{time}</span>
-        badge_intro:
-          what_are_badges_title: "เหรียญคืออะไร"
         mass_award:
           replace_owners: ลบเหรียญจากผู้ใช้ก่อนหน้านี้
       emoji:
         title: "อีโมจิ"
-        add: "เพิ่มอีโมจิใหม่"
+        delete: "ลบ"
         name: "ชื่อ"
         group: "กลุ่ม"
         image: "ภาพ"
@@ -3262,12 +3319,13 @@ th:
         category_id: "หมายเลขหมวดหมู่"
         category_title: "หมวดหมู่"
         tag_name: "ชื่อแท็ก"
+        user_title: "ผู้ใช้"
         username: "ชื่อผู้ใช้"
         delete_confirm: คุณแน่ใจหรือว่าจะลบลิงค์ถาวรนี้?
         form:
           label: "ใหม่:"
-          add: "เพิ่ม"
-          filter: "ค้นหา (URL หรือ ลิงก์ภายนอก)"
+          url: "URL"
+          save: "บันทึก"
       reseed:
         modal:
           categories: "หมวดหมู่"

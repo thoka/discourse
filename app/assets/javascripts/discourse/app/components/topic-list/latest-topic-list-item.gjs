@@ -1,8 +1,7 @@
 import Component from "@glimmer/component";
 import { concat, hash } from "@ember/helper";
-import { service } from "@ember/service";
 import PluginOutlet from "discourse/components/plugin-outlet";
-import PostsCountColumn from "discourse/components/topic-list/posts-count-column";
+import ItemRepliesCell from "discourse/components/topic-list/item/replies-cell";
 import TopicPostBadges from "discourse/components/topic-post-badges";
 import TopicStatus from "discourse/components/topic-status";
 import UserAvatarFlair from "discourse/components/user-avatar-flair";
@@ -16,12 +15,8 @@ import topicFeaturedLink from "discourse/helpers/topic-featured-link";
 import topicLink from "discourse/helpers/topic-link";
 
 export default class LatestTopicListItem extends Component {
-  @service appEvents;
-
   get tagClassNames() {
-    if (this.args.topic.tags) {
-      return this.args.topic.tags.map((tagName) => `tag-${tagName}`);
-    }
+    return this.args.topic.tags?.map((tagName) => `tag-${tagName}`);
   }
 
   <template>
@@ -80,7 +75,7 @@ export default class LatestTopicListItem extends Component {
           @outletArgs={{hash topic=@topic}}
         />
 
-        <PostsCountColumn @topic={{@topic}} @tagName="div" />
+        <ItemRepliesCell @topic={{@topic}} @tagName="div" />
 
         <div class="topic-last-activity">
           <a

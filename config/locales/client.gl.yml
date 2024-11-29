@@ -21,6 +21,7 @@ gl:
             kb: KB
             mb: MB
             tb: TB
+      percent: "%{count}%"
       short:
         thousands: "%{number}k"
         millions: "%{number}M"
@@ -115,7 +116,6 @@ gl:
     share:
       topic_html: 'Tema: <span class="topic-title">%{topicTitle}</span>'
       close: "pechar"
-      twitter: "Compartir no Twitter"
       facebook: "Compartir no Facebook"
       email: "Enviar por correo"
       url: "Copiar e compartir o URL"
@@ -240,6 +240,7 @@ gl:
     suggested_topics:
       pm_title: "Mensaxes suxeridas"
     about:
+      edit: "Editar esta páxina"
       simple_title: "Verbo de"
       title: "Verbo de %{title}"
       stats: "Estatísticas do sitio"
@@ -251,7 +252,19 @@ gl:
       like_count: "Gústames"
       topic_count: "Temas"
       post_count: "Publicacións"
-      contact_info: "No caso dunha incidencia crítica ou asunto urxente que afecte este sitio, contacte connosco en %{contact_info}."
+      activities:
+        topics:
+          one: "%{formatted_number} tema"
+          other: "%{formatted_number} temas"
+        posts:
+          one: "%{formatted_number} publicación"
+          other: "%{formatted_number} publicacións"
+        likes:
+          one: "%{formatted_number} gústame"
+          other: "%{formatted_number} gústame"
+        periods:
+          last_7_days: "nos últimos 7 días"
+          today: "hoxe"
     bookmarked:
       title: "Marcador"
       clear_bookmarks: "Limpar marcadores"
@@ -549,7 +562,6 @@ gl:
       none: "Non se necesita"
       never: "Nunca"
       custom: "Personalizar data e hora"
-      custom_short: "Personalizar..."
       select_timeframe: "Seleccione un marco temporal"
     user_action:
       user_posted_topic: "<a href='%{userUrl}'>%{user}</a> publicou <a href='%{topicUrl}'>o tema</a>"
@@ -632,11 +644,12 @@ gl:
           title: "Correo electrónico"
           status: "Sincronizados os correos %{old_emails} / %{total_emails} vía IMAP."
           last_updated_by: "por"
+          ssl_modes:
+            none: "Ningunha"
           credentials:
             title: "Acreditacións"
             smtp_server: "Servidor SMTP"
             smtp_port: "Porto SMTP"
-            smtp_ssl: "Use SSL para SMTP"
             imap_server: "Servidor SMTP"
             imap_port: "Porto IMAP"
             imap_ssl: "Use SSL para IMAP"
@@ -883,6 +896,7 @@ gl:
     user_fields:
       none: "(seleccione unha opción)"
       required: 'Escriba un valor para "%{name}"'
+      optional: (opcional)
     user:
       said: "%{username}:"
       profile: "Perfil"
@@ -924,7 +938,8 @@ gl:
       activity_stream: "Actividade"
       read: "Ler"
       read_help: "Temas lidos recentes"
-      preferences: "Preferencias"
+      preferences:
+        title: "Preferencias"
       feature_topic_on_profile:
         open_search: "Seleccionar un novo tema"
         title: "Seleccionar un tema"
@@ -1038,7 +1053,7 @@ gl:
       ignored_users: "Ignorado"
       ignored_users_instructions: "Suprimir todas as publicacións, notificacións e mensaxes privadas destes usuarios."
       tracked_topics_link: "Amosar"
-      automatically_unpin_topics: "Desprender os temas automaticamente cando acade o fondo."
+      automatically_unpin_topics: "Desprender os temas automaticamente cando acade o fondo"
       apps: "Apps"
       revoke_access: "Revogar acceso"
       undo_revoke_access: "Desfacer a revogación de acceso"
@@ -1206,7 +1221,7 @@ gl:
         add_email: "Engadir correo electrónico alternativo"
         auth_override_instructions: "O enderezo decorreo pode actualizarse desde un fornecedor de autenticación."
         no_secondary: "Sen correos electrónicos secundarios"
-        instructions: "Non se verá nunca en público."
+        instructions: "Non se verá nunca en público"
         admin_note: "Nota: un usuario administrador que cambia o correo electrónico doutro usuario que non é administrador indica que o usuario perdeu o acceso á súa conta de correo orixinal, polo que se lle enviará un correo electrónico de restabelecemento do contrasinal ao seu novo enderezo. O correo electrónico do usuario non cambiará ata completar o proceso de restabelecemento do contrasinal."
         ok: "Enviarémoslle un correo electrónico para confirmar"
         required: "Escriba un enderezo de correo electrónico"
@@ -1226,10 +1241,17 @@ gl:
         confirm_description:
           account_specific: "Usarase a súa conta «%{account_description}» de %{provider} para a autenticación."
           generic: "Usarase a súa conta de %{provider} para a autenticación."
+      activate_account:
+        action: "Prema aquí para activar a súa conta"
+        already_done: "Sentímolo, esta ligazón de confirmación da conta xa non está dispoñible. Estará xa a súa conta activada?"
+        please_continue: "A súa nova conta está confirmada; redirixirémolo á páxina de inicio."
+        continue_button: "Finalizar!"
+        welcome_to: "Dámoslle a benvida a %{site_name}!"
+        approval_required: "Un moderador debe aprobar manualmente a súa nova conta antes de que poida acceder a este foro. Recibirá un correo electrónico cando a súa conta sexa aprobada!"
       name:
         title: "Nome"
-        instructions: "O seu nOme cOmpletO (OpciOnal)."
-        instructions_required: "Nome completo."
+        instructions: "O seu nOme cOmpletO (OpciOnal)"
+        instructions_required: "Nome completo"
         required: "Escriba un nome"
         too_short: "O nome é curto de mais"
         ok: "O nome parece correcto"
@@ -1278,7 +1300,6 @@ gl:
       location: "Localización"
       website: "Sitio web"
       email_settings: "Correo electrónico"
-      hide_profile_and_presence: "Agochar o meu perfil público e as funcionalidades de presenza"
       enable_physical_keyboard: "Activar a compatibilidade do teclado físico no iPad"
       text_size:
         title: "Tamaño do texto"
@@ -1390,18 +1411,14 @@ gl:
           success: "A ligazón do convite xerouse correctamente!"
           error: "Produciuse un erro ao xerar esta ligazón de convite"
         invite:
-          new_title: "Crear convite"
-          edit_title: "Editar convite"
-          instructions: "Compartir esta ligazón para conceder acceso a este sitio:"
-          copy_link: "copiar a ligazón"
           expired_at_time: "Caduca o %{time}"
           show_advanced: "Amosar opcións avanzadas"
           hide_advanced: "Agochar opcións avanzadas"
           add_to_groups: "Engadir aos grupos"
-          expires_at: "Caduca tras"
-          custom_message: "Mensaxe persoal opcional"
+          expires_after: "Caduca tras"
           send_invite_email: "Gardar e enviar mensaxe de correo"
-          save_invite: "Gardar convite"
+          update_invite: "Actualizar"
+          cancel: "Cancelar"
         bulk_invite:
           none: "Non hai convites que amosar nesta páxina."
           text: "Convite en grupo"
@@ -1514,6 +1531,11 @@ gl:
     modal:
       close: "pechar"
       dismiss_error: "Desbotar erro"
+    form_kit:
+      reset: Restabelecer
+      optional: opcional
+      errors:
+        required: "Obrigatorio"
     close: "Pechar"
     logout: "Pechouselle a sesión."
     refresh: "Actualizar"
@@ -1522,15 +1544,6 @@ gl:
       enabled: "Este sitio está en modo só-lectura. Continúe navegando pero responder, gustar e outras accións estarán desactivadas polo de agora."
       login_disabled: "Cando o sitio está no modo de só-lectura, desactívase o inicio de sesión."
       logout_disabled: "O peche de sesión desactívase mentres o sitio está en modo de só lectura."
-    logs_error_rate_notice:
-      reached_hour_MF: |
-        <b>{relativeAge}</b> – <a href='{url}' target='_blank'>{rate, plural, one {# error/hour} other {# errors/hour}}</a> acadou o límite configurado no sitio de {limit, plural, one {# erro/hora} other {# erros/hora}}.
-      reached_minute_MF: |
-        <b>{relativeAge}</b> – <a href='{url}' target='_blank'>{rate, plural, one {# erro/minuto} other {# erros/minuto}}</a> acadou o límite configurado no sitio de {limit, plural, one {# erro/minuto} other {# erros/minuto}}.
-      exceeded_hour_MF: |
-        <b>{relativeAge}</b> – <a href='{url}' target='_blank'>{rate, plural, one {# erro/hora} other {# erros/hora}}</a> excedeu o límite configurado do sitio de {limit, plural, one {# erro/hora} other {# erros/hora}}.
-      exceeded_minute_MF: |
-        <b>{relativeAge}</b> – <a href='{url}' target='_blank'>{rate, plural, one {# erro/minuto} other {# erros/minuto}}</a> excedeu o límite configurado do sitio de {limit, plural, one {# erro/minuto} other {# erros/minuto}}.
     mute: Silenciar
     unmute: Non silenciar
     last_post: Publicado
@@ -1551,9 +1564,12 @@ gl:
       description:
         one: "Hai <b>%{count}</b> resposta."
         other: "Hai <b>%{count}</b> respostas."
+      buttons:
+        regenerate: "Rexenerar"
       description_time_MF: |
         Hai {replyCount, plural, one {<b>#</b> resposta} other {<b>#</b> respostas}} que supoñen un tempo estimado de lectura de <b>{readingTime, plural, one {# minuto} other {# minutos}}</b>.
       disable: "Amosar todas as publicacións"
+      show_all_label: "Amosar todas"
     deleted_filter:
       enabled_description: "Este tema contén publicacións eliminadas, que se ocultaron."
       disabled_description: "Amósanse as publicacións eliminadas do tema."
@@ -1575,10 +1591,13 @@ gl:
     search_hint: "nome de usuario, enderezo de  correo ou enderezo IP"
     create_account:
       header_title: "Dámoslle a benvida!"
-      subheader_title: "Déixenos crear a súa conta"
       disclaimer: "Ao rexistrarse, acepta a <a href='%{privacy_link}' target='blank'>norma de privacidade</a> e os <a href='%{tos_link}' target='blank'>termos de servizo</a>."
-      title: "Crear unha conta nova"
+      title: "Crear conta"
       failed: "Algo foi mal, quizais este correo electrónico xa está rexistrado, ténteo coa ligazón de «Esqueceume o contrasinal»"
+      progress_bar:
+        signup: "Crear conta"
+        approve: "Aprobar"
+        login: "Acceder"
     forgot_password:
       title: "Contrasinal restabelecido"
       action: "Esquecín o meu contrasinal"
@@ -1607,7 +1626,7 @@ gl:
       logging_in_as: Iniciar sesión como %{email}
       confirm_button: Finalizar inicio de sesión
     login:
-      subheader_title: "Iniciar sesión na súa conta"
+      title: "Acceder"
       username: "Usuario"
       password: "Contrasinal"
       show_password: "Amosar"
@@ -1639,6 +1658,7 @@ gl:
       admin_not_allowed_from_ip_address: "Non pode acceder como administrador desde ese enderezo IP."
       resend_activation_email: "Prema aquí para enviar outro correo de activación."
       omniauth_disallow_totp: "A súa conta ten activada a autenticación de dobre paso. Inicie sesión co seu contrasinal."
+      activate_account: "Activar conta"
       resend_title: "Reenviar correo electrónico de activación"
       change_email: "Cambiar enderezo de correo"
       provide_new_email: "Escriba un enderezo novo e reenviarémoslle o correo de confirmación."
@@ -1696,8 +1716,8 @@ gl:
       enter: "Intro"
     category_row:
       subcategory_count:
-        one: "+ %{count} subcategoría"
-        other: "+ %{count} subcategorías"
+        one: "+%{count} subcategoría"
+        other: "+%{count} subcategorías"
       topic_count:
         one: "%{count} tema nesta categoría"
         other: "%{count} temas nesta categoría"
@@ -1835,7 +1855,6 @@ gl:
       show_toolbar: "amosar a barra de ferramentas de composición"
       hide_toolbar: "agochar a barra de ferramentas de composición"
       modal_ok: "De acordo"
-      modal_cancel: "Cancelar"
       cant_send_pm: "Sentímolo pero non pode enviar unha mensaxe a %{username}."
       yourself_confirm:
         title: "Esqueceu engadir os destinatarios?"
@@ -2130,6 +2149,8 @@ gl:
         top: "Non hai máis temas destacados."
         bookmarks: "Non hai máis temas marcados."
     topic_bulk_actions:
+      dismiss:
+        name: "Desbotar"
       close_topics:
         name: "Pechar"
         optional: (opcional)
@@ -2577,16 +2598,20 @@ gl:
       few_likes_left: "Grazas por repartir cariño! Só lle quedan algúns gústame por hoxe."
       controls:
         reply: "escribir unha resposta a esta publicación"
+        like_action: "Gústame"
         like: "gústame esta publicación"
         has_liked: "gustoulle esta publicación"
         read_indicator: "membros que leron esta publicación"
+        undo_like_action: "Desfacer o gústame"
         undo_like: "desfacer o gústame"
         edit: "editar a publicación"
         edit_action: "Editar"
         edit_anonymous: "Sentímolo pero debe iniciar sesión para editar esta publicación."
+        flag_action: "Sinalar"
         flag: "sinalar privadamente esta publicación ou enviar unha notificación privada sobre ela"
         delete: "eliminar esta publicación"
         undelete: "recuperar esta publicación"
+        share_action: "Compartir"
         share: "compartir ligazón a esta publicación"
         more: "Máis"
         delete_replies:
@@ -2599,6 +2624,7 @@ gl:
             other: "Si, e as %{count} respostas"
           just_the_post: "Non, só esta publicación"
         admin: "accións admin. nas publicacións"
+        admin_action: "Administrador"
         permanently_delete: "Eliminar definitivamente"
         wiki: "Crear wiki"
         unwiki: "Eliminar wiki"
@@ -2844,7 +2870,6 @@ gl:
         none: "sen subcategorías"
       colors_disabled: "Non pode seleccionar cores porque ten un estilo de categoría con ningún."
     flagging:
-      title: "Grazas por axudar a manter cívica a nosa comunidade!"
       action: "Sinalar a publicación"
       take_action_options:
         default:
@@ -2881,7 +2906,6 @@ gl:
           one: "Queda %{count}"
           other: "Quedan %{count}"
     flagging_topic:
-      title: "Grazas por axudar a manter cívica a nosa comunidade!"
       action: "Sinalar o tema"
       notify_action: "Mensaxe"
     topic_map:
@@ -2891,6 +2915,9 @@ gl:
       clicks:
         one: "%{count} clic"
         other: "%{count} clics"
+      views: "Visualizacións"
+      read: lectura
+      minutes: mín
     post_links:
       about: "despregar máis ligazóns para esta publicación"
       title:
@@ -2923,12 +2950,7 @@ gl:
     pending_posts:
       label: "Pendente"
       label_with_count: "Pendentes (%{count})"
-    posts_likes_MF: |
-      Este tema ten {count, plural, one {# resposta} other {# respostas}} {ratio, select,
-        low {cun alto nivel de valoración da publicación}
-        med {cun moi alto nivel de valoración da publicación}
-        high {cun extremo nivel de valoración da publicación}
-        other {}}
+    posters: "Autores"
     original_post: "Publicación orixinal"
     views: "Vistas"
     views_lowercase:
@@ -3335,6 +3357,8 @@ gl:
               content: "Temas"
             faq:
               content: "PMF"
+            guidelines:
+              content: "Directrices"
             groups:
               content: "Grupos"
             users:
@@ -3343,6 +3367,8 @@ gl:
               content: "As miñas publicacións"
             review:
               content: "Revisar"
+            invite:
+              content: "Convidar"
       filter: "Filtrar..."
     until: "Ata:"
     form_templates:
@@ -3366,6 +3392,7 @@ gl:
         show: "Amosar"
         about: "Verbo de"
   admin_js:
+    settings: "Configuración"
     admin:
       title: "Administrador de Discourse"
       moderator: "Moderador"
@@ -3393,6 +3420,7 @@ gl:
         installed_version: "Instalado"
         latest_version: "Últimos"
         problems_found: "Algúns consellos baseados na súa configuración actual do sitio"
+        dismiss_notice: "Desbotar"
         new_features:
           learn_more: "Saber máis..."
         last_checked: "Última comprobación"
@@ -3691,15 +3719,40 @@ gl:
           screened_ips: "IP controlados"
           screened_urls: "URL controlados"
           search_logs: "Buscar rexistros"
-          security: "Seguranza"
-          spam: "Lixo"
+      section_landing_pages:
+        account:
+          title: "Conta"
+          backups:
+            title: "Copias de seguranza"
       config_areas:
         about:
+          contact_url_placeholder: "https://johnny-smith.com/contact"
+          company_name: "Nome"
           optional: "(opcional)"
           update: "Actualizar"
+          saved: "gardado!"
+        flags:
+          description: "Descrición"
+          enabled: "Activado?"
+          edit: "Editar"
+          delete: "Eliminar"
+          delete_confirm: 'Confirma a eliminación de «%{name}»?'
+          flags_tab: "Alertas"
+          form:
+            save: "Gardar"
+            name: "Nome"
+            description: "Descrición"
+            invalid_applies_to: "Obrigatorio"
+            topic: "temas"
+            post: "publicacións"
+        look_and_feel:
+          themes:
+            title: "Temas"
+        user_fields:
+          type: "Tipo"
+          delete: "Eliminar"
       plugins:
         title: "Complementos"
-        installed: "Complementos instalados"
         name: "Nome"
         none_installed: "Non ten ningún complemento instalado."
         version: "Versión"
@@ -3728,7 +3781,7 @@ gl:
         menu:
           backups: "Copias de seguranza"
           logs: "Rexistros"
-        none: "Non hai copia de seguranza dispoñíbel."
+        none: "Non hai copia de seguranza dispoñíbel"
         read_only:
           enable:
             title: "Activar modo que só permite lectura"
@@ -3759,12 +3812,11 @@ gl:
           download:
             label: "Descargar"
             title: "Enviar correo electrónico coa ligazón de descarga"
-            alert: "Recibiu un correo electrónico coa ligazón para descargar esta copia de seguranza."
+            alert: "Recibiu un correo electrónico coa ligazón para descargar esta copia de seguranza"
           destroy:
             title: "Eliminar a copia de seguranza"
             confirm: "Confirma a destrución desta copia de seguranza?"
           restore:
-            is_disabled: "«Restabelecer» está desactivado na configuración do sitio."
             label: "Restabelecer"
             title: "Restabelecer a copia de seguranza"
             confirm: "Confirma a restauración desta copia de seguranza?"
@@ -3773,7 +3825,6 @@ gl:
             title: "Reverter a base de datos ao estado de funcionamento anterior"
             confirm: "Confirma a reversión da base de datos ao estado de funcionamento anterior?"
         location:
-          local: "Almacén local"
           s3: "S3"
         backup_storage_error: "Erro ao acceder ao almacenamento da copia de seguranza: %{error_message}"
       export_csv:
@@ -4017,7 +4068,6 @@ gl:
             description: "Ligazóns, algúns botóns, notificacións e cor de realce."
           quaternary:
             name: "cuaternario"
-            description: "Ligazóns de navegación."
           header_background:
             name: "fondo da cabeceira"
             description: "Cor do fondo na cabeceira do sitio."
@@ -4376,6 +4426,11 @@ gl:
         status: "Estado"
         show_emails: "Amosar correos"
         hide_emails: "Agochar correos"
+        bulk_actions:
+          delete:
+            confirmation_modal:
+              close: "Pechar"
+              confirm: "Eliminar"
         nav:
           new: "Novo"
           active: "Activo"
@@ -4488,7 +4543,6 @@ gl:
         time_read: "Tempo de lectura"
         post_edits_count: "Edicións publicadas"
         anonymize: "Facer o usuario anónimo"
-        anonymize_confirm: "Confirma que desexa converter esta conta en anónima? Cambiaranse o nome do usuario e o correo electrónico e reiniciarase toda a información do perfil."
         anonymize_yes: "Si, converter a conta en anónima"
         anonymize_failed: "Produciuse un problema convertendo a conta en anónima."
         delete: "Eliminar usuario"
@@ -4617,8 +4671,6 @@ gl:
           confirm_delete: "Confirma que quere eliminar este rexistro do DiscourseConnect?"
       user_fields:
         title: "Campos do usuario"
-        help: "Engade campos que os usuarios poidan encher."
-        create: "Crear un campo de usuario"
         untitled: "Sen título"
         name: "Nome do campo"
         type: "TIpo de campo"
@@ -4639,18 +4691,12 @@ gl:
             title: "Opcional"
         editable:
           title: "Editábel despois do rexistro"
-          enabled: "editábel"
-          disabled: "non editábel"
         show_on_profile:
           title: "Amosar no perfil público"
-          enabled: "amosado no perfil"
-          disabled: "non amosado no perfil"
         show_on_user_card:
           title: "Amosar na tarxeta de usuario"
-          enabled: "amosado na tarxeta de usuario"
-          disabled: "non amosado na tarxeta de usuario"
         field_types:
-          text: "Campo de texto"
+          text: "Texto"
           confirm: "Confirmación"
           dropdown: "Despregábel"
       site_text:
@@ -4672,6 +4718,8 @@ gl:
         history: "Ver o historial de cambios"
         reset: "restabelecer"
         none: "ningunha"
+        save: "gardar"
+        cancel: "cancelar"
       site_settings:
         title: "Axustes"
         no_results: "Non se atoparon resultados."
@@ -4728,6 +4776,7 @@ gl:
           add_image_types: "Imaxes"
           add_audio_types: "Audio"
       badges:
+        status: Estado
         title: Insignias
         new_badge: Nova insignia
         new: Novo
@@ -4735,8 +4784,6 @@ gl:
         badge: Insignia
         display_name: Nome público
         description: Descrición
-        long_description: Descrición longa
-        badge_type: Tipo de insignia
         badge_grouping: Grupo
         badge_groupings:
           modal_title: Grupos de insignias
@@ -4766,7 +4813,6 @@ gl:
         image: Imaxe
         graphic: Gráfico
         icon_help: "Escriba un nome de icona Font Awesome (use o prefixo «far-» para as iconas normais e «fab-» para as iconas de marca)"
-        image_help: "Ao cargar unha imaxe sobrescríbese o campo da icona se ambos estivesen determinados."
         select_an_icon: "Seleccionar unha icona"
         upload_an_image: "Cargar unha imaxe"
         read_only_setting_help: "Personalice o texto"
@@ -4800,10 +4846,6 @@ gl:
             with_post: <span class="username">%{username}</span> por publicación en %{link}
             with_post_time: <span class="username">%{username}</span> por publicación en %{link} o <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> o <span class="time">%{time}</span>
-        badge_intro:
-          title: "Seleccione unha insignia existente ou cree unha nova para comezar"
-          what_are_badges_title: "Que son as insignias?"
-          badge_query_examples_title: "Exemplos de consulta de insignias"
         mass_award:
           title: Recoñemento en lote
           description: Concede a mesma insignia a varios usuarios á vez.
@@ -4814,7 +4856,7 @@ gl:
           replace_owners: Retirar a insignia dos propietarios anteriores
       emoji:
         title: "Emoji"
-        add: "Engadir novo emoji"
+        delete: "Eliminar"
         name: "Nome"
         group: "Grupo"
         image: "Imaxe"
@@ -4853,15 +4895,17 @@ gl:
         category_id: "ID da categoría"
         category_title: "Categoría"
         tag_name: "Nome da etiqueta"
+        tag_title: "Etiqueta"
         external_url: "URL externo ou relativo"
+        user_title: "Usuario"
         username: "Nome de usuario"
         destination: "Destino"
         copy_to_clipboard: "Copiar a ligazón permanente ao portapapeis"
         delete_confirm: Confirma a eliminación desta ligazón permanente?
         form:
           label: "Novo:"
-          add: "Engadir"
-          filter: "Buscar (URL ou URL externa)"
+          url: "URL"
+          save: "Gardar"
       reseed:
         action:
           label: "Substituír texto…"

@@ -1,9 +1,8 @@
 import Component from "@glimmer/component";
 import { DEBUG } from "@glimmer/env";
-import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
-import { cancel, schedule } from "@ember/runloop";
+import { schedule } from "@ember/runloop";
 import { service } from "@ember/service";
 import { waitForPromise } from "@ember/test-waiters";
 import ItsATrap from "@discourse/itsatrap";
@@ -22,6 +21,7 @@ import Header from "./header";
 
 let _menuPanelClassesToForceDropdown = [];
 const PANEL_WIDTH = 340;
+const DEBOUNCE_HEADER_DELAY = 10;
 
 export default class GlimmerSiteHeader extends Component {
   @service appEvents;
@@ -29,21 +29,18 @@ export default class GlimmerSiteHeader extends Component {
   @service site;
   @service header;
 
-  docking;
   pxClosed;
   headerElement;
 
-  @tracked _dockedHeader = false;
   _animate = false;
   _headerWrap;
+  _mainOutletWrapper;
   _swipeMenuOrigin;
   _applicationElement;
   _resizeObserver;
-  _docAt;
 
   constructor() {
     super(...arguments);
-    this.docking = new Docking(this.dockCheck);
 
     if (this.currentUser?.staff) {
       document.body.classList.add("staff");
@@ -52,8 +49,31 @@ export default class GlimmerSiteHeader extends Component {
     schedule("afterRender", () => this.animateMenu());
   }
 
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this.appEvents.off("user-menu:rendered", this, this.animateMenu);
+
+    if (this.dropDownHeaderEnabled) {
+      this.appEvents.off(
+        "sidebar-hamburger-dropdown:rendered",
+        this,
+        this.animateMenu
+      );
+    }
+
+    this._itsatrap?.destroy();
+    this._itsatrap = null;
+
+    window.removeEventListener("scroll", this._recalculateHeaderOffset);
+    this._resizeObserver?.disconnect();
+  }
+
   get dropDownHeaderEnabled() {
     return !this.sidebarEnabled || this.site.narrowDesktopView;
+  }
+
+  get slideInMode() {
+    return this.site.mobileView || this.site.narrowDesktopView;
   }
 
   get leftMenuClass() {
@@ -65,42 +85,51 @@ export default class GlimmerSiteHeader extends Component {
   }
 
   @bind
-  updateHeaderOffset() {
-    // Safari likes overscolling the page (on both iOS and macOS).
-    // This shows up as a negative value in window.scrollY.
-    // We can use this to offset the headerWrap's top offset to avoid
-    // jitteriness and bad positioning.
-    const windowOverscroll = Math.min(0, window.scrollY);
-
-    // The headerWrap's top offset can also be a negative value on Safari,
-    // because of the changing height of the viewport (due to the URL bar).
-    // For our use case, it's best to ensure this is clamped to 0.
-    const headerWrapTop = Math.max(
+  updateOffsets() {
+    // clamping to 0 to prevent negative values (hello, Safari)
+    const headerWrapBottom = Math.max(
       0,
-      Math.floor(this._headerWrap.getBoundingClientRect().top)
+      Math.floor(this._headerWrap.getBoundingClientRect().bottom)
     );
-    let offsetTop = headerWrapTop + windowOverscroll;
+
+    let mainOutletOffsetTop = Math.max(
+      0,
+      Math.floor(this._mainOutletWrapper.getBoundingClientRect().top) -
+        headerWrapBottom
+    );
 
     if (DEBUG && isTesting()) {
-      offsetTop -= document
+      mainOutletOffsetTop -= document
         .getElementById("ember-testing-container")
         .getBoundingClientRect().top;
 
-      offsetTop -= 1; // For 1px border on testing container
+      mainOutletOffsetTop -= 1; // For 1px border on testing container
     }
 
-    const documentStyle = document.documentElement.style;
-    const currentValue =
-      parseInt(documentStyle.getPropertyValue("--header-offset"), 10) || 0;
-    const newValue = this._headerWrap.offsetHeight + offsetTop;
-    if (currentValue !== newValue) {
-      documentStyle.setProperty("--header-offset", `${newValue}px`);
+    const docStyle = document.documentElement.style;
+    const currentHeaderOffset =
+      parseInt(docStyle.getPropertyValue("--header-offset"), 10) || 0;
+    const newHeaderOffset = headerWrapBottom;
+    if (currentHeaderOffset !== newHeaderOffset) {
+      docStyle.setProperty("--header-offset", `${newHeaderOffset}px`);
+    }
+
+    const currentMainOutletOffset =
+      parseInt(docStyle.getPropertyValue("--main-outlet-offset"), 10) || 0;
+    const newMainOutletOffset = headerWrapBottom + mainOutletOffsetTop;
+    if (currentMainOutletOffset !== newMainOutletOffset) {
+      docStyle.setProperty("--main-outlet-offset", `${newMainOutletOffset}px`);
     }
   }
 
+  @debounce(DEBOUNCE_HEADER_DELAY)
+  _recalculateHeaderOffset() {
+    this._scheduleUpdateOffsets();
+  }
+
   @bind
-  _onScroll() {
-    schedule("afterRender", this.updateHeaderOffset);
+  _scheduleUpdateOffsets() {
+    schedule("afterRender", this.updateOffsets);
   }
 
   @action
@@ -115,17 +144,13 @@ export default class GlimmerSiteHeader extends Component {
     }
 
     this._headerWrap = document.querySelector(".d-header-wrap");
+    this._mainOutletWrapper = document.querySelector("#main-outlet-wrapper");
     if (this._headerWrap) {
       schedule("afterRender", () => {
         this.headerElement = this._headerWrap.querySelector("header.d-header");
-        this.updateHeaderOffset();
-        document.documentElement.style.setProperty(
-          "--header-top",
-          `${this.headerElement.offsetTop}px`
-        );
       });
 
-      window.addEventListener("scroll", this._onScroll, {
+      window.addEventListener("scroll", this._recalculateHeaderOffset, {
         passive: true,
       });
 
@@ -133,20 +158,11 @@ export default class GlimmerSiteHeader extends Component {
       const dirs = ["up", "down"];
       this._itsatrap.bind(dirs, (e) => this._handleArrowKeysNav(e));
 
-      this._resizeObserver = new ResizeObserver((entries) => {
-        for (let entry of entries) {
-          if (entry.contentRect) {
-            const headerTop = this.headerElement?.offsetTop;
-            document.documentElement.style.setProperty(
-              "--header-top",
-              `${headerTop}px`
-            );
-            this.updateHeaderOffset();
-          }
-        }
+      this._resizeObserver = new ResizeObserver(() => {
+        this._recalculateHeaderOffset();
       });
 
-      this._resizeObserver.observe(this._headerWrap);
+      this._resizeObserver.observe(document.querySelector(".discourse-root"));
     }
   }
 
@@ -182,14 +198,11 @@ export default class GlimmerSiteHeader extends Component {
     const menuPanels = document.querySelectorAll(".menu-panel");
 
     if (menuPanels.length === 0) {
-      this._animate = this.site.mobileView || this.site.narrowDesktopView;
+      this._animate = this.slideInMode;
       return;
     }
 
-    let viewMode =
-      this.site.mobileView || this.site.narrowDesktopView
-        ? "slide-in"
-        : "drop-down";
+    let viewMode = this.slideInMode ? "slide-in" : "drop-down";
 
     menuPanels.forEach((panel) => {
       if (menuPanelContainsClass(panel)) {
@@ -208,7 +221,7 @@ export default class GlimmerSiteHeader extends Component {
         let finalPosition = PANEL_WIDTH;
         this._swipeMenuOrigin = "right";
         if (
-          (this.site.mobileView || this.site.narrowDesktopView) &&
+          this.slideInMode &&
           panel.parentElement.classList.contains(this.leftMenuClass)
         ) {
           this._swipeMenuOrigin = "left";
@@ -221,9 +234,7 @@ export default class GlimmerSiteHeader extends Component {
           }
         ).finished;
 
-        if (isTesting()) {
-          waitForPromise(animationFinished);
-        }
+        waitForPromise(animationFinished);
 
         cloakElement.animate([{ opacity: 0 }], { fill: "forwards" });
         cloakElement.style.display = "block";
@@ -239,32 +250,6 @@ export default class GlimmerSiteHeader extends Component {
 
       this._animate = false;
     });
-  }
-
-  @bind
-  dockCheck() {
-    if (this._docAt === undefined || this._docAt === null) {
-      if (!this.headerElement) {
-        return;
-      }
-      this._docAt = this.headerElement.offsetTop;
-    }
-
-    const main = (this._applicationElement ??=
-      document.querySelector(".ember-application"));
-    const offsetTop = main?.offsetTop ?? 0;
-    const offset = window.pageYOffset - offsetTop;
-    if (offset >= this._docAt) {
-      if (!this._dockedHeader) {
-        document.body.classList.add("docked");
-        this._dockedHeader = true;
-      }
-    } else {
-      if (this._dockedHeader) {
-        document.body.classList.remove("docked");
-        this._dockedHeader = false;
-      }
-    }
   }
 
   @bind
@@ -395,30 +380,10 @@ export default class GlimmerSiteHeader extends Component {
     );
   }
 
-  willDestroy() {
-    super.willDestroy(...arguments);
-    this.docking.destroy();
-    this.appEvents.off("user-menu:rendered", this, this.animateMenu);
-
-    if (this.dropDownHeaderEnabled) {
-      this.appEvents.off(
-        "sidebar-hamburger-dropdown:rendered",
-        this,
-        this.animateMenu
-      );
-    }
-
-    this._itsatrap?.destroy();
-    this._itsatrap = null;
-
-    window.removeEventListener("scroll", this._onScroll);
-    this._resizeObserver?.disconnect();
-  }
-
   <template>
     <div
       class={{concatClass
-        (if this.site.desktopView "drop-down-mode")
+        (unless this.slideInMode "drop-down-mode")
         "d-header-wrap"
       }}
       {{didInsert this.setupHeader}}
@@ -438,40 +403,11 @@ export default class GlimmerSiteHeader extends Component {
         @showCreateAccount={{@showCreateAccount}}
         @showLogin={{@showLogin}}
         @animateMenu={{this.animateMenu}}
+        @topicInfo={{this.header.topicInfo}}
+        @topicInfoVisible={{this.header.topicInfoVisible}}
       />
     </div>
   </template>
-}
-
-const INITIAL_DELAY_MS = 50;
-const DEBOUNCE_MS = 5;
-class Docking {
-  dockCheck = null;
-  _initialTimer = null;
-  _queuedTimer = null;
-
-  constructor(dockCheck) {
-    this.dockCheck = dockCheck;
-    window.addEventListener("scroll", this.queueDockCheck, { passive: true });
-
-    // dockCheck might happen too early on full page refresh
-    this._initialTimer = discourseLater(this, this.dockCheck, INITIAL_DELAY_MS);
-  }
-
-  @debounce(DEBOUNCE_MS)
-  queueDockCheck() {
-    this._queuedTimer = this.dockCheck;
-  }
-
-  @action
-  destroy() {
-    if (this._queuedTimer) {
-      cancel(this._queuedTimer);
-    }
-
-    cancel(this._initialTimer);
-    window.removeEventListener("scroll", this.queueDockCheck);
-  }
 }
 
 function menuPanelContainsClass(menuPanel) {

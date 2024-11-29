@@ -1,4 +1,4 @@
-import { getOwner } from "@ember/application";
+import { getOwner } from "@ember/owner";
 import { render } from "@ember/test-helpers";
 import { hbs } from "ember-cli-htmlbars";
 import { module, test } from "qunit";
@@ -40,7 +40,7 @@ module(
 
       await this.subject.expand();
 
-      assert.notOk(this.subject.rowByValue(2).exists());
+      assert.false(this.subject.rowByValue(2).exists());
     });
 
     test("with scopedCategoryId", async function (assert) {

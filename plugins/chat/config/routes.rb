@@ -11,6 +11,8 @@ Chat::Engine.routes.draw do
     put "/channels/:channel_id/read" => "channels_read#update"
     post "/channels/:channel_id/messages/:message_id/flags" => "channels_messages_flags#create"
     post "/channels/:channel_id/drafts" => "channels_drafts#create"
+    post "/channels/:channel_id/messages/:message_id/interactions" =>
+           "channels_messages_interactions#create"
     delete "/channels/:channel_id" => "channels#destroy"
     put "/channels/:channel_id" => "channels#update"
     get "/channels/:channel_id" => "channels#show"
@@ -51,16 +53,11 @@ Chat::Engine.routes.draw do
           "channel_threads_current_user_notifications_settings#update"
     post "/channels/:channel_id/threads/:thread_id/mark-thread-title-prompt-seen/me" =>
            "channel_threads_current_user_title_prompt_seen#update"
-
-    # TODO (martin) Remove this when we refactor the DM channel creation to happen
-    # via message creation in a different API controller.
     post "/direct-message-channels" => "direct_messages#create"
 
     put "/channels/:channel_id/messages/:message_id/restore" => "channel_messages#restore"
     delete "/channels/:channel_id/messages/:message_id" => "channel_messages#destroy"
     delete "/channels/:channel_id/messages" => "channel_messages#bulk_destroy"
-
-    get "/channels/:channel_id/summarize" => "summaries#get_summary"
   end
 
   namespace :admin, defaults: { format: :json, constraints: StaffConstraint.new } do

@@ -5,12 +5,11 @@ import { classNameBindings } from "@ember-decorators/component";
 import { emojiUrlFor } from "discourse/lib/text";
 import discourseLater from "discourse-common/lib/later";
 import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 @classNameBindings(":value-list", ":emoji-list")
 export default class EmojiValueList extends Component {
   values = null;
-  validationMessage = null;
   emojiPickerIsActive = false;
   isEditorFocused = false;
 
@@ -137,16 +136,14 @@ export default class EmojiValueList extends Component {
   }
 
   _validateInput(input) {
-    this.set("validationMessage", null);
-
     if (!emojiUrlFor(input)) {
-      this.set(
-        "validationMessage",
-        I18n.t("admin.site_settings.emoji_list.invalid_input")
+      this.setValidationMessage(
+        i18n("admin.site_settings.emoji_list.invalid_input")
       );
       return false;
     }
 
+    this.setValidationMessage(null);
     return true;
   }
 

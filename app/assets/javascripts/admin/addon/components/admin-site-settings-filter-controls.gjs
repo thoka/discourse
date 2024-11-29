@@ -6,11 +6,12 @@ import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import didUpdate from "@ember/render-modifiers/modifiers/did-update";
 import DButton from "discourse/components/d-button";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 
 export default class AdminSiteSettingsFilterControls extends Component {
   @tracked filter = this.args.initialFilter || "";
   @tracked onlyOverridden = false;
+  @tracked isMenuOpen = false;
 
   @action
   clearFilter() {
@@ -47,6 +48,12 @@ export default class AdminSiteSettingsFilterControls extends Component {
     this.onChangeFilter();
   }
 
+  @action
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    this.args.onToggleMenu();
+  }
+
   <template>
     <div
       class="admin-controls admin-site-settings-filter-controls"
@@ -57,8 +64,8 @@ export default class AdminSiteSettingsFilterControls extends Component {
         <div class="inline-form">
           {{#if @showMenu}}
             <DButton
-              @action={{@onToggleMenu}}
-              @icon="bars"
+              @action={{this.toggleMenu}}
+              @icon={{if this.isMenuOpen "xmark" "bars"}}
               class="menu-toggle"
             />
           {{/if}}

@@ -4,7 +4,7 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 import { defaultHomepage } from "discourse/lib/utilities";
 import { scrollTop } from "discourse/mixins/scroll-top";
 import DiscourseRoute from "discourse/routes/discourse";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 import { getUserChatSeparateSidebarMode } from "discourse/plugins/chat/discourse/lib/get-user-chat-separate-sidebar-mode";
 import {
   CHAT_PANEL,
@@ -19,7 +19,7 @@ export default class ChatRoute extends DiscourseRoute {
   @service currentUser;
 
   titleToken() {
-    return I18n.t("chat.title_capitalized");
+    return i18n("chat.title_capitalized");
   }
 
   beforeModel(transition) {
@@ -35,6 +35,7 @@ export default class ChatRoute extends DiscourseRoute {
       transition.abort();
 
       let url = transition.intent.url;
+
       if (transition.targetName.startsWith("chat.channel")) {
         url ??= this.router.urlFor(
           transition.targetName,
@@ -45,6 +46,7 @@ export default class ChatRoute extends DiscourseRoute {
       }
 
       this.appEvents.trigger("chat:open-url", url);
+
       return;
     }
 

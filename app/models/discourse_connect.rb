@@ -252,7 +252,10 @@ class DiscourseConnect < DiscourseConnectBase
 
       if !user
         user_params = {
-          primary_email: UserEmail.new(email: email, primary: true),
+          primary_email:
+            UserEmail.new(email: email, primary: true) do |user_email|
+              user_email.skip_normalize_email = true
+            end,
           name: resolve_name,
           username: resolve_username,
           ip_address: ip_address,
@@ -353,7 +356,7 @@ class DiscourseConnect < DiscourseConnectBase
       user.name = name || User.suggest_name(username.blank? ? email : username)
     end
 
-    if locale_force_update && SiteSetting.allow_user_locale && locale &&
+    if locale_force_update && SiteSetting.allow_user_locale && locale.present? &&
          LocaleSiteSetting.valid_value?(locale)
       user.locale = locale
     end

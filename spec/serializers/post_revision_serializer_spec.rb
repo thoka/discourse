@@ -41,6 +41,16 @@ RSpec.describe PostRevisionSerializer do
     end
   end
 
+  it "handles tags not being an array" do
+    pr = Fabricate(:post_revision, post: post, modifications: { "tags" => ["[]", ""] })
+
+    json =
+      PostRevisionSerializer.new(pr, scope: Guardian.new(Fabricate(:user)), root: false).as_json
+
+    expect(json[:tags_changes][:previous]).to eq("[]")
+    expect(json[:tags_changes][:current]).to eq([])
+  end
+
   context "with hidden tags" do
     fab!(:public_tag) { Fabricate(:tag, name: "public") }
     fab!(:public_tag2) { Fabricate(:tag, name: "visible") }
@@ -115,6 +125,22 @@ RSpec.describe PostRevisionSerializer do
         ).as_json
 
       expect(json[:tags_changes]).to_not be_present
+    end
+  end
+
+  context "when some tracked topic fields are associations" do
+    let(:serializer) { described_class.new(post_revision, scope: guardian, root: false) }
+    let(:post_revision) { Fabricate(:post_revision, post:) }
+    let(:guardian) { Discourse.system_user.guardian }
+
+    before do
+      allow(PostRevisor).to receive(:tracked_topic_fields).and_wrap_original do |original_method|
+        original_method.call.merge(allowed_users: -> {}, allowed_groups: -> {})
+      end
+    end
+
+    it "skips them" do
+      expect { serializer.as_json }.not_to raise_error
     end
   end
 end

@@ -219,8 +219,13 @@ class PostRevisionSerializer < ApplicationSerializer
 
     # Retrieve any `tracked_topic_fields`
     PostRevisor.tracked_topic_fields.each_key do |field|
-      next if field == :tags
-      latest_modifications[field.to_s] = [topic.public_send(field)] if topic.respond_to?(field)
+      next unless topic.respond_to?(field)
+      topic
+        .public_send(field)
+        .then do |value|
+          next if value.try(:proxy_association)
+          latest_modifications[field.to_s] = [value]
+        end
     end
 
     latest_modifications["featured_link"] = [
@@ -279,7 +284,7 @@ class PostRevisionSerializer < ApplicationSerializer
   end
 
   def filter_tags(tags)
-    tags - hidden_tags
+    tags.is_a?(Array) && tags.any? ? tags - hidden_tags : tags
   end
 
   def filter_category_id(category_id)

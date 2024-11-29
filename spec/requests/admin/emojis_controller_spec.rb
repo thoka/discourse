@@ -11,7 +11,7 @@ RSpec.describe Admin::EmojisController do
       before { sign_in(admin) }
 
       it "returns a list of custom emojis" do
-        CustomEmoji.create!(name: "osama-test-emoji", upload: upload)
+        CustomEmoji.create!(name: "osama-test-emoji", upload: upload, user: admin)
         Emoji.clear_cache
 
         get "/admin/customize/emojis.json"
@@ -20,6 +20,7 @@ RSpec.describe Admin::EmojisController do
         json = response.parsed_body
         expect(json[0]["name"]).to eq("osama-test-emoji")
         expect(json[0]["url"]).to eq(upload.url)
+        expect(json[0]["created_by"]).to eq(admin.username)
       end
     end
 
@@ -101,6 +102,23 @@ RSpec.describe Admin::EmojisController do
         expect(data["name"]).to eq(custom_emoji.name)
         expect(data["url"]).to eq(upload.url)
         expect(custom_emoji.group).to eq(nil)
+        expect(custom_emoji.user_id).to eq(admin.id)
+      end
+
+      it "should log the action" do
+        Emoji.expects(:clear_cache)
+
+        post "/admin/customize/emojis.json",
+             params: {
+               name: "test",
+               file: fixture_file_upload("#{Rails.root}/spec/fixtures/images/logo.png"),
+             }
+
+        last_log = UserHistory.last
+
+        expect(last_log.action).to eq(UserHistory.actions[:custom_emoji_create])
+        expect(last_log.acting_user_id).to eq(admin.id)
+        expect(last_log.new_value).to eq("test")
       end
 
       it "should allow an admin to add a custom emoji with a custom group" do
@@ -195,6 +213,19 @@ RSpec.describe Admin::EmojisController do
         expect do
           delete "/admin/customize/emojis/#{custom_emoji.name}.json", params: { name: "test" }
         end.to change { CustomEmoji.count }.by(-1)
+      end
+
+      it "should log the action" do
+        custom_emoji = CustomEmoji.create!(name: "test", upload: upload)
+        Emoji.clear_cache
+
+        delete "/admin/customize/emojis/#{custom_emoji.name}.json", params: { name: "test" }
+
+        last_log = UserHistory.last
+
+        expect(last_log.action).to eq(UserHistory.actions[:custom_emoji_destroy])
+        expect(last_log.acting_user_id).to eq(admin.id)
+        expect(last_log.previous_value).to eq("test")
       end
     end
 
