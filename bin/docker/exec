@@ -10,5 +10,6 @@ exec docker exec \
   -e RAILS_ENV \
   -e NO_EMBER_CLI \
   -e QUNIT_RAILS_ENV \
+  -e USER=discourse \
   discourse_dev \
   "$@"
