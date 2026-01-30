@@ -1,6 +1,10 @@
 {
   "name": "Discourse",
-  "image": "docker.io/discourse/discourse_dev:20260109-0020",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".." 
+  },
+  // "image": "docker.io/discourse/discourse_dev:20260109-0020",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/discourse,type=bind",
   "workspaceFolder": "/workspace/discourse",
   "postStartCommand": "./.devcontainer/scripts/start.rb",
@@ -16,7 +20,7 @@
     "RAILS_DEVELOPMENT_HOSTS": ".app.github.dev",
     "PGUSER": "discourse",
     "SELENIUM_FORWARD_DEVTOOLS_TO_PORT": "9229",
-    "PATH": "/workspace/discourse/bin:${containerEnv:PATH}"
+    "PATH": "/workspace/discourse/bin:/home/discourse/.local/share/gem/ruby/3.3.0/bin:${containerEnv:PATH}"
   },
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
@@ -24,6 +28,7 @@
     "source=${localWorkspaceFolderBasename}-pg,target=/shared/postgres_data,type=volume",
     "source=${localWorkspaceFolderBasename}-redis,target=/shared/redis,type=volume"
   ],
+  "updateRemoteUserUID": true,
   "customizations": {
     "vscode": {
       "extensions": [
@@ -37,7 +42,13 @@
       "settings": {
         "terminal.integrated.env.linux": {
           "PATH": "/workspace/discourse/bin:${env:PATH}"
-        }
+        },
+        "rubyLsp.rubyVersionManager": {
+          "identifier": "none"
+        },
+        "rubyLsp.bundleGemfile": "/workspace/discourse/Gemfile",
+        // Wichtig: Verweist auf den Pfad, wo die Gems liegen
+        "rubyLsp.branch": "main" 
       }
     }
   }
