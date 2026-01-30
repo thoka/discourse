@@ -16,8 +16,10 @@
     "RAILS_DEVELOPMENT_HOSTS": ".app.github.dev",
     "PGUSER": "discourse",
     "SELENIUM_FORWARD_DEVTOOLS_TO_PORT": "9229",
+    "PATH": "/workspace/discourse/bin:${containerEnv:PATH}"
   },
   "mounts": [
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
     "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=${localWorkspaceFolderBasename}-pg,target=/shared/postgres_data,type=volume",
     "source=${localWorkspaceFolderBasename}-redis,target=/shared/redis,type=volume"
@@ -31,7 +33,12 @@
         "lifeart.vscode-glimmer-syntax",
         "typed-ember.glint2-vscode",
         "stylelint.vscode-stylelint"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.env.linux": {
+          "PATH": "/workspace/discourse/bin:${env:PATH}"
+        }
+      }
     }
   }
 }
