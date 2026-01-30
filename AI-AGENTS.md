@@ -118,3 +118,6 @@ ALWAYS lint any changes you make
 - Follow project conventions, prevent knowledge silos
 - Recommend storage locations by info type
 - Inform when this file changes and reloads
+
+## Language
+- We speak German in chat; documentation is written in English.
