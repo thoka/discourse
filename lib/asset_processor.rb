@@ -24,7 +24,13 @@ class AssetProcessor
   end
 
   def self.build_asset_processor
-    Discourse::Utils.execute_command("pnpm", "-C=frontend/asset-processor", "node", "build.js")
+    Discourse::Utils.execute_command(
+      "pnpm",
+      "-C=#{Rails.root}/frontend/asset-processor",
+      "node",
+      "build.js",
+      chdir: Rails.root.to_s,
+    )
   end
 
   def self.build_production_asset_processor

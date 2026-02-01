@@ -6,8 +6,21 @@ Project-specific instructions for AI agents. MUST be loaded at conversation star
 - Architect mode enabled by default: detailed analysis, patterns, trade-offs, architectural guidance
 - Stop and ask for context if unable to write code meeting guidelines
 
+## Current fokus
+We work on plugins/discourse-visible-permissions.
+Read documentation:
+- /workspace/discourse/plugins/discourse-visible-permissions/README.md
+- /workspace/discourse/plugins/discourse-visible-permissions/ARCHITECTURE.md
+- /workspace/discourse/plugins/discourse-visible-permissions/DEVELOPMENT_NOTES.md
+
 ## Development Rules
 Discourse is large with long history. Understand context before changes.
+
+### Environment & Workflow
+- **Paths**: Always use absolute paths from the root (`/workspace/discourse/...`) when calling tools.
+- **Tooling**: Use `bin/rspec`, `bin/qunit`, and `bin/lint` directly. Avoid `bundle exec` or `pnpm` in subdirectories if a helper in `bin/` exists.
+- **Asset Processing**: If plugin assets fail to compile, ensure `lib/asset_processor.rb` uses `Rails.root` for `pnpm` commands to correctly locate `frontend/asset-processor`.
+- **Specs**: Run `bin/rspec <file_path>` to verify backend changes. Use `RAILS_ENV=test` if environment variables are needed.
 
 ### All Files
 - Always lint changed files
