@@ -14,8 +14,8 @@ RUN mkdir -p /usr/local/bundle \
 USER discourse
 WORKDIR /workspace/discourse
 
-# Pfade für Gems und Binstubs (User-spezifisch)
-ENV PATH="/usr/local/bundle/bin:/workspace/discourse/vendor/bundle/ruby/3.3.0/bin:/workspace/discourse/bin:${PATH}"
+# Pfade für Gems und Binstubs - Hier KEIN :${PATH} am Ende, um Altlasten zu kappen
+ENV PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ENV GEM_HOME="/usr/local/bundle"
 ENV BUNDLE_PATH="/usr/local/bundle" 
 ENV BUNDLE_BIN="/usr/local/bundle/bin"
@@ -25,7 +25,9 @@ ENV BUNDLE_BIN="/usr/local/bundle/bin"
 COPY --chown=discourse:discourse Gemfile Gemfile.lock ./
 
 # Jetzt installieren wir direkt als discourse user
-# Da uns der WORKDIR gehört, brauchen wir kein sudo oder root
-RUN bundle config set --local path 'vendor/bundle' && \
-    bundle install --jobs 4 && \
-    gem install ruby-lsp 
+# Wir entfernen die lokale Konfiguration, damit GEM_HOME (/usr/local/bundle) verwendet wird
+RUN bundle install --jobs 16 && \
+    gem install ruby-lsp
+
+# Erzwinge sauberen PATH in der bashrc des users
+RUN echo 'export PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> ~/.bashrc

@@ -19,6 +19,9 @@ end
 system "cp -n .vscode/settings.json.sample .vscode/settings.json", exception: true
 system "cp -n .vscode/tasks.json.sample .vscode/tasks.json", exception: true
 
+puts "Prüfe Ruby Gems..."
+system "bundle check || bundle install --jobs 4", exception: true
+
 puts <<~TXT
   🎉 All done!
 
