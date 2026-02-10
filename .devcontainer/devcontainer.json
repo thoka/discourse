@@ -20,14 +20,20 @@
     "RAILS_DEVELOPMENT_HOSTS": ".app.github.dev",
     "PGUSER": "discourse",
     "SELENIUM_FORWARD_DEVTOOLS_TO_PORT": "9229",
-    "PATH": "/workspace/discourse/bin:/home/discourse/.local/share/gem/ruby/3.3.0/bin:${containerEnv:PATH}"
+    "PATH": "/workspace/discourse/bin:/usr/local/bundle/bin:${containerEnv:PATH}"
   },
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
     "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=${localWorkspaceFolderBasename}-pg,target=/shared/postgres_data,type=volume",
-    "source=${localWorkspaceFolderBasename}-redis,target=/shared/redis,type=volume"
+    "source=${localWorkspaceFolderBasename}-redis,target=/shared/redis,type=volume",
+    "source=${localWorkspaceFolderBasename}-ruby-gems-cache,target=/usr/local/bundle,type=volume"
   ],
+  "containerEnv": {
+      "GEM_HOME": "/usr/local/bundle",
+      "BUNDLE_PATH": "/usr/local/bundle",
+      "BUNDLE_BIN": "/usr/local/bundle/bin"
+  },
   "updateRemoteUserUID": true,
   "customizations": {
     "vscode": {
