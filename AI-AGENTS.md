@@ -7,11 +7,11 @@ Project-specific instructions for AI agents. MUST be loaded at conversation star
 - Stop and ask for context if unable to write code meeting guidelines
 
 ## Current fokus
-We work on plugins/discourse-visible-permissions.
+We work on plugins/discourse-reach-and-rights.
 Read documentation:
-- /workspace/discourse/plugins/discourse-visible-permissions/README.md
-- /workspace/discourse/plugins/discourse-visible-permissions/ARCHITECTURE.md
-- /workspace/discourse/plugins/discourse-visible-permissions/DEVELOPMENT_NOTES.md
+- /workspace/discourse/plugins/discourse-reach-and-rights/README.md
+- /workspace/discourse/plugins/discourse-reach-and-rights/ARCHITECTURE.md
+- /workspace/discourse/plugins/discourse-reach-and-rights/DEVELOPMENT_NOTES.md
 
 ## Development Rules
 Discourse is large with long history. Understand context before changes.
