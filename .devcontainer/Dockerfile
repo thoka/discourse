@@ -31,3 +31,6 @@ RUN bundle install --jobs 16 && \
 
 # Erzwinge sauberen PATH in der bashrc des users
 RUN echo 'export PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> ~/.bashrc
+
+# Playwright Browser für MCP installieren
+#RUN npx playwright install chromium

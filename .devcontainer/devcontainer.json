@@ -55,8 +55,22 @@
         },
         "rubyLsp.bundleGemfile": "/workspace/discourse/Gemfile",
         // Wichtig: Verweist auf den Pfad, wo die Gems liegen
-        "rubyLsp.branch": "main" 
+        "rubyLsp.branch": "main",
+        "github.copilot.mcp.servers": {
+          "playwright": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@playwright/mcp",
+              "--cdp-endpoint",
+              "http://host.docker.internal:9239"
+            ]
+          }
+        }
       }
     }
-  }
+  },
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ]
 }
