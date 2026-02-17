@@ -30,12 +30,19 @@ RUN bundle install --jobs 16 && \
     gem install ruby-lsp
 
 # Erzwinge sauberen PATH in der bashrc des users
-RUN echo 'export PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> ~/.bashrc
+RUN echo 'export PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> ~/.bashrc && \
+    echo '[ -f /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion' >> ~/.bashrc
 
 # Playwright Browser für MCP installieren
 #RUN npx playwright install chromium
 
 USER root
 RUN rm -f /etc/apt/sources.list.d/yarn.list && \
-    apt-get update && apt-get install -y --no-install-recommends iputils-ping netcat-openbsd \
+    apt-get update && apt-get install -y --no-install-recommends \
+        iputils-ping netcat-openbsd \
+        bash-completion \
+        software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get install -y --no-install-recommends \
+        python3.13 python3.13-venv \
     && rm -rf /var/lib/apt/lists/*
