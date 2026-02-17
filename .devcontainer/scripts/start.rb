@@ -19,20 +19,7 @@ end
 system "cp -n .vscode/settings.json.sample .vscode/settings.json", exception: true
 system "cp -n .vscode/tasks.json.sample .vscode/tasks.json", exception: true
 
-puts "Generating workspace file..."
-require "json"
-sample_path = File.expand_path(".devcontainer/discourse.code-workspace.sample", Dir.pwd)
-workspace_path = File.expand_path("discourse.code-workspace", Dir.pwd)
-plugin_folders =
-  Dir
-    .glob("plugins/*/")
-    .select { |dir| File.directory?("#{dir}/.git") }
-    .sort
-    .map { |dir| { "name" => File.basename(dir), "path" => dir.chomp("/") } }
-workspace = JSON.parse(File.read(sample_path))
-workspace["folders"] = [{ "name" => "discourse", "path" => "." }] + plugin_folders
-File.write(workspace_path, "#{JSON.pretty_generate(workspace)}\n")
-puts "Workspace: discourse + #{plugin_folders.length} plugin(s)"
+system ".devcontainer/scripts/update-workspace.rb", exception: true
 
 puts "Prüfe Ruby Gems..."
 system "bundle check || bundle install --jobs 4", exception: true
