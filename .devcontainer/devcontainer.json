@@ -27,7 +27,8 @@
     "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=${localWorkspaceFolderBasename}-pg,target=/shared/postgres_data,type=volume",
     "source=${localWorkspaceFolderBasename}-redis,target=/shared/redis,type=volume",
-    "source=${localWorkspaceFolderBasename}-ruby-gems-cache,target=/usr/local/bundle,type=volume"
+    "source=${localWorkspaceFolderBasename}-ruby-gems-cache,target=/usr/local/bundle,type=volume",
+    "source=${localWorkspaceFolderBasename}-claude-data,target=/home/discourse/.claude,type=volume"
   ],
   "containerEnv": {
     "GEM_HOME": "/usr/local/bundle",
@@ -39,6 +40,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "anthropic.claude-code",
         "Shopify.ruby-lsp",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
@@ -63,7 +65,8 @@
               "-y",
               "@playwright/mcp",
               "--cdp-endpoint",
-              "http://host.docker.internal:9239"
+              "http://172.17.0.1:9249"
+              // "http://host.docker.internal:9239"
             ]
           }
         }

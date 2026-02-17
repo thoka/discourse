@@ -34,3 +34,8 @@ RUN echo 'export PATH="/workspace/discourse/bin:/usr/local/bundle/bin:/usr/local
 
 # Playwright Browser für MCP installieren
 #RUN npx playwright install chromium
+
+USER root
+RUN rm -f /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install -y --no-install-recommends iputils-ping netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
