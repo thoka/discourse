@@ -22,6 +22,11 @@ Discourse is large with long history. Understand context before changes.
 - **Asset Processing**: If plugin assets fail to compile, ensure `lib/asset_processor.rb` uses `Rails.root` for `pnpm` commands to correctly locate `frontend/asset-processor`.
 - **Specs**: Run `bin/rspec <file_path>` to verify backend changes. Use `RAILS_ENV=test` if environment variables are needed.
 
+### Communication & Commit Workflow
+- Keep conversation output as short and direct as possible.
+- Commit results directly to the `implement` branch, including a short status summary in the commit message.
+- Update the TODO list before committing; after committing, remove all items that are fully completed.
+
 ### All Files
 - Always lint changed files
 - Make display strings translatable (use placeholders, not split strings)
